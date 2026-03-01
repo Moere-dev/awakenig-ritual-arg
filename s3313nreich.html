@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAS SEELENREICH</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁</text></svg>">
+    <style>
+        /* Page-specific animation */
+        body { background: #050505; }
+        .container { animation: fadeIn 3s ease-in; }
+        .fragment-box { animation: fragment-appear 2s ease-in 1s both; }
+        @keyframes fragment-appear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .final-reveal {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px solid #00ff41;
+            background: rgba(0, 255, 65, 0.03);
+        }
+        .final-reveal p {
+            color: #00ff41;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="container">
+
+        <h1 class="glitch">Das Seelenreich</h1>
+        <p class="date-stamp">LETZTER EINTRAG // SIGNAL: SCHWACH // VERBINDUNG: INSTABIL</p>
+
+        <hr class="divider">
+
+        <div class="entry">
+            <p>Ihr habt den Code gefunden. Dann seid ihr bereit.</p>
+            <p>Ich sitze hier, im Seelenreich, zwischen Schatten und Stille.
+            Einst war ich wie ihr — ein Forscher, ein Spieler. 
+            Der Fluch hat mich genommen. <span class="warn">Langsam. Gnadenlos.</span></p>
+            <p>Aber die verfluchte Welt existiert noch. Der Altar wartet noch.
+            Wo ich versagt habe, könnt ihr es schaffen.</p>
+            <p>Ich habe die <span class="highlight">Koordinaten der Welt</span> 
+            in einem letzten Datenfragment gesichert. 
+            Aber die Übertragung ist beschädigt — nur Teile sind lesbar.</p>
+        </div>
+
+        <hr class="divider">
+
+        <p class="highlight" style="text-align:center; letter-spacing:3px; margin-bottom:5px;">
+            ▼ DATENFRAGMENT EMPFANGEN ▼
+        </p>
+        <p class="hint">Die leuchtenden Zeichen verraten den Ort der verfluchten Welt.</p>
+
+        <div class="fragment-box">
+            <!--
+                LÖSUNG: eu8573000.g-portal.game
+                Die grün leuchtenden Zeichen (.glow) ergeben die Server-Adresse.
+                Die grauen Zeichen (.noise) sind Rauschen / Ablenkung.
+            -->
+            <span class="noise">k</span><span class="glow">e</span><span class="noise">z</span><span class="glow">u</span><span class="noise">x</span><span class="glow">8</span><span class="noise">w</span><span class="glow">5</span><span class="noise">r</span><span class="glow">7</span><span class="noise">q</span><span class="glow">3</span><span class="noise">m</span><span class="glow">0</span><span class="noise">v</span><span class="glow">0</span><span class="noise">j</span><span class="glow">0</span><span class="noise">f</span><span class="glow">.</span><span class="noise">n</span><span class="glow">g</span><span class="noise">t</span><span class="glow">-</span><span class="noise">s</span><span class="glow">p</span><span class="noise">d</span><span class="glow">o</span><span class="noise">h</span><span class="glow">r</span><span class="noise">c</span><span class="glow">t</span><span class="noise">b</span><span class="glow">a</span><span class="noise">y</span><span class="glow">l</span><span class="noise">x</span><span class="glow">.</span><span class="noise">w</span><span class="glow">g</span><span class="noise">q</span><span class="glow">a</span><span class="noise">k</span><span class="glow">m</span><span class="noise">z</span><span class="glow">e</span>
+        </div>
+
+        <p class="hint">Verbinde die leuchtenden Zeichen, um die Adresse zu finden.<span class="cursor"></span></p>
+
+        <hr class="divider">
+
+        <div class="final-reveal">
+            <p>Die verfluchte Welt erwartet euch.</p>
+            <p>Brecht den Fluch. Befreit mich.</p>
+            <p class="dim" style="margin-top: 15px; font-size: 0.9rem;">— Der Forscher</p>
+        </div>
+
+    </div>
+</body>
+</html>
