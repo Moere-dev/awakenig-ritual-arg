@@ -445,7 +445,7 @@
                     const c = document.createTextNode(fullText[charIndex]);
                     el.insertBefore(c, cursor);
                     charIndex++;
-                    SFX.typeClick();
+                    requestAnimationFrame(function() { SFX.typeClick(); });
 
                     let delay = speed;
                     const ch = fullText[charIndex - 1];

@@ -738,7 +738,7 @@
                     const c = document.createTextNode(fullText[charIndex]);
                     div.insertBefore(c, cursor);
                     charIndex++;
-                    SFX.typeClick();
+                    requestAnimationFrame(function() { SFX.typeClick(); });
                     scrollBottom();
 
                     let delay = speed;
