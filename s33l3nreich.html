@@ -227,14 +227,13 @@
             animation: char-lock 0.3s ease-out;
         }
         .decrypt-display .char.dot { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.3); }
-        .decrypt-display .char.destabilized {
-            color: #1a4a1a;
-            animation: destab-flicker 0.15s infinite alternate;
+        .decrypt-display .char.bruteforce {
+            color: #ff4444;
+            text-shadow: 0 0 6px rgba(255,68,68,0.5);
         }
-        .decrypt-display .char.shifting {
+        .decrypt-display .char.trying {
             color: #d4a030;
             text-shadow: 0 0 8px rgba(212,160,48,0.6), 0 0 20px rgba(212,160,48,0.2);
-            animation: caesar-pulse 0.3s ease-in-out;
         }
         .decrypt-display .char.decode-flash {
             color: #ffffff;
@@ -244,15 +243,6 @@
         @keyframes char-lock {
             0% { transform: scale(1.4); }
             50% { transform: scale(0.9); }
-            100% { transform: scale(1); }
-        }
-        @keyframes destab-flicker {
-            0% { opacity: 0.3; transform: translateY(-1px); }
-            100% { opacity: 0.8; transform: translateY(1px); }
-        }
-        @keyframes caesar-pulse {
-            0% { transform: scale(1.3); opacity: 0.6; }
-            50% { transform: scale(1.1); opacity: 1; }
             100% { transform: scale(1); }
         }
         @keyframes decode-lock {
@@ -340,14 +330,13 @@
             animation: char-lock 0.3s ease-out;
         }
         .decoder-overlay .decoder-chars .char.dot { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.3); }
-        .decoder-overlay .decoder-chars .char.destabilized {
-            color: #1a4a1a;
-            animation: destab-flicker 0.15s infinite alternate;
+        .decoder-overlay .decoder-chars .char.bruteforce {
+            color: #ff4444;
+            text-shadow: 0 0 6px rgba(255,68,68,0.5);
         }
-        .decoder-overlay .decoder-chars .char.shifting {
+        .decoder-overlay .decoder-chars .char.trying {
             color: #d4a030;
             text-shadow: 0 0 8px rgba(212,160,48,0.6), 0 0 20px rgba(212,160,48,0.2);
-            animation: caesar-pulse 0.3s ease-in-out;
         }
         .decoder-overlay .decoder-chars .char.decode-flash {
             color: #ffffff;
@@ -1280,6 +1269,9 @@
         var decoderLogEl = null;
         var decoderStatusEl = null;
         var decoderShiftEl = null;
+        var decoderAttemptsEl = null;
+        var bruteAttempts = 0;
+        var ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
         function decoderLog(text, cls) {
             var d = document.createElement('div');
@@ -1301,9 +1293,10 @@
                 '<div class="decoder-body">' +
                     '<div class="decoder-label">VERSCHLÜSSELTE DATEN</div>' +
                     '<div class="decoder-chars" id="dec-chars"></div>' +
-                    '<div class="decoder-shift-indicator" id="dec-shift">SHIFT: -3</div>' +
+                    '<div class="decoder-shift-indicator" id="dec-shift">BRUTEFORCE: SHIFT -3</div>' +
                     '<div class="decoder-progress"><div class="fill" id="dec-fill"></div></div>' +
                     '<div class="decoder-status" id="dec-status">Initialisiere...</div>' +
+                    '<div class="decoder-status" id="dec-attempts" style="color:#ff4444;">Versuche: 0</div>' +
                     '<div class="decoder-log" id="dec-log"></div>' +
                 '</div>';
             document.body.appendChild(decoderOverlay);
@@ -1313,6 +1306,8 @@
             decoderLogEl = document.getElementById('dec-log');
             decoderStatusEl = document.getElementById('dec-status');
             decoderShiftEl = document.getElementById('dec-shift');
+            decoderAttemptsEl = document.getElementById('dec-attempts');
+            bruteAttempts = 0;
 
             // Populate chars from SHIFTED_TARGET
             decoderChars = [];
@@ -1337,28 +1332,55 @@
             });
 
             decoderLog('CAESAR-DEKODER v1.3 gestartet', 'log-success');
-            decoderLog('Verschiebungswert: -3 geladen', '');
+            decoderLog('Bruteforce-Modus: Verschiebung -3', '');
 
             setTimeout(decoderPhaseA, 1000);
         }
 
         function decoderPhaseA() {
-            // Destabilize all letter chars
-            decoderStatusEl.textContent = 'Zeichenmatrix wird destabilisiert...';
-            decoderLog('Destabilisiere Zeichenmatrix...', 'log-warn');
+            // Bruteforce phase: all chars cycle rapidly through random values
+            decoderStatusEl.textContent = 'Bruteforce läuft...';
+            decoderLog('Starte Bruteforce-Angriff...', 'log-warn');
             SFX.warn();
-            shake();
+
+            // All non-dot chars start cycling red
+            var bruteIntervals = [];
             decoderChars.forEach(function(s) {
                 if (s.className.indexOf('dot') === -1) {
-                    s.className = 'char destabilized';
+                    s.className = 'char bruteforce';
+                    var iv = setInterval(function() {
+                        s.textContent = ALPHA[Math.floor(Math.random() * ALPHA.length)];
+                        bruteAttempts++;
+                        if (bruteAttempts % 50 === 0) {
+                            decoderAttemptsEl.textContent = 'Versuche: ' + bruteAttempts;
+                        }
+                    }, 40);
+                    bruteIntervals.push(iv);
                 }
             });
-            setTimeout(decoderPhaseB, 1400);
+
+            // Log failed attempts during the cycling phase
+            var rapidLogCount = 0;
+            var rapidLogInterval = setInterval(function() {
+                rapidLogCount++;
+                if (rapidLogCount <= 6) {
+                    SFX.scrambleTick();
+                    decoderLog('Teste Kombination #' + bruteAttempts + '... FEHLGESCHLAGEN', 'log-error');
+                }
+            }, 300);
+
+            // After ~2s of visible cycling, stop and crack per-char
+            setTimeout(function() {
+                clearInterval(rapidLogInterval);
+                bruteIntervals.forEach(function(iv) { clearInterval(iv); });
+                decoderLog('Muster erkannt — starte gezielte Entschlüsselung...', 'log-success');
+                decoderStatusEl.textContent = 'Zeichen werden einzeln geknackt...';
+                setTimeout(decoderPhaseB, 600);
+            }, 2200);
         }
 
         function decoderPhaseB() {
-            decoderStatusEl.textContent = 'Caesar-Rotation rückgängig: -3 Positionen';
-            decoderLog('Starte Rückrotation...', 'log-success');
+            decoderLog('Knacke Zeichen einzeln...', 'log-success');
 
             var indices = [];
             for (var i = 0; i < SHIFTED_TARGET.length; i++) {
@@ -1368,33 +1390,31 @@
             var resolved = 0;
             var pos = 0;
 
-            function shiftNext() {
+            function crackNext() {
                 if (pos >= indices.length) {
                     setTimeout(decoderPhaseC, 700);
                     return;
                 }
                 var idx = indices[pos]; pos++;
                 var span = decoderChars[idx];
-                var shiftedChar = SHIFTED_TARGET[idx];
                 var realChar = TARGET[idx];
 
-                // Build 3-step countdown
-                var steps = [];
-                for (var s = 0; s < CAESAR_SHIFT; s++) {
-                    steps.push(caesarShift(shiftedChar, -(s + 1)));
-                }
+                // Rapid cycling through wrong values then lock on correct
+                var cycleCount = 0;
+                var cycleMax = 8 + Math.floor(Math.random() * 7);
+                span.className = 'char trying';
 
-                var stepIdx = 0;
-                span.className = 'char shifting';
+                var cycleInterval = setInterval(function() {
+                    span.textContent = ALPHA[Math.floor(Math.random() * ALPHA.length)];
+                    SFX.scrambleTick();
+                    bruteAttempts++;
+                    if (bruteAttempts % 5 === 0) {
+                        decoderAttemptsEl.textContent = 'Versuche: ' + bruteAttempts;
+                    }
+                    cycleCount++;
 
-                var countdownInterval = setInterval(function() {
-                    if (stepIdx < steps.length) {
-                        span.textContent = steps[stepIdx];
-                        span.className = 'char shifting';
-                        SFX.scrambleTick();
-                        stepIdx++;
-                    } else {
-                        clearInterval(countdownInterval);
+                    if (cycleCount >= cycleMax) {
+                        clearInterval(cycleInterval);
                         span.textContent = realChar;
                         span.className = 'char decode-flash';
                         SFX.charLock();
@@ -1406,16 +1426,16 @@
                         }, 500);
 
                         var pct = Math.round((resolved / total) * 100);
-                        decoderStatusEl.textContent = 'Dekodiere... ' + pct + '%';
-                        if (pct === 25) { flash(); decoderLog('Transformation: 25%', ''); }
-                        else if (pct === 50) { shake(); decoderLog('Transformation: 50%', 'log-warn'); }
-                        else if (pct === 75) { flash(); shake(); SFX.warn(); decoderLog('WARNUNG: Datenstrom instabil — 75%', 'log-error'); }
+                        decoderStatusEl.textContent = 'Knacke Zeichen... ' + pct + '%';
+                        if (pct === 25) { flash(); decoderLog('Fortschritt: 25% — ' + bruteAttempts + ' Versuche', ''); }
+                        else if (pct === 50) { shake(); decoderLog('Fortschritt: 50% — ' + bruteAttempts + ' Versuche', 'log-warn'); }
+                        else if (pct === 75) { flash(); shake(); SFX.warn(); decoderLog('WARNUNG: Hohe Last — 75% — ' + bruteAttempts + ' Versuche', 'log-error'); }
 
-                        setTimeout(shiftNext, 60 + Math.random() * 80);
+                        setTimeout(crackNext, 50 + Math.random() * 70);
                     }
-                }, 90);
+                }, 45);
             }
-            setTimeout(shiftNext, 400);
+            setTimeout(crackNext, 300);
         }
 
         function decoderPhaseC() {
@@ -1430,10 +1450,12 @@
                     decoderStatusEl.textContent = 'DEKODIERUNG ABGESCHLOSSEN';
                     decoderStatusEl.style.color = '#00ff41';
                     decoderStatusEl.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
-                    decoderShiftEl.textContent = '✓ ENTSCHLÜSSELT';
+                    decoderShiftEl.textContent = '✓ GEKNACKT';
                     decoderShiftEl.style.color = '#00ff41';
-                    decoderLog('Dekodierung erfolgreich!', 'log-success');
+                    decoderLog('Bruteforce erfolgreich! ' + bruteAttempts + ' Versuche', 'log-success');
                     decoderLog('Koordinaten extrahiert.', 'log-success');
+                    decoderAttemptsEl.textContent = 'Versuche: ' + bruteAttempts + ' ✔';
+                    decoderAttemptsEl.style.color = '#00ff41';
                     SFX.reveal();
                     setTimeout(closeDecoderApp, 2500);
                     return;
