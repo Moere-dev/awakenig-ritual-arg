@@ -84,27 +84,7 @@
             margin: 6px 0;
         }
 
-        .skip-btn {
-            position: fixed;
-            bottom: 40px;
-            right: 20px;
-            z-index: 1500;
-            background: transparent;
-            border: 1px solid rgba(0, 255, 65, 0.08);
-            color: rgba(0, 255, 65, 0.15);
-            font-family: 'VT323', monospace;
-            font-size: 0.8rem;
-            padding: 4px 10px;
-            cursor: pointer;
-            letter-spacing: 2px;
-            transition: all 0.3s;
-        }
-        .skip-btn:hover {
-            color: #00ff41;
-            border-color: rgba(0, 255, 65, 0.3);
-            text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
-        }
-        .skip-btn.hidden { display: none; }
+
 
         .input-line {
             display: none;
@@ -260,14 +240,14 @@
             var d = document.createElement('div');
             d.className = 'line' + (cls ? ' ' + cls : '');
             d.textContent = text;
-            terminal.appendChild(d);
+            terminal.insertBefore(d, inputLine);
             scrollBottom();
         }
         function addLineHtml(html, cls) {
             var d = document.createElement('div');
             d.className = 'line' + (cls ? ' ' + cls : '');
             d.innerHTML = html;
-            terminal.appendChild(d);
+            terminal.insertBefore(d, inputLine);
             scrollBottom();
         }
         function addEmpty() { addLine('', ''); }
@@ -301,7 +281,7 @@
             if (skipped) { addLineHtml(html, ''); if (callback) callback(); return; }
             var d = document.createElement('div');
             d.className = 'line';
-            terminal.appendChild(d);
+            terminal.insertBefore(d, inputLine);
 
             var temp = document.createElement('span');
             temp.innerHTML = html;
@@ -343,7 +323,7 @@
         function addSep() {
             var hr = document.createElement('hr');
             hr.className = 'separator';
-            terminal.appendChild(hr);
+            terminal.insertBefore(hr, inputLine);
         }
 
         // ============================================================
@@ -579,7 +559,7 @@
                 '</div>' +
                 '<div class="frag-error" id="frag-error">ZUGANG VERWEIGERT — UNGÜLTIGER CODE</div>' +
                 '<div class="frag-success" id="frag-success"></div>';
-            terminal.appendChild(section);
+            terminal.insertBefore(section, inputLine);
             scrollBottom();
 
             var fragInput = document.getElementById('frag-code-input');
