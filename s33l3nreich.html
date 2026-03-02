@@ -423,6 +423,141 @@
         }
         .shaking { animation: shake-hard 0.15s linear infinite; }
 
+        /* ===================== BREACH ATTACK ===================== */
+        .breach-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: 2000;
+            display: none; flex-direction: column;
+            font-family: 'VT323', monospace;
+            transition: background 1s;
+        }
+        .breach-overlay.active { display: flex; }
+        .breach-overlay.darken { background: rgba(0, 0, 0, 0.85); }
+
+        .breach-header {
+            padding: 12px 20px;
+            background: rgba(255, 0, 0, 0.12);
+            border-bottom: 2px solid rgba(255, 0, 0, 0.4);
+            font-size: 1rem;
+            color: #ff4444;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            animation: breach-header-blink 0.5s ease-in-out infinite alternate;
+            flex-shrink: 0;
+        }
+        @keyframes breach-header-blink {
+            0% { background: rgba(255, 0, 0, 0.12); }
+            100% { background: rgba(255, 0, 0, 0.06); }
+        }
+
+        .breach-terminal {
+            flex: 1; overflow-y: auto;
+            padding: 20px 25px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .breach-terminal .bt-line { margin-bottom: 2px; }
+        .breach-terminal .bt-red { color: #ff4444; text-shadow: 0 0 5px rgba(255,0,0,0.3); }
+        .breach-terminal .bt-green { color: #00ff41; text-shadow: 0 0 5px rgba(0,255,65,0.3); }
+        .breach-terminal .bt-amber { color: #d4a030; text-shadow: 0 0 5px rgba(212,160,48,0.3); }
+        .breach-terminal .bt-dim { color: rgba(255,255,255,0.2); }
+        .breach-terminal .bt-white { color: #e0e0e0; }
+
+        .breach-input-area {
+            padding: 10px 25px 20px;
+            border-top: 1px solid rgba(255, 0, 0, 0.2);
+            flex-shrink: 0;
+            display: flex; gap: 10px; align-items: center;
+        }
+        .breach-prompt {
+            color: #ff4444;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .breach-input {
+            flex: 1;
+            background: transparent;
+            border: none; outline: none;
+            color: #ff4444;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            caret-color: #ff4444;
+        }
+        .breach-input::placeholder { color: rgba(255,68,68,0.3); }
+
+        .breach-timer {
+            position: absolute; top: 12px; right: 20px;
+            font-size: 1.4rem;
+            color: #ff4444;
+            text-shadow: 0 0 10px rgba(255,0,0,0.6);
+            letter-spacing: 2px;
+        }
+        .breach-timer.critical { animation: timer-pulse 0.3s ease-in-out infinite alternate; }
+        @keyframes timer-pulse {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.5; transform: scale(1.1); }
+        }
+
+        .breach-progress {
+            position: absolute; bottom: 60px; left: 25px; right: 25px;
+            height: 3px;
+            background: rgba(255,0,0,0.1);
+        }
+        .breach-progress .bp-fill {
+            height: 100%;
+            width: 0%;
+            background: #ff4444;
+            box-shadow: 0 0 8px rgba(255,0,0,0.4);
+            transition: width 0.3s;
+        }
+        .breach-progress .bp-fill.safe {
+            background: #00ff41;
+            box-shadow: 0 0 8px rgba(0,255,65,0.4);
+        }
+
+        @keyframes wipe-line {
+            0% { opacity: 1; transform: translateX(0); }
+            60% { opacity: 0.5; transform: translateX(10px); color: #ff4444; }
+            100% { opacity: 0; transform: translateX(-100%); }
+        }
+        .wipe-out { animation: wipe-line 0.4s ease-in forwards; }
+
+        .easter-egg-box {
+            border: 1px solid #00ff41;
+            background: rgba(0,20,0,0.8);
+            padding: 25px;
+            margin: 15px 0;
+            box-shadow: 0 0 30px rgba(0,255,65,0.1), inset 0 0 20px rgba(0,255,65,0.03);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        .easter-egg-box.visible { opacity: 1; }
+        .easter-egg-box pre {
+            color: #00ff41;
+            font-family: 'VT323', monospace;
+            font-size: 0.65rem;
+            line-height: 1.15;
+            text-shadow: 0 0 5px rgba(0,255,65,0.3);
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        .easter-egg-box .ee-msg {
+            color: #d4a030;
+            font-size: 1rem;
+            text-shadow: 0 0 6px rgba(212,160,48,0.3);
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        .easter-egg-box .ee-code {
+            color: #00ff41;
+            font-size: 1.3rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(0,255,65,0.5);
+            margin-top: 10px;
+        }
+
         /* ===================== RESPONSIVE ===================== */
         @media (max-width: 600px) {
             .terminal { padding: 15px 12px 110px 12px; }
@@ -911,6 +1046,7 @@
         //  COMMANDS
         // ============================================================
         function processCommand(raw) {
+            if (checkBreachTrigger(raw)) return;
             var parts = raw.split(/\s+/);
             var cmd = parts[0].toLowerCase();
             if (loggedIn) { postLogin(cmd, parts); return; }
@@ -1525,7 +1661,373 @@
                     addEmpty();
                     addLine('FORSCHER', 'Ihr habt mich gefunden... brecht den Fluch.', 'success');
                     scrollBottom();
+
+                    // After a pause, show suspicious warning
+                    setTimeout(function() {
+                        addEmpty();
+                        addLine('SYSTEM', '<span class="warn-text">[WARNUNG] Unbekannter Prozess erkannt: PID 6661</span>', 'warn-text');
+                        addLine('SYSTEM', 'Verdächtige Netzwerkaktivität auf Port 443...', 'text');
+                        addEmpty();
+
+                        inputLineEl.style.display = '';
+                        inputEl.disabled = false;
+                        inputEl.placeholder = 'trace PID 6661...';
+                        inputEl.focus();
+                        decrypting = false;
+                        breachArmed = true;
+                        scrollBottom();
+                    }, 4000);
                 }, 300);
+            }, 1500);
+        }
+
+        // ============================================================
+        //  BREACH ATTACK SYSTEM
+        // ============================================================
+        var breachArmed = false;
+        var breachActive = false;
+
+        function checkBreachTrigger(cmd) {
+            var c = cmd.toLowerCase().trim();
+            if (breachArmed && !breachActive) {
+                if (c.indexOf('trace') !== -1 || c.indexOf('6661') !== -1 || c.indexOf('scan') !== -1 || c.indexOf('kill') !== -1 || c.indexOf('run') !== -1 || c.indexOf('execute') !== -1) {
+                    breachArmed = false;
+                    breachActive = true;
+                    inputLineEl.style.display = 'none';
+                    startBreachAttack();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        var BreachSFX = {
+            alarm: function() {
+                var c = SFXCore.getCtx();
+                var o = c.createOscillator(), g = c.createGain();
+                o.type = 'sawtooth';
+                o.frequency.setValueAtTime(600, c.currentTime);
+                o.frequency.setValueAtTime(400, c.currentTime + 0.15);
+                o.frequency.setValueAtTime(600, c.currentTime + 0.3);
+                o.frequency.setValueAtTime(400, c.currentTime + 0.45);
+                g.gain.setValueAtTime(0.06, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.6);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + 0.6);
+            },
+            cmdSuccess: function() { SFXCore.tone('sine', 1000, 0.1, 0.06); },
+            cmdFail: function() { SFXCore.tone('square', 150, 0.2, 0.05); },
+            wipe: function() {
+                var c = SFXCore.getCtx();
+                var o = c.createOscillator(), g = c.createGain();
+                o.type = 'sawtooth';
+                o.frequency.setValueAtTime(800, c.currentTime);
+                o.frequency.exponentialRampToValueAtTime(30, c.currentTime + 2);
+                g.gain.setValueAtTime(0.07, c.currentTime);
+                g.gain.linearRampToValueAtTime(0.001, c.currentTime + 2);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + 2);
+            },
+            victory: function() {
+                var c = SFXCore.getCtx();
+                [600, 800, 1000, 1200, 1400].forEach(function(f, i) {
+                    setTimeout(function() { SFXCore.tone('sine', f, 0.2, 0.06); }, i * 80);
+                });
+            }
+        };
+
+        function startBreachAttack() {
+            var overlay = document.createElement('div');
+            overlay.className = 'breach-overlay';
+            overlay.innerHTML =
+                '<div class="breach-header">⚠ SICHERHEITSVERLETZUNG — EINDRINGLING ERKANNT</div>' +
+                '<div class="breach-timer" id="breach-timer">08.0</div>' +
+                '<div class="breach-terminal" id="breach-term"></div>' +
+                '<div class="breach-progress"><div class="bp-fill" id="breach-fill"></div></div>' +
+                '<div class="breach-input-area">' +
+                    '<span class="breach-prompt">root@DEFENSE:~#</span>' +
+                    '<input class="breach-input" id="breach-input" placeholder="Befehl eingeben..." autocomplete="off" spellcheck="false">' +
+                '</div>';
+            document.body.appendChild(overlay);
+
+            requestAnimationFrame(function() {
+                overlay.classList.add('active');
+                setTimeout(function() { overlay.classList.add('darken'); }, 50);
+            });
+
+            var term = document.getElementById('breach-term');
+            var timerEl = document.getElementById('breach-timer');
+            var bInput = document.getElementById('breach-input');
+            var bFill = document.getElementById('breach-fill');
+
+            BreachSFX.alarm();
+            setTimeout(function() { BreachSFX.alarm(); }, 600);
+
+            function bLog(text, cls) {
+                var d = document.createElement('div');
+                d.className = 'bt-line' + (cls ? ' ' + cls : '');
+                d.textContent = text;
+                term.appendChild(d);
+                term.scrollTop = term.scrollHeight;
+            }
+
+            function bLogHtml(html, cls) {
+                var d = document.createElement('div');
+                d.className = 'bt-line' + (cls ? ' ' + cls : '');
+                d.innerHTML = html;
+                term.appendChild(d);
+                term.scrollTop = term.scrollHeight;
+            }
+
+            var commands = [
+                { cmd: 'FIREWALL ACTIVATE', hint: 'FIREWALL ACTIVATE', desc: 'Firewall aktivieren', timeLimit: 8000 },
+                { cmd: 'KILL 6661', hint: 'KILL 6661', desc: 'Prozess terminieren', timeLimit: 7000 },
+                { cmd: 'ENCRYPT TUNNEL', hint: 'ENCRYPT TUNNEL', desc: 'Tunnel verschlüsseln', timeLimit: 7000 },
+                { cmd: 'PURGE INTRUDER', hint: 'PURGE INTRUDER', desc: 'Eindringling entfernen', timeLimit: 8000 }
+            ];
+
+            var cmdIndex = 0;
+            var timeLeft = 0;
+            var timerInterval = null;
+            var breachWon = false;
+            var breachLost = false;
+
+            bLog('[ALARM] Eindringling erkannt auf forscher@seelenreich', 'bt-red');
+            bLog('[ALARM] Unautorisierter Zugriff — PID 6661', 'bt-red');
+            bLog('[SYSTEM] Remote-Angriff beginnt... Mehrere Vektoren aktiv', 'bt-red');
+            bLog('', '');
+
+            setTimeout(function() {
+                bLog('[DEFENSE] Notfall-Verteidigungsprotokoll geladen', 'bt-amber');
+                bLog('[DEFENSE] BEFEHLE MÜSSEN SCHNELL EINGEGEBEN WERDEN', 'bt-amber');
+                bLog('', '');
+                setTimeout(function() { promptNextCommand(); }, 500);
+            }, 1200);
+
+            var attackNoiseInterval = setInterval(function() {
+                if (breachWon || breachLost) { clearInterval(attackNoiseInterval); return; }
+                var noises = [
+                    '[INTRUSION] Brute-Force auf Port ' + (Math.floor(Math.random() * 9000) + 1000) + '...',
+                    '[INTRUSION] SQL-Injection Versuch auf /api/seele...',
+                    '[INTRUSION] Payload Upload: shell_' + Math.floor(Math.random() * 999) + '.bin',
+                    '[INTRUSION] Scanning Memory 0x' + Math.random().toString(16).slice(2, 6).toUpperCase() + '...',
+                    '[INTRUSION] SSH-Tunnel Hijack Versuch...',
+                    '[INTRUSION] Privilege Escalation: root...',
+                    '[INTRUSION] Daten-Exfiltration: seelenreich.db...'
+                ];
+                bLog(noises[Math.floor(Math.random() * noises.length)], 'bt-dim');
+            }, 1800);
+
+            function promptNextCommand() {
+                if (cmdIndex >= commands.length) {
+                    breachWon = true;
+                    breachVictory(overlay, term);
+                    return;
+                }
+
+                var cmd = commands[cmdIndex];
+                bLog('', '');
+                bLog('[DEFENSE] >> Aktion erforderlich: ' + cmd.desc, 'bt-amber');
+                bLogHtml('[DEFENSE] >> Eingabe: <span style="color:#ff4444;text-shadow:0 0 8px rgba(255,0,0,0.5);letter-spacing:2px;">' + cmd.hint + '</span>', 'bt-white');
+                BreachSFX.alarm();
+
+                bInput.value = '';
+                bInput.focus();
+                bFill.style.width = ((cmdIndex / commands.length) * 100) + '%';
+
+                timeLeft = cmd.timeLimit;
+                timerEl.textContent = (timeLeft / 1000).toFixed(1);
+                timerEl.classList.remove('critical');
+
+                clearInterval(timerInterval);
+                timerInterval = setInterval(function() {
+                    timeLeft -= 100;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        breachLost = true;
+                        bLog('[SYSTEM] ZEIT ABGELAUFEN', 'bt-red');
+                        breachDefeat(overlay, term);
+                        return;
+                    }
+                    timerEl.textContent = (timeLeft / 1000).toFixed(1);
+                    if (timeLeft <= 3000) timerEl.classList.add('critical');
+                }, 100);
+            }
+
+            bInput.addEventListener('keydown', function(e) {
+                if (e.key.length === 1) SFX.keyPress();
+                if (e.key === 'Enter') {
+                    if (breachWon || breachLost) return;
+                    var val = bInput.value.trim().toUpperCase();
+                    bInput.value = '';
+                    if (!val) return;
+
+                    bLog('root@DEFENSE:~# ' + val, 'bt-white');
+
+                    if (val === commands[cmdIndex].cmd) {
+                        clearInterval(timerInterval);
+                        BreachSFX.cmdSuccess();
+                        bLog('[OK] ' + commands[cmdIndex].desc + ' — ERFOLGREICH', 'bt-green');
+                        cmdIndex++;
+                        bFill.classList.add('safe');
+                        bFill.style.width = ((cmdIndex / commands.length) * 100) + '%';
+                        setTimeout(function() {
+                            bFill.classList.remove('safe');
+                            promptNextCommand();
+                        }, 600);
+                    } else {
+                        BreachSFX.cmdFail();
+                        bLog('[FEHLER] Unbekannter Befehl — versuche es erneut!', 'bt-red');
+                        timeLeft -= 1500;
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            breachLost = true;
+                            bLog('[SYSTEM] ZEIT ABGELAUFEN', 'bt-red');
+                            breachDefeat(overlay, term);
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        //  BREACH DEFEAT — System Wipe
+        // ============================================================
+        function breachDefeat(overlay, term) {
+            BreachSFX.wipe();
+
+            function bLog(text, cls) {
+                var d = document.createElement('div');
+                d.className = 'bt-line' + (cls ? ' ' + cls : '');
+                d.textContent = text;
+                term.appendChild(d);
+                term.scrollTop = term.scrollHeight;
+            }
+
+            bLog('', '');
+            bLog('[INTRUSION] VERTEIDIGUNG GESCHEITERT', 'bt-red');
+            bLog('[INTRUSION] ÜBERNEHME KONTROLLE...', 'bt-red');
+
+            var inputArea = overlay.querySelector('.breach-input-area');
+            if (inputArea) inputArea.style.display = 'none';
+            var timerEl = document.getElementById('breach-timer');
+            if (timerEl) timerEl.textContent = '00.0';
+
+            setTimeout(function() {
+                bLog('', '');
+                bLog('[WÄCHTER] Ihr seid nicht würdig.', 'bt-red');
+                bLog('[WÄCHTER] Das Seelenreich bleibt verschlossen.', 'bt-red');
+                bLog('[WÄCHTER] Lösche alle Spuren...', 'bt-red');
+            }, 1000);
+
+            setTimeout(function() {
+                var allLines = term.querySelectorAll('.bt-line');
+                var wipeIdx = 0;
+                var wipeInterval = setInterval(function() {
+                    if (wipeIdx >= allLines.length) {
+                        clearInterval(wipeInterval);
+                        setTimeout(function() {
+                            term.innerHTML = '';
+                            bLog('VERBINDUNG GETRENNT.', 'bt-red');
+                            bLog('', '');
+                            bLog('[WÄCHTER] Bis zum nächsten Mal.', 'bt-red');
+                            setTimeout(function() {
+                                overlay.style.transition = 'opacity 2s';
+                                overlay.style.opacity = '0';
+                                setTimeout(function() {
+                                    overlay.remove();
+                                    localStorage.removeItem('arg-phase');
+                                    window.location.href = 'index.html';
+                                }, 2500);
+                            }, 2000);
+                        }, 600);
+                        return;
+                    }
+                    allLines[wipeIdx].classList.add('wipe-out');
+                    SFX.scrambleTick();
+                    wipeIdx++;
+                }, 50);
+            }, 3000);
+        }
+
+        // ============================================================
+        //  BREACH VICTORY — Easter Egg
+        // ============================================================
+        function breachVictory(overlay, term) {
+            BreachSFX.victory();
+
+            function bLog(text, cls) {
+                var d = document.createElement('div');
+                d.className = 'bt-line' + (cls ? ' ' + cls : '');
+                d.textContent = text;
+                term.appendChild(d);
+                term.scrollTop = term.scrollHeight;
+            }
+
+            var inputArea = overlay.querySelector('.breach-input-area');
+            if (inputArea) inputArea.style.display = 'none';
+            var timerEl = document.getElementById('breach-timer');
+            if (timerEl) timerEl.style.display = 'none';
+            var bFill = document.getElementById('breach-fill');
+            if (bFill) { bFill.classList.add('safe'); bFill.style.width = '100%'; }
+
+            var header = overlay.querySelector('.breach-header');
+            if (header) {
+                header.textContent = '✓ EINDRINGLING NEUTRALISIERT — SYSTEM GESICHERT';
+                header.style.background = 'rgba(0, 255, 65, 0.08)';
+                header.style.borderColor = 'rgba(0, 255, 65, 0.4)';
+                header.style.color = '#00ff41';
+                header.style.animation = 'none';
+            }
+
+            bLog('', '');
+            bLog('[DEFENSE] ALLE BEFEHLE AUSGEFÜHRT', 'bt-green');
+            bLog('[DEFENSE] FIREWALL .............. [AKTIV]', 'bt-green');
+            bLog('[DEFENSE] PROZESS 6661 .......... [TERMINIERT]', 'bt-green');
+            bLog('[DEFENSE] TUNNEL ................ [VERSCHLÜSSELT]', 'bt-green');
+            bLog('[DEFENSE] EINDRINGLING .......... [BEREINIGT]', 'bt-green');
+            bLog('', '');
+            bLog('[SYSTEM] Angriff abgewehrt. System gesichert.', 'bt-green');
+
+            setTimeout(function() {
+                bLog('', '');
+                bLog('[SYSTEM] Versteckte Partition gefunden...', 'bt-amber');
+                bLog('[SYSTEM] Entschlüssele Fragment...', 'bt-amber');
+
+                setTimeout(function() {
+                    var eggBox = document.createElement('div');
+                    eggBox.className = 'easter-egg-box';
+                    eggBox.innerHTML =
+                        '<pre>' +
+                        '     ████████████████████████████████\n' +
+                        '     █                              █\n' +
+                        '     █   ███  ███  ███ █   ███    █\n' +
+                        '     █   █    █   █ █   █   █      █\n' +
+                        '     █   ███  █   █ █   █   ███    █\n' +
+                        '     █       █ █   █ █   █   █      █\n' +
+                        '     █   ███  ███  ███ ██  ███    █\n' +
+                        '     █                              █\n' +
+                        '     █   █  █  ███  ███ ███ █  █   █\n' +
+                        '     █   █  █  █  █ █    █   █ █    █\n' +
+                        '     █   █  █  █  █ ██   █   ██     █\n' +
+                        '     █   █  █  █  █ █    █   █ █    █\n' +
+                        '     █    ██   ███  ███ ███ █  █   █\n' +
+                        '     █                              █\n' +
+                        '     ████████████████████████████████\n' +
+                        '</pre>' +
+                        '<div class="ee-msg">« Ihr habt das System verteidigt. »</div>' +
+                        '<div class="ee-msg">« Nur die Würdigsten finden diesen Ort. »</div>' +
+                        '<div class="ee-msg" style="margin-top:15px;color:rgba(0,255,65,0.5);font-size:0.85rem;">FORSCHER-DATENFRAGMENT #0</div>' +
+                        '<div class="ee-code">SEELE-7X-EREBUS</div>' +
+                        '<div class="ee-msg" style="margin-top:15px;font-size:0.85rem;color:rgba(255,255,255,0.2);">Bewahre diesen Code. Er wird gebraucht.</div>';
+                    term.appendChild(eggBox);
+
+                    setTimeout(function() {
+                        eggBox.classList.add('visible');
+                        SFX.reveal();
+                        term.scrollTop = term.scrollHeight;
+                    }, 100);
+                }, 2000);
             }, 1500);
         }
 
