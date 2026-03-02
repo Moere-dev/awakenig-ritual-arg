@@ -415,6 +415,7 @@
 
         // ============================================================
         //  TYPE A BLOCK — char by char with blinking cursor
+        //  Uses requestAnimationFrame so sound + visual are in the same frame
         // ============================================================
         function typeBlock(blockInfo, speed, callback) {
             if (skipped) { if (callback) callback(); return; }
@@ -432,12 +433,23 @@
             el.appendChild(cursor);
 
             let charIndex = 0;
+            let lastCharTime = 0;
+            let currentDelay = 0;
 
-            function typeNext() {
+            function tick(timestamp) {
                 if (skipped) {
                     el.innerHTML = fullHtml;
                     el.classList.add('done');
                     if (callback) callback();
+                    return;
+                }
+
+                // First frame — initialise timing
+                if (lastCharTime === 0) lastCharTime = timestamp;
+
+                // Check if enough time has passed since last character
+                if (timestamp - lastCharTime < currentDelay) {
+                    requestAnimationFrame(tick);
                     return;
                 }
 
@@ -447,16 +459,18 @@
                     var t = document.createTextNode(ch);
                     el.insertBefore(t, cursor);
 
-                    let delay = speed;
-                    if (ch === ' ') delay = speed * 0.3;
-                    else if (ch === '\n') delay = speed * 0.5;
-                    else if (ch === '.' || ch === '—' || ch === '!') delay = speed * 3;
-                    else if (ch === ',') delay = speed * 1.8;
-
-                    // Play click sound in sync with visible characters only
+                    // Play click sound in sync — same frame as the DOM update
                     if (ch !== ' ' && ch !== '\n') SFX.typeClick();
 
-                    setTimeout(typeNext, delay);
+                    // Calculate delay until next character
+                    currentDelay = speed;
+                    if (ch === ' ') currentDelay = speed * 0.3;
+                    else if (ch === '\n') currentDelay = speed * 0.5;
+                    else if (ch === '.' || ch === '—' || ch === '!') currentDelay = speed * 3;
+                    else if (ch === ',') currentDelay = speed * 1.8;
+
+                    lastCharTime = timestamp;
+                    requestAnimationFrame(tick);
                 } else {
                     // Done — restore original HTML with formatting
                     el.innerHTML = fullHtml;
@@ -465,7 +479,7 @@
                 }
             }
 
-            typeNext();
+            requestAnimationFrame(tick);
         }
 
         // ============================================================

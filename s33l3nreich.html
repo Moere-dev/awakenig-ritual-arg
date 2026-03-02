@@ -704,6 +704,7 @@
 
         // ============================================================
         //  TYPEWRITER LINE — types a line character by character
+        //  Uses requestAnimationFrame so sound + visual are in the same frame
         // ============================================================
         function typeLine(html, speed, callback) {
             if (skipped) {
@@ -730,23 +731,40 @@
             div.innerHTML = '';
             div.appendChild(cursor);
 
-            // Build chars from full text, paired with their HTML
-            // Simple approach: type the raw text, then replace with HTML at end
-            function typeNext() {
+            let lastCharTime = 0;
+            let currentDelay = 0;
+
+            function tick(timestamp) {
+                if (skipped) {
+                    div.innerHTML = html;
+                    if (callback) callback();
+                    return;
+                }
+
+                if (lastCharTime === 0) lastCharTime = timestamp;
+
+                if (timestamp - lastCharTime < currentDelay) {
+                    requestAnimationFrame(tick);
+                    return;
+                }
+
                 if (charIndex < fullText.length) {
                     var ch = fullText[charIndex];
                     charIndex++;
                     var t = document.createTextNode(ch);
                     div.insertBefore(t, cursor);
                     scrollBottom();
-                    setTimeout(function() { SFX.typeClick(); }, 18);
 
-                    let delay = speed;
-                    if (ch === ' ') delay = speed * 0.3;
-                    else if (ch === '.' || ch === '—') delay = speed * 3;
-                    else if (ch === ',') delay = speed * 1.8;
+                    // Play click sound in sync — same frame as the DOM update
+                    if (ch !== ' ' && ch !== '\n') SFX.typeClick();
 
-                    setTimeout(typeNext, delay);
+                    currentDelay = speed;
+                    if (ch === ' ') currentDelay = speed * 0.3;
+                    else if (ch === '.' || ch === '—') currentDelay = speed * 3;
+                    else if (ch === ',') currentDelay = speed * 1.8;
+
+                    lastCharTime = timestamp;
+                    requestAnimationFrame(tick);
                 } else {
                     // Done — replace with full HTML
                     div.innerHTML = html;
@@ -754,7 +772,7 @@
                 }
             }
 
-            typeNext();
+            requestAnimationFrame(tick);
         }
 
         // ============================================================
