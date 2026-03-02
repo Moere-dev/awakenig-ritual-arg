@@ -113,6 +113,16 @@
             color: #00ff41;
             text-shadow: 0 0 15px #00ff41, 0 0 30px rgba(0, 255, 65, 0.3);
         }
+        .frame-code .fc-char.verified {
+            color: #00ff41;
+            text-shadow: 0 0 15px #00ff41, 0 0 30px rgba(0, 255, 65, 0.3);
+            border-bottom: 2px solid #00ff41;
+        }
+        .frame-code .fc-char.wrong {
+            color: #ff4444;
+            text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+            border-bottom: 2px solid #ff4444;
+        }
         .frame-code .fc-char.scanning {
             color: rgba(0, 255, 65, 0.5);
             animation: char-scan 0.15s ease-in-out;
@@ -331,6 +341,14 @@
         //  PASSWORD (SHA-256 hash comparison — not plaintext)
         // ============================================================
         const PASSWORD_HASH = 'b7d9bde10622452b7f57c02bf6c51a39fa733744669eadb11813c1b649270fb7';
+        // Per-position hashes (salted with index) for individual digit feedback
+        const CHAR_HASHES = [
+            '91ce123f4eaf1fcfd3d42566eedc60866be1ccadff46e292c3dae556c4a275a5',
+            '673aeeb08cfbb00b91e5e3c60b5ba31896d55b522b1be2dccb0645a59bae8775',
+            'bc731f76c2e8e0c5899d18d9cec7ffa120cf0bdfdfa5a419bcf27824ce8cc869',
+            '3adf4e63cc74037434c465d9c496622f3ce0032a18a0fa328857858c33933dbb',
+            'd4803e17ed18d3d41de0582d5192eca3b1fe8bc09e1361c9f8cc7ecced38b020'
+        ];
         const input = document.getElementById('password-input');
         const submitBtn = document.getElementById('submit-btn');
         const errorMsg = document.getElementById('error-msg');
@@ -493,6 +511,30 @@
                 addLog('[VER] SHA-256 Prüfsumme berechnet', 'log-dim');
                 await sleep(500);
 
+                // Per-character verification
+                addLog('[VER] Starte Zeichen-Abgleich...', '');
+                status.textContent = 'PRÜFE EINZELNE ZEICHEN...';
+                var correctCount = 0;
+                for (var ci = 0; ci < 5; ci++) {
+                    var charHash = await hashSHA256(ci + ':' + chars[ci]);
+                    var charOk = (ci < CHAR_HASHES.length && charHash === CHAR_HASHES[ci]);
+                    fcChars[ci].classList.remove('found');
+                    if (charOk) {
+                        correctCount++;
+                        fcChars[ci].classList.add('verified');
+                        addLog('[VER] Pos ' + (ci + 1) + ': ✓ KORREKT', 'log-hit');
+                        SFX.frameHit();
+                    } else {
+                        fcChars[ci].classList.add('wrong');
+                        addLog('[VER] Pos ' + (ci + 1) + ': ✗ FALSCH', 'log-err');
+                    }
+                    await sleep(350);
+                }
+                await sleep(400);
+
+                addLog('[VER] Ergebnis: ' + correctCount + '/5 korrekt', correctCount === 5 ? 'log-hit' : 'log-err');
+                subtext.textContent = correctCount + '/5 ZEICHEN KORREKT';
+
                 fill.style.width = '100%';
                 pLabel.textContent = '100%';
 
@@ -509,20 +551,14 @@
                     window.location.href = 's33l3nreich.html';
                 } else {
                     status.className = 'analyzer-status fail';
-                    status.textContent = '✗ KEINE ÜBEREINSTIMMUNG — ZUGANG VERWEIGERT';
-                    subtext.textContent = 'VERIFIKATION FEHLGESCHLAGEN';
+                    status.textContent = '✗ KEINE ÜBEREINSTIMMUNG — ' + correctCount + '/5 KORREKT';
                     addLog('[VER] ✗ HASH STIMMT NICHT ÜBEREIN', 'log-err');
-                    addLog('[SYS] Code ungültig — erneut versuchen', 'log-err');
+                    addLog('[SYS] ' + correctCount + ' Zeichen korrekt — versuche erneut', correctCount > 0 ? '' : 'log-err');
                     SFX.passFail();
 
-                    fcChars.forEach(function(c) {
-                        c.classList.remove('found');
-                        c.style.color = '#ff4444';
-                        c.style.textShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
-                    });
                     overlay.classList.add('analyzer-shake');
 
-                    await sleep(2200);
+                    await sleep(2800);
                     overlay.classList.remove('active', 'analyzer-shake');
                     input.value = '';
                     input.disabled = false;
