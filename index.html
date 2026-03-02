@@ -348,9 +348,9 @@
             return {
                 typeClick: function() {
                     var now = Date.now();
-                    if (now - _lastClick < 25) return;
+                    if (now - _lastClick < 8) return;
                     _lastClick = now;
-                    noise(0.018, 0.06, 3500);
+                    noise(0.012, 0.04 + Math.random() * 0.04, 3000 + Math.random() * 2000);
                 },
                 ctaReveal: function() {
                     var c = getCtx(), o = c.createOscillator(), g = c.createGain();
