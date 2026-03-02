@@ -1996,7 +1996,7 @@
                                     overlay.remove();
                                     localStorage.setItem('arg-breach-failed', 'true');
                                     localStorage.removeItem('arg-phase');
-                                    window.location.href = 'start.html';
+                                    window.location.href = 'index.html';
                                 }, 2500);
                             }, 2000);
                         }, 600);
@@ -2094,7 +2094,7 @@
                             bLog('[SYSTEM] Verbindung zum Terminal wird wiederhergestellt...', 'bt-amber');
                             bLog('[SYSTEM] Kehre zurück zum Forscher-Terminal.', 'bt-amber');
                             setTimeout(function() {
-                                window.location.href = 'start.html';
+                                window.location.href = 'index.html';
                             }, 3000);
                         }, 8000);
                     }, 100);
@@ -2109,7 +2109,6 @@
         if (new URLSearchParams(window.location.search).get('breach') === 'retry') {
             // Minimal boot then launch breach
             terminal.innerHTML = '';
-            inputLineEl.style.display = 'none';
             addLine('SYSTEM', 'Verbindung wiederhergestellt.', 'text');
             addLine('SYSTEM', 'Vorherige Sitzung erkannt.', 'text');
             addLine('SYSTEM', '<span class="warn-text">[WARNUNG] Eindringling noch aktiv — PID 6661</span>', 'warn-text');

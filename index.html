@@ -479,7 +479,7 @@
         function processCommand(raw) {
             var cmd = raw.toLowerCase().trim();
 
-            if (cmd === 'open übertragung' || cmd === 'open uebertragung' || cmd === 'open übertragung') {
+            if (cmd === 'open übertragung' || cmd === 'open uebertragung') {
                 SFX.confirm();
                 addLine('[SYSTEM] Verbinde mit Signalübertragung...', 'green');
                 addLine('[SYSTEM] Tunnel aufgebaut. Weiterleitung...', 'green');
@@ -534,7 +534,9 @@
                 showHelp();
             }
             else if (cmd === 'clear') {
-                terminal.innerHTML = '';
+                while (terminal.firstChild && terminal.firstChild !== inputLine) {
+                    terminal.removeChild(terminal.firstChild);
+                }
             }
             else {
                 SFX.error();
