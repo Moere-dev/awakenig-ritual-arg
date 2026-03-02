@@ -735,7 +735,7 @@
             inputEl.disabled = true;
 
             setTimeout(function() {
-                if (user.toLowerCase() === VALID_USER && pass === VALID_PASS) {
+                if (user.toLowerCase() === VALID_USER && pass.toLowerCase() === VALID_PASS.toLowerCase()) {
                     flash(); shake(); addEmpty();
                     addLine('AUTH', '✓ ZUGANG GEWÄHRT', 'success');
                     addLine('AUTH', 'Willkommen zurück, Watson.', 'success');
