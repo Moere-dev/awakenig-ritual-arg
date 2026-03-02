@@ -304,6 +304,12 @@
 
     <script src="sfx.js"></script>
     <script>
+        // Gate: breach must have been won to access this page at all
+        if (localStorage.getItem('arg-breach-won') !== 'true') {
+            document.body.innerHTML = '';
+            window.location.href = 'index.html';
+        }
+
         var CODE_HASH = '7fd491e56c28b1fc38860045f3c26a2b32adf92a004ee4bdca9b01bd6ea487ff';
 
         var lockScreen = document.getElementById('lock-screen');
@@ -311,7 +317,7 @@
         var lockError = document.getElementById('lock-error');
         var fragmentContent = document.getElementById('fragment-content');
 
-        // Check if already unlocked
+        // Check if already unlocked (only reachable after breach gate above)
         if (localStorage.getItem('arg-fragment0-unlocked') === 'true') {
             unlock();
         }

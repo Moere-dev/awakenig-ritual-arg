@@ -1848,11 +1848,59 @@
             bLog('[SYSTEM] Remote-Angriff beginnt... Mehrere Vektoren aktiv', 'bt-red');
             bLog('', '');
 
+            // Disable input during threat analysis
+            bInput.disabled = true;
+            bInput.placeholder = 'Analyse läuft...';
+
             setTimeout(function() {
                 bLog('[DEFENSE] Notfall-Verteidigungsprotokoll geladen', 'bt-amber');
-                bLog('[DEFENSE] BEFEHLE MÜSSEN SCHNELL EINGEGEBEN WERDEN', 'bt-amber');
+                bLog('[DEFENSE] Starte Bedrohungsanalyse...', 'bt-amber');
                 bLog('', '');
-                setTimeout(function() { promptNextCommand(); }, 500);
+
+                // Threat analysis — reveal each threat + its counter-command
+                var threats = [
+                    { threat: 'Offene Ports erkannt — Firewall inaktiv', response: 'FIREWALL ACTIVATE', delay: 1200 },
+                    { threat: 'Feindlicher Prozess PID 6661 aktiv', response: 'KILL 6661', delay: 1000 },
+                    { threat: 'Unverschlüsselter Datentunnel kompromittiert', response: 'ENCRYPT TUNNEL', delay: 1000 },
+                    { threat: 'Eindringling im System — Root-Zugriff', response: 'PURGE INTRUDER', delay: 1000 }
+                ];
+
+                var ti = 0;
+                function showNextThreat() {
+                    if (ti >= threats.length) {
+                        setTimeout(function() {
+                            bLog('', '');
+                            SFX.scan();
+                            bLog('[DEFENSE] Analyse abgeschlossen — 4 Bedrohungen identifiziert', 'bt-amber');
+                            bLog('[DEFENSE] TIPPE DIE BEFEHLE EXAKT WIE ANGEZEIGT', 'bt-amber');
+                            bLog('[DEFENSE] Fehler kosten Zeit — Zeitlimit pro Befehl aktiv', 'bt-amber');
+                            bLog('', '');
+                            setTimeout(function() {
+                                bLog('[DEFENSE] ═══════════════════════════════════════════', 'bt-amber');
+                                bLog('[DEFENSE] » VERTEIDIGUNG BEGINNT «', 'bt-green');
+                                bLog('[DEFENSE] ═══════════════════════════════════════════', 'bt-amber');
+                                bLog('', '');
+                                BreachSFX.alarm();
+                                bInput.disabled = false;
+                                bInput.placeholder = 'Befehl eingeben...';
+                                setTimeout(function() { promptNextCommand(); }, 800);
+                            }, 1500);
+                        }, 800);
+                        return;
+                    }
+
+                    var t = threats[ti];
+                    ti++;
+                    SFX.scrambleTick();
+                    bLog('[SCAN] Bedrohung #' + ti + ': ' + t.threat, 'bt-red');
+                    setTimeout(function() {
+                        bLogHtml('[SCAN] Gegenmaßnahme: <span style="color:#00ff41;text-shadow:0 0 8px rgba(0,255,65,0.4);letter-spacing:2px;">' + t.response + '</span>', 'bt-green');
+                        SFX.charLock();
+                        setTimeout(showNextThreat, t.delay);
+                    }, 500);
+                }
+
+                setTimeout(showNextThreat, 800);
             }, 1200);
 
             var attackNoiseInterval = setInterval(function() {
