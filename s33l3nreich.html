@@ -889,7 +889,6 @@
                         span.textContent = TARGET[idx];
                         span.className = 'char resolved';
                         span.dataset.resolved = 'true';
-                        flash();
                         resolved++;
                         fillEl.style.width = ((resolved / total) * 100) + '%';
                         const pct = Math.round((resolved / total) * 100);
@@ -905,10 +904,7 @@
         }
 
         function finish(progEl) {
-            shake(); flash();
-            setTimeout(flash, 150);
-            setTimeout(flash, 300);
-            setTimeout(flash, 500);
+            shake();
             addLine('DECRYPT', 'ENTSCHLÜSSELUNG ABGESCHLOSSEN.', 'success');
             addLine('SYSTEM', 'Koordinaten extrahiert.', 'success');
 
