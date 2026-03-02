@@ -513,6 +513,92 @@
         });
 
         // ============================================================
+        //  SOUND EFFECTS ENGINE (Web Audio API — no files needed)
+        // ============================================================
+        const SFX = (function() {
+            let ctx, _lastClick = 0;
+            function getCtx() {
+                if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') ctx.resume();
+                return ctx;
+            }
+            function tone(type, freq, dur, vol) {
+                var c = getCtx(), o = c.createOscillator(), g = c.createGain();
+                o.type = type; o.frequency.value = freq;
+                g.gain.setValueAtTime(vol || 0.08, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + dur);
+            }
+            function noise(dur, vol, highpass) {
+                var c = getCtx(), rate = c.sampleRate;
+                var buf = c.createBuffer(1, rate * dur, rate);
+                var data = buf.getChannelData(0);
+                for (var i = 0; i < data.length; i++)
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (rate * dur * 0.3));
+                var src = c.createBufferSource(); src.buffer = buf;
+                var g = c.createGain(); g.gain.value = vol;
+                if (highpass) {
+                    var f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = highpass;
+                    src.connect(f); f.connect(g);
+                } else { src.connect(g); }
+                g.connect(c.destination); src.start();
+            }
+            return {
+                typeClick: function() {
+                    var now = Date.now();
+                    if (now - _lastClick < 25) return;
+                    _lastClick = now;
+                    noise(0.018, 0.06, 3500);
+                },
+                bootBeep: function() { tone('square', 800, 0.15, 0.08); },
+                glitch: function() { noise(0.07, 0.1); },
+                loginSuccess: function() {
+                    [600, 800, 1000].forEach(function(f, i) {
+                        setTimeout(function() { tone('sine', f, 0.18, 0.08); }, i * 100);
+                    });
+                },
+                loginFail: function() {
+                    var c = getCtx(), o = c.createOscillator(), g = c.createGain();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(300, c.currentTime);
+                    o.frequency.linearRampToValueAtTime(100, c.currentTime + 0.3);
+                    g.gain.setValueAtTime(0.06, c.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3);
+                    o.connect(g); g.connect(c.destination);
+                    o.start(); o.stop(c.currentTime + 0.3);
+                },
+                charLock: function() { tone('sine', 1200 + Math.random() * 400, 0.08, 0.1); },
+                scrambleTick: function() { tone('square', 200 + Math.random() * 300, 0.015, 0.02); },
+                reveal: function() {
+                    var c = getCtx();
+                    [200, 300, 400, 500, 600].forEach(function(freq) {
+                        var o = c.createOscillator(), g = c.createGain();
+                        o.type = 'sine'; o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.05, c.currentTime);
+                        g.gain.linearRampToValueAtTime(0.07, c.currentTime + 0.5);
+                        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 3);
+                        o.connect(g); g.connect(c.destination);
+                        o.start(); o.stop(c.currentTime + 3);
+                    });
+                },
+                keyPress: function() { noise(0.012, 0.04, 4000); },
+                warn: function() {
+                    var c = getCtx(), o = c.createOscillator(), g = c.createGain();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(800, c.currentTime);
+                    o.frequency.setValueAtTime(400, c.currentTime + 0.1);
+                    o.frequency.setValueAtTime(800, c.currentTime + 0.2);
+                    o.frequency.setValueAtTime(400, c.currentTime + 0.3);
+                    g.gain.setValueAtTime(0.04, c.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.4);
+                    o.connect(g); g.connect(c.destination);
+                    o.start(); o.stop(c.currentTime + 0.4);
+                }
+            };
+        })();
+
+        // ============================================================
         //  HELPERS
         // ============================================================
         function addRaw(html) {
@@ -540,6 +626,7 @@
         function scrollBottom() { window.scrollTo(0, document.body.scrollHeight); }
 
         function flash() {
+            SFX.glitch();
             screenFlash.classList.add('flash');
             setTimeout(function() { screenFlash.classList.remove('flash'); }, 80);
         }
@@ -585,6 +672,7 @@
                     const c = document.createTextNode(fullText[charIndex]);
                     div.insertBefore(c, cursor);
                     charIndex++;
+                    SFX.typeClick();
                     scrollBottom();
 
                     let delay = speed;
@@ -646,6 +734,7 @@
         function startBoot() {
             // Brief delay for CRT turn-on animation
             setTimeout(function() {
+                SFX.bootBeep();
                 const bootLines = [
                     { html: '<span class="brand">FORSCHER-OS v0.7.3 — BIOS POST</span>', type: true, speed: 30, delay: 400 },
                     { fn: addSep, delay: 200 },
@@ -728,6 +817,7 @@
             scrollBottom();
 
             inputEl.addEventListener('keydown', function(e) {
+                if (e.key.length === 1) SFX.keyPress();
                 if (e.key === 'Enter') {
                     const raw = inputEl.value.trim();
                     inputEl.value = '';
@@ -792,6 +882,7 @@
 
             setTimeout(function() {
                 if (user.toLowerCase() === VALID_USER && pass.toLowerCase() === VALID_PASS.toLowerCase()) {
+                    SFX.loginSuccess();
                     flash(); shake(); addEmpty();
                     addLine('AUTH', '✓ ZUGANG GEWÄHRT', 'success');
                     addLine('AUTH', 'Willkommen zurück, Watson.', 'success');
@@ -802,6 +893,7 @@
                     loggedIn = true;
                     stickyNote.style.display = 'none';
                 } else {
+                    SFX.loginFail();
                     shake();
                     addLine('AUTH', '✗ ZUGANG VERWEIGERT', 'error-text');
                     if (user.toLowerCase() !== VALID_USER)
@@ -909,6 +1001,7 @@
                 chars.push(span);
             }
             scrambleInterval = setInterval(function() {
+                if (Math.random() < 0.3) SFX.scrambleTick();
                 chars.forEach(function(s) {
                     if (s.dataset.resolved === 'false')
                         s.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
@@ -945,12 +1038,13 @@
                         span.textContent = TARGET[idx];
                         span.className = 'char resolved';
                         span.dataset.resolved = 'true';
+                        SFX.charLock();
                         resolved++;
                         fillEl.style.width = ((resolved / total) * 100) + '%';
                         const pct = Math.round((resolved / total) * 100);
                         if (pct === 25) { addLine('DECRYPT', 'Erste Datenschicht... 25%', 'text'); shake(); }
                         else if (pct === 50) { addLine('DECRYPT', 'Fragmentrekonstruktion... 50%', 'warn-text'); shake(); }
-                        else if (pct === 75) { addLine('SYSTEM', 'WARNUNG: Instabile Verbindung!', 'error-text'); shake(); }
+                        else if (pct === 75) { SFX.warn(); addLine('SYSTEM', 'WARNUNG: Instabile Verbindung!', 'error-text'); shake(); }
                         scrollBottom();
                         setTimeout(next, 150 + Math.random() * 250);
                     }
@@ -960,6 +1054,7 @@
         }
 
         function finish(progEl) {
+            SFX.reveal();
             shake();
             addLine('DECRYPT', 'ENTSCHLÜSSELUNG ABGESCHLOSSEN.', 'success');
             addLine('SYSTEM', 'Koordinaten extrahiert.', 'success');

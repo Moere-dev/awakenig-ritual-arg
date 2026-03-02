@@ -119,6 +119,49 @@
         });
 
         // ============================================================
+        //  SOUND EFFECTS ENGINE (Web Audio API — no files needed)
+        // ============================================================
+        const SFX = (function() {
+            let ctx;
+            function getCtx() {
+                if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') ctx.resume();
+                return ctx;
+            }
+            function tone(type, freq, dur, vol) {
+                var c = getCtx(), o = c.createOscillator(), g = c.createGain();
+                o.type = type; o.frequency.value = freq;
+                g.gain.setValueAtTime(vol || 0.08, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + dur);
+            }
+            function noise(dur, vol, highpass) {
+                var c = getCtx(), rate = c.sampleRate;
+                var buf = c.createBuffer(1, rate * dur, rate);
+                var data = buf.getChannelData(0);
+                for (var i = 0; i < data.length; i++)
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (rate * dur * 0.3));
+                var src = c.createBufferSource(); src.buffer = buf;
+                var g = c.createGain(); g.gain.value = vol;
+                if (highpass) {
+                    var f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = highpass;
+                    src.connect(f); f.connect(g);
+                } else { src.connect(g); }
+                g.connect(c.destination); src.start();
+            }
+            return {
+                passSuccess: function() {
+                    [440, 660, 880].forEach(function(f, i) {
+                        setTimeout(function() { tone('sine', f, 0.18, 0.07); }, i * 120);
+                    });
+                },
+                passFail: function() { tone('square', 120, 0.35, 0.06); },
+                keyPress: function() { noise(0.012, 0.04, 4000); }
+            };
+        })();
+
+        // ============================================================
         //  PASSWORD
         // ============================================================
         const PASSWORD = '82941';
@@ -133,6 +176,7 @@
             successMsg.style.display = 'none';
 
             if (value === PASSWORD) {
+                SFX.passSuccess();
                 successMsg.style.display = 'block';
                 input.disabled = true;
                 submitBtn.disabled = true;
@@ -140,6 +184,7 @@
                     window.location.href = 's33l3nreich.html';
                 }, 2000);
             } else {
+                SFX.passFail();
                 errorMsg.style.display = 'block';
                 input.value = '';
                 input.focus();
@@ -148,6 +193,7 @@
 
         submitBtn.addEventListener('click', checkPassword);
         input.addEventListener('keydown', function(e) {
+            if (e.key.length === 1) SFX.keyPress();
             if (e.key === 'Enter') checkPassword();
         });
         input.focus();

@@ -310,6 +310,58 @@
         });
 
         // ============================================================
+        //  SOUND EFFECTS ENGINE (Web Audio API — no files needed)
+        // ============================================================
+        const SFX = (function() {
+            let ctx, _lastClick = 0;
+            function getCtx() {
+                if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') ctx.resume();
+                return ctx;
+            }
+            function tone(type, freq, dur, vol) {
+                var c = getCtx(), o = c.createOscillator(), g = c.createGain();
+                o.type = type; o.frequency.value = freq;
+                g.gain.setValueAtTime(vol || 0.08, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + dur);
+            }
+            function noise(dur, vol, highpass) {
+                var c = getCtx(), rate = c.sampleRate;
+                var buf = c.createBuffer(1, rate * dur, rate);
+                var data = buf.getChannelData(0);
+                for (var i = 0; i < data.length; i++)
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (rate * dur * 0.3));
+                var src = c.createBufferSource(); src.buffer = buf;
+                var g = c.createGain(); g.gain.value = vol;
+                if (highpass) {
+                    var f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = highpass;
+                    src.connect(f); f.connect(g);
+                } else { src.connect(g); }
+                g.connect(c.destination); src.start();
+            }
+            return {
+                typeClick: function() {
+                    var now = Date.now();
+                    if (now - _lastClick < 25) return;
+                    _lastClick = now;
+                    noise(0.018, 0.06, 3500);
+                },
+                ctaReveal: function() {
+                    var c = getCtx(), o = c.createOscillator(), g = c.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(300, c.currentTime);
+                    o.frequency.exponentialRampToValueAtTime(800, c.currentTime + 0.5);
+                    g.gain.setValueAtTime(0.05, c.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.8);
+                    o.connect(g); g.connect(c.destination);
+                    o.start(); o.stop(c.currentTime + 0.8);
+                }
+            };
+        })();
+
+        // ============================================================
         //  TYPEWRITER ENGINE (terminal-style, char by char with cursor)
         // ============================================================
         const blockData = [
@@ -389,6 +441,7 @@
                     const c = document.createTextNode(fullText[charIndex]);
                     el.insertBefore(c, cursor);
                     charIndex++;
+                    SFX.typeClick();
 
                     let delay = speed;
                     const ch = fullText[charIndex - 1];
@@ -418,6 +471,7 @@
 
             if (index >= blocksOriginal.length) {
                 setTimeout(function() {
+                    SFX.ctaReveal();
                     document.getElementById('cta-button').classList.add('revealed');
                     skipBtn.classList.add('hidden');
                     typewriterDone = true;
