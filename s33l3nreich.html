@@ -289,6 +289,108 @@
             letter-spacing: 4px; margin: 15px 0;
         }
 
+        /* ===================== DECODER OVERLAY APP ===================== */
+        .decoder-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 2000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-family: 'VT323', monospace;
+            opacity: 0; transition: opacity 0.4s ease-in;
+            overflow: hidden;
+        }
+        .decoder-overlay.visible { opacity: 1; }
+        .decoder-overlay .decoder-titlebar {
+            position: absolute; top: 0; left: 0; right: 0;
+            padding: 8px 16px;
+            background: rgba(0,255,65,0.08);
+            border-bottom: 1px solid #0e2e0e;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.9rem;
+        }
+        .decoder-overlay .decoder-titlebar .title {
+            color: #00ff41; letter-spacing: 2px;
+        }
+        .decoder-overlay .decoder-titlebar .version {
+            color: rgba(0,255,65,0.4); font-size: 0.8rem;
+        }
+        .decoder-overlay .decoder-body {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 20px; width: 90%; max-width: 700px;
+        }
+        .decoder-overlay .decoder-label {
+            font-size: 1rem; color: rgba(0,255,65,0.6);
+            letter-spacing: 3px; text-transform: uppercase;
+        }
+        .decoder-overlay .decoder-chars {
+            font-size: 2.6rem; letter-spacing: 8px; text-align: center;
+            padding: 25px 20px;
+            border: 1px solid #0e2e0e; background: rgba(0,10,0,0.6);
+            color: #00ff41; min-height: 80px; width: 100%;
+            display: flex; align-items: center; justify-content: center;
+            word-break: break-all;
+            box-shadow: 0 0 30px rgba(0,255,65,0.05) inset, 0 0 60px rgba(0,255,65,0.02);
+        }
+        .decoder-overlay .decoder-chars .char { display: inline-block; min-width: 0.6em; text-align: center; }
+        .decoder-overlay .decoder-chars .char.scrambling { color: #1a4a1a; text-shadow: 0 0 3px rgba(0,255,65,0.15); }
+        .decoder-overlay .decoder-chars .char.resolved {
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41, 0 0 25px rgba(0,255,65,0.4);
+            animation: char-lock 0.3s ease-out;
+        }
+        .decoder-overlay .decoder-chars .char.dot { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.3); }
+        .decoder-overlay .decoder-chars .char.destabilized {
+            color: #1a4a1a;
+            animation: destab-flicker 0.15s infinite alternate;
+        }
+        .decoder-overlay .decoder-chars .char.shifting {
+            color: #d4a030;
+            text-shadow: 0 0 8px rgba(212,160,48,0.6), 0 0 20px rgba(212,160,48,0.2);
+            animation: caesar-pulse 0.3s ease-in-out;
+        }
+        .decoder-overlay .decoder-chars .char.decode-flash {
+            color: #ffffff;
+            text-shadow: 0 0 15px #ffffff, 0 0 30px #00ff41, 0 0 50px rgba(0,255,65,0.5);
+            animation: decode-lock 0.5s ease-out;
+        }
+        .decoder-overlay .decoder-progress {
+            width: 100%; height: 4px; background: #0a0a0a;
+            border-radius: 2px; overflow: hidden;
+            border: 1px solid #0e2e0e;
+        }
+        .decoder-overlay .decoder-progress .fill {
+            height: 100%; width: 0%; background: #00ff41;
+            box-shadow: 0 0 12px #00ff41, 0 0 25px rgba(0,255,65,0.3);
+            transition: width 0.3s;
+        }
+        .decoder-overlay .decoder-status {
+            font-size: 1rem; color: rgba(0,255,65,0.5);
+            letter-spacing: 1px; text-align: center;
+            min-height: 1.2em;
+        }
+        .decoder-overlay .decoder-log {
+            width: 100%; max-height: 120px; overflow-y: auto;
+            border: 1px solid #0e2e0e; background: rgba(0,5,0,0.4);
+            padding: 8px 12px; font-size: 0.85rem;
+            color: rgba(0,255,65,0.5);
+        }
+        .decoder-overlay .decoder-log div {
+            margin: 2px 0;
+        }
+        .decoder-overlay .decoder-log .log-success { color: #00ff41; }
+        .decoder-overlay .decoder-log .log-warn { color: #d4a030; }
+        .decoder-overlay .decoder-log .log-error { color: #ff4444; }
+        .decoder-overlay .decoder-shift-indicator {
+            font-size: 1.3rem; color: #d4a030;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(212,160,48,0.3);
+        }
+        @media (max-width: 600px) {
+            .decoder-overlay .decoder-chars { font-size: 1.5rem; letter-spacing: 4px; padding: 15px 10px; }
+            .decoder-overlay .decoder-body { width: 95%; }
+        }
+
         /* ===================== SCREEN FLASH ===================== */
         .screen-flash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -1162,134 +1264,197 @@
             // Correct!
             SFX.loginSuccess();
             flash();
-            addLine('DECODE', 'Verschiebung +3 bestätigt. Dekodiere...', 'success');
+            addLine('DECODE', 'Verschiebung +3 bestätigt. Starte CAESAR-DEKODER...', 'success');
             decrypting = true;
             inputEl.disabled = true;
-            setTimeout(runFinalDecode, 800);
+            setTimeout(launchDecoderApp, 800);
         }
 
-        function runFinalDecode() {
+        // ============================================================
+        //  DECODER APP — FULLSCREEN OVERLAY
+        // ============================================================
+        var decoderOverlay = null;
+        var decoderCharsEl = null;
+        var decoderChars = [];
+        var decoderFill = null;
+        var decoderLogEl = null;
+        var decoderStatusEl = null;
+        var decoderShiftEl = null;
+
+        function decoderLog(text, cls) {
+            var d = document.createElement('div');
+            d.className = cls || '';
+            d.textContent = '> ' + text;
+            decoderLogEl.appendChild(d);
+            decoderLogEl.scrollTop = decoderLogEl.scrollHeight;
+        }
+
+        function launchDecoderApp() {
+            // Build overlay
+            decoderOverlay = document.createElement('div');
+            decoderOverlay.className = 'decoder-overlay';
+            decoderOverlay.innerHTML =
+                '<div class="decoder-titlebar">' +
+                    '<span class="title">■ CAESAR-DEKODER</span>' +
+                    '<span class="version">v1.3 // Forscher-OS</span>' +
+                '</div>' +
+                '<div class="decoder-body">' +
+                    '<div class="decoder-label">VERSCHLÜSSELTE DATEN</div>' +
+                    '<div class="decoder-chars" id="dec-chars"></div>' +
+                    '<div class="decoder-shift-indicator" id="dec-shift">SHIFT: -3</div>' +
+                    '<div class="decoder-progress"><div class="fill" id="dec-fill"></div></div>' +
+                    '<div class="decoder-status" id="dec-status">Initialisiere...</div>' +
+                    '<div class="decoder-log" id="dec-log"></div>' +
+                '</div>';
+            document.body.appendChild(decoderOverlay);
+
+            decoderCharsEl = document.getElementById('dec-chars');
+            decoderFill = document.getElementById('dec-fill');
+            decoderLogEl = document.getElementById('dec-log');
+            decoderStatusEl = document.getElementById('dec-status');
+            decoderShiftEl = document.getElementById('dec-shift');
+
+            // Populate chars from SHIFTED_TARGET
+            decoderChars = [];
+            for (var i = 0; i < SHIFTED_TARGET.length; i++) {
+                var span = document.createElement('span');
+                if (SHIFTED_TARGET[i] === '.' || SHIFTED_TARGET[i] === '-') {
+                    span.textContent = SHIFTED_TARGET[i];
+                    span.className = 'char dot';
+                    span.dataset.resolved = 'true';
+                } else {
+                    span.textContent = SHIFTED_TARGET[i];
+                    span.className = 'char resolved'; // start as resolved (shifted text)
+                    span.dataset.resolved = 'true';
+                }
+                decoderCharsEl.appendChild(span);
+                decoderChars.push(span);
+            }
+
+            // Fade in
+            requestAnimationFrame(function() {
+                decoderOverlay.classList.add('visible');
+            });
+
+            decoderLog('CAESAR-DEKODER v1.3 gestartet', 'log-success');
+            decoderLog('Verschiebungswert: -3 geladen', '');
+
+            setTimeout(decoderPhaseA, 1000);
+        }
+
+        function decoderPhaseA() {
+            // Destabilize all letter chars
+            decoderStatusEl.textContent = 'Zeichenmatrix wird destabilisiert...';
+            decoderLog('Destabilisiere Zeichenmatrix...', 'log-warn');
+            SFX.warn();
+            shake();
+            decoderChars.forEach(function(s) {
+                if (s.className.indexOf('dot') === -1) {
+                    s.className = 'char destabilized';
+                }
+            });
+            setTimeout(decoderPhaseB, 1400);
+        }
+
+        function decoderPhaseB() {
+            decoderStatusEl.textContent = 'Caesar-Rotation rückgängig: -3 Positionen';
+            decoderLog('Starte Rückrotation...', 'log-success');
+
             var indices = [];
             for (var i = 0; i < SHIFTED_TARGET.length; i++) {
                 if (SHIFTED_TARGET[i] !== '.' && SHIFTED_TARGET[i] !== '-') indices.push(i);
             }
             var total = indices.length;
             var resolved = 0;
+            var pos = 0;
 
-            // Add Phase-2 progress bar
-            var p2prog = document.createElement('div');
-            p2prog.className = 'progress-bar active';
-            p2prog.innerHTML = '<div class="fill" id="p2-fill" style="width:0%"></div>';
-            // Insert after the decrypt display
-            var decDisplay = document.querySelector('.decrypt-display');
-            if (decDisplay && decDisplay.nextSibling) {
-                decDisplay.parentNode.insertBefore(p2prog, decDisplay.nextSibling);
-            } else {
-                terminal.insertBefore(p2prog, inputLineEl);
-            }
-            var p2fill = document.getElementById('p2-fill');
-
-            addLine('DECODE', 'Verschiebungskorrektur wird initialisiert...', 'text');
-
-            // ── Phase A: Destabilize all characters ──
-            function phaseA() {
-                shake();
-                SFX.warn();
-                decChars.forEach(function(s) {
-                    if (s.dataset.resolved === 'true' && s.className.indexOf('dot') === -1) {
-                        s.className = 'char destabilized';
-                    }
-                });
-                addLine('SYSTEM', 'Zeichenmatrix destabilisiert...', 'warn-text');
-                setTimeout(phaseB, 1200);
-            }
-
-            // ── Phase B: Caesar shift countdown per character ──
-            function phaseB() {
-                addLine('DECODE', 'Caesar-Rotation rückgängig: -3 Positionen...', 'success');
-                var pos = 0;
-
-                function shiftNext() {
-                    if (pos >= indices.length) {
-                        setTimeout(phaseC, 600);
-                        return;
-                    }
-                    var idx = indices[pos]; pos++;
-                    var span = decChars[idx];
-                    var shiftedChar = SHIFTED_TARGET[idx];
-                    var realChar = TARGET[idx];
-
-                    // Build the 3-step countdown: shifted → shifted-1 → shifted-2 → real
-                    var steps = [];
-                    for (var s = 0; s < CAESAR_SHIFT; s++) {
-                        steps.push(caesarShift(shiftedChar, -(s + 1)));
-                    }
-
-                    var stepIdx = 0;
-                    span.className = 'char shifting';
-
-                    var countdownInterval = setInterval(function() {
-                        if (stepIdx < steps.length) {
-                            span.textContent = steps[stepIdx];
-                            span.className = 'char shifting';
-                            SFX.scrambleTick();
-                            stepIdx++;
-                        } else {
-                            clearInterval(countdownInterval);
-                            // Final lock with flash
-                            span.textContent = realChar;
-                            span.className = 'char decode-flash';
-                            SFX.charLock();
-                            resolved++;
-                            p2fill.style.width = ((resolved / total) * 100) + '%';
-
-                            // Settle to resolved after flash
-                            setTimeout(function() {
-                                span.className = 'char resolved';
-                            }, 500);
-
-                            // Milestone effects
-                            var pct = Math.round((resolved / total) * 100);
-                            if (pct === 25) { flash(); addLine('DECODE', 'Transformation: 25%', 'text'); }
-                            else if (pct === 50) { shake(); addLine('DECODE', 'Transformation: 50%', 'warn-text'); }
-                            else if (pct === 75) { flash(); shake(); SFX.warn(); addLine('SYSTEM', 'Datenstrom instabil — 75%', 'error-text'); }
-
-                            scrollBottom();
-                            // Slightly randomized timing for organic feel
-                            setTimeout(shiftNext, 60 + Math.random() * 80);
-                        }
-                    }, 90);
+            function shiftNext() {
+                if (pos >= indices.length) {
+                    setTimeout(decoderPhaseC, 700);
+                    return;
                 }
-                setTimeout(shiftNext, 400);
-            }
+                var idx = indices[pos]; pos++;
+                var span = decoderChars[idx];
+                var shiftedChar = SHIFTED_TARGET[idx];
+                var realChar = TARGET[idx];
 
-            // ── Phase C: Verification sweep ──
-            function phaseC() {
-                addLine('DECODE', 'Verifizierung der Zeichenintegrität...', 'text');
-                SFX.scan();
+                // Build 3-step countdown
+                var steps = [];
+                for (var s = 0; s < CAESAR_SHIFT; s++) {
+                    steps.push(caesarShift(shiftedChar, -(s + 1)));
+                }
 
-                // Rapid sweep: briefly flash each char white left→right
-                var sweepIdx = 0;
-                var sweepInterval = setInterval(function() {
-                    if (sweepIdx >= decChars.length) {
-                        clearInterval(sweepInterval);
-                        p2prog.style.display = 'none';
-                        setTimeout(showFinalBox, 800);
-                        return;
+                var stepIdx = 0;
+                span.className = 'char shifting';
+
+                var countdownInterval = setInterval(function() {
+                    if (stepIdx < steps.length) {
+                        span.textContent = steps[stepIdx];
+                        span.className = 'char shifting';
+                        SFX.scrambleTick();
+                        stepIdx++;
+                    } else {
+                        clearInterval(countdownInterval);
+                        span.textContent = realChar;
+                        span.className = 'char decode-flash';
+                        SFX.charLock();
+                        resolved++;
+                        decoderFill.style.width = ((resolved / total) * 100) + '%';
+
+                        setTimeout(function() {
+                            span.className = 'char resolved';
+                        }, 500);
+
+                        var pct = Math.round((resolved / total) * 100);
+                        decoderStatusEl.textContent = 'Dekodiere... ' + pct + '%';
+                        if (pct === 25) { flash(); decoderLog('Transformation: 25%', ''); }
+                        else if (pct === 50) { shake(); decoderLog('Transformation: 50%', 'log-warn'); }
+                        else if (pct === 75) { flash(); shake(); SFX.warn(); decoderLog('WARNUNG: Datenstrom instabil — 75%', 'log-error'); }
+
+                        setTimeout(shiftNext, 60 + Math.random() * 80);
                     }
-                    var sp = decChars[sweepIdx];
-                    sp.className = 'char decode-flash';
-                    SFX.scrambleTick();
-                    // Settle back
-                    (function(ref) {
-                        setTimeout(function() { ref.className = 'char resolved'; }, 250);
-                    })(sp);
-                    sweepIdx++;
-                }, 35);
+                }, 90);
             }
+            setTimeout(shiftNext, 400);
+        }
 
-            // Kick off
-            setTimeout(phaseA, 400);
+        function decoderPhaseC() {
+            decoderStatusEl.textContent = 'Verifizierung...';
+            decoderLog('Verifiziere Zeichenintegrität...', '');
+            SFX.scan();
+
+            var sweepIdx = 0;
+            var sweepInterval = setInterval(function() {
+                if (sweepIdx >= decoderChars.length) {
+                    clearInterval(sweepInterval);
+                    decoderStatusEl.textContent = 'DEKODIERUNG ABGESCHLOSSEN';
+                    decoderStatusEl.style.color = '#00ff41';
+                    decoderStatusEl.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
+                    decoderShiftEl.textContent = '✓ ENTSCHLÜSSELT';
+                    decoderShiftEl.style.color = '#00ff41';
+                    decoderLog('Dekodierung erfolgreich!', 'log-success');
+                    decoderLog('Koordinaten extrahiert.', 'log-success');
+                    SFX.reveal();
+                    setTimeout(closeDecoderApp, 2500);
+                    return;
+                }
+                var sp = decoderChars[sweepIdx];
+                sp.className = 'char decode-flash';
+                SFX.scrambleTick();
+                (function(ref) {
+                    setTimeout(function() { ref.className = 'char resolved'; }, 250);
+                })(sp);
+                sweepIdx++;
+            }, 35);
+        }
+
+        function closeDecoderApp() {
+            decoderOverlay.classList.remove('visible');
+            setTimeout(function() {
+                decoderOverlay.remove();
+                decoderOverlay = null;
+                showFinalBox();
+            }, 500);
         }
 
         function showFinalBox() {
