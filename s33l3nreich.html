@@ -10,8 +10,9 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* ===================== CRT BODY ===================== */
         body {
-            background: #0a0a0a;
+            background: #000;
             color: #b0b0b0;
             font-family: 'VT323', 'Courier New', monospace;
             font-size: 1.1rem;
@@ -20,51 +21,157 @@
             min-height: 100vh;
         }
 
-        /* Scanlines */
+        /* ===================== CRT WRAPPER ===================== */
+        .crt {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* CRT curvature + vignette */
+        .crt::before {
+            content: '';
+            position: fixed;
+            top: -5%; left: -5%;
+            width: 110%; height: 110%;
+            pointer-events: none;
+            z-index: 1001;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 60%,
+                rgba(0,0,0,0.35) 80%,
+                rgba(0,0,0,0.75) 100%
+            );
+        }
+
+        /* CRT barrel distortion simulation */
+        .crt::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1002;
+            box-shadow:
+                inset 0 0 80px rgba(0,0,0,0.6),
+                inset 0 0 160px rgba(0,0,0,0.3);
+            border-radius: 18px;
+        }
+
+        /* ===================== SCANLINES ===================== */
         .scanlines {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             pointer-events: none; z-index: 1000;
             background: repeating-linear-gradient(
-                0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px,
-                transparent 1px, transparent 3px
+                0deg,
+                rgba(0,0,0,0.12) 0px,
+                rgba(0,0,0,0.12) 1px,
+                transparent 1px,
+                transparent 3px
             );
         }
 
-        /* Full-screen terminal */
+        /* Horizontal flicker line */
+        .flicker-line {
+            position: fixed; left: 0;
+            width: 100%; height: 2px;
+            background: rgba(0,255,65,0.08);
+            pointer-events: none; z-index: 1003;
+            animation: flicker-move 6s linear infinite;
+            box-shadow: 0 0 12px 2px rgba(0,255,65,0.06);
+        }
+
+        @keyframes flicker-move {
+            0% { top: -2px; }
+            100% { top: 100vh; }
+        }
+
+        /* ===================== CRT GLOW ===================== */
+        .crt-glow {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: -1;
+            background: radial-gradient(
+                ellipse at center,
+                rgba(0,255,65,0.03) 0%,
+                rgba(0,255,65,0.01) 40%,
+                transparent 70%
+            );
+            animation: glow-pulse 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow-pulse {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        /* ===================== MATRIX RAIN (canvas) ===================== */
+        #matrix-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.07;
+        }
+
+        /* ===================== TERMINAL ===================== */
         .terminal {
             max-width: 850px;
             margin: 0 auto;
-            padding: 20px 20px 120px 20px;
+            padding: 30px 25px 130px 25px;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 3px rgba(0,255,65,0.15);
         }
 
         .terminal-line {
             margin-bottom: 2px;
             word-break: break-word;
+            animation: line-appear 0.1s ease-out;
         }
 
-        .prefix { color: #00ff41; }
-        .text { color: #888; }
-        .ok { color: #00ff41; text-shadow: 0 0 5px rgba(0,255,65,0.3); }
-        .warn-text { color: #ffaa00; }
-        .error-text { color: #ff4444; }
-        .success { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.4); }
-        .brand { color: #00ff41; font-size: 1.3rem; text-shadow: 0 0 10px rgba(0,255,65,0.4); }
-        .dim { color: #333; }
-        .highlight { color: #00ff41; }
-        .warn { color: #ff4444; }
-        .separator { color: #1a3a1a; }
-
-        /* Lore text (typed in terminal) */
-        .lore-line {
-            color: #999;
-            margin-bottom: 2px;
+        @keyframes line-appear {
+            from { opacity: 0; transform: translateY(2px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .lore-line .highlight { color: #00ff41; }
-        .lore-line .warn { color: #ff4444; }
 
-        /* Input line */
+        /* ===================== COLORS — GREEN + AMBER ===================== */
+        .prefix { color: #00ff41; text-shadow: 0 0 6px rgba(0,255,65,0.3); }
+        .text { color: #7a7a7a; }
+        .ok { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.4); }
+        .warn-text { color: #ffaa00; text-shadow: 0 0 6px rgba(255,170,0,0.3); }
+        .error-text { color: #ff4444; text-shadow: 0 0 6px rgba(255,68,68,0.3); }
+        .success { color: #00ff41; text-shadow: 0 0 10px rgba(0,255,65,0.5); }
+        .brand { color: #00ff41; font-size: 1.3rem; text-shadow: 0 0 12px rgba(0,255,65,0.5); }
+        .dim { color: #2a2a2a; }
+        .highlight { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.4); }
+        .warn { color: #ff4444; text-shadow: 0 0 6px rgba(255,68,68,0.3); }
+        .separator { color: #1a3a1a; text-shadow: none; }
+
+        /* Amber for lore */
+        .lore-line { color: #d4a030; text-shadow: 0 0 5px rgba(212,160,48,0.25); }
+        .lore-line .highlight { color: #ffcc00; text-shadow: 0 0 8px rgba(255,204,0,0.4); }
+        .lore-line .warn { color: #ff4444; text-shadow: 0 0 6px rgba(255,68,68,0.3); }
+
+        /* ===================== TYPEWRITER CURSOR ===================== */
+        .tw-cursor {
+            display: inline-block;
+            width: 9px; height: 1.15em;
+            background: #00ff41;
+            vertical-align: text-bottom;
+            margin-left: 1px;
+            animation: cursor-blink 0.6s step-end infinite;
+            box-shadow: 0 0 6px rgba(0,255,65,0.5);
+        }
+
+        @keyframes cursor-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ===================== INPUT LINE ===================== */
         .input-line {
             display: flex;
             align-items: center;
@@ -75,6 +182,7 @@
             color: #00ff41;
             margin-right: 8px;
             white-space: nowrap;
+            text-shadow: 0 0 6px rgba(0,255,65,0.3);
         }
 
         .terminal-input {
@@ -87,24 +195,29 @@
             outline: none;
             caret-color: #00ff41;
             letter-spacing: 1px;
+            text-shadow: 0 0 6px rgba(0,255,65,0.3);
         }
 
-        .terminal-input::placeholder { color: #1a3a1a; }
-        .terminal-input:disabled { opacity: 0.4; }
+        .terminal-input::placeholder { color: #0e2e0e; text-shadow: none; }
+        .terminal-input:disabled { opacity: 0.3; }
 
-        /* Sticky Note */
+        /* ===================== STICKY NOTE ===================== */
         .sticky-note {
             position: fixed; top: 18px; right: 18px;
             width: 180px; padding: 18px 16px 14px 16px;
             background: #f5e960; color: #222;
             font-family: 'Segoe UI', 'Comic Sans MS', cursive, sans-serif;
             font-size: 0.95rem; line-height: 1.5;
-            box-shadow: 3px 5px 14px rgba(0,0,0,0.5);
-            transform: rotate(3deg); z-index: 500;
+            box-shadow: 3px 5px 18px rgba(0,0,0,0.7);
+            transform: rotate(3deg); z-index: 1500;
             border-bottom-right-radius: 30px 8px;
             display: none;
         }
-        .sticky-note.show { display: block; }
+        .sticky-note.show { display: block; animation: note-drop 0.4s ease-out; }
+        @keyframes note-drop {
+            from { transform: rotate(3deg) translateY(-30px); opacity: 0; }
+            to { transform: rotate(3deg) translateY(0); opacity: 1; }
+        }
         .sticky-note::before {
             content: ''; position: absolute; top: -6px; left: 50%;
             transform: translateX(-50%); width: 50px; height: 12px;
@@ -119,102 +232,152 @@
             margin-top: 4px; letter-spacing: 2px;
         }
 
-        /* Decrypt display */
+        /* ===================== DECRYPT DISPLAY ===================== */
         .decrypt-display {
             font-size: 2rem; letter-spacing: 6px; text-align: center;
             margin: 15px 0; padding: 20px;
-            border: 1px solid #1a3a1a; background: #050505;
-            color: #00ff41; text-shadow: 0 0 10px rgba(0,255,65,0.6);
-            font-family: 'VT323', monospace; min-height: 70px;
+            border: 1px solid #0e2e0e; background: rgba(0,10,0,0.5);
+            color: #00ff41; font-family: 'VT323', monospace; min-height: 70px;
             display: none; align-items: center; justify-content: center;
             word-break: break-all;
+            box-shadow: 0 0 20px rgba(0,255,65,0.05) inset;
         }
         .decrypt-display.active { display: flex; }
         .decrypt-display .char { display: inline-block; min-width: 0.6em; text-align: center; }
-        .decrypt-display .char.scrambling { color: #335533; text-shadow: none; }
-        .decrypt-display .char.resolved { color: #00ff41; text-shadow: 0 0 10px #00ff41, 0 0 20px rgba(0,255,65,0.4); }
-        .decrypt-display .char.dot { color: #00ff41; }
+        .decrypt-display .char.scrambling { color: #1a4a1a; text-shadow: 0 0 3px rgba(0,255,65,0.15); }
+        .decrypt-display .char.resolved {
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41, 0 0 25px rgba(0,255,65,0.4);
+            animation: char-lock 0.3s ease-out;
+        }
+        .decrypt-display .char.dot { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.3); }
+        @keyframes char-lock {
+            0% { transform: scale(1.4); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
 
-        /* Progress bar */
+        /* ===================== PROGRESS BAR ===================== */
         .progress-bar {
-            width: 100%; height: 3px; background: #111;
+            width: 100%; height: 3px; background: #0a0a0a;
             margin: 10px 0; border-radius: 2px; overflow: hidden; display: none;
+            border: 1px solid #0e2e0e;
         }
         .progress-bar.active { display: block; }
-        .progress-bar .fill { height: 100%; width: 0%; background: #00ff41; box-shadow: 0 0 10px #00ff41; transition: width 0.3s; }
+        .progress-bar .fill {
+            height: 100%; width: 0%; background: #00ff41;
+            box-shadow: 0 0 12px #00ff41, 0 0 25px rgba(0,255,65,0.3);
+            transition: width 0.3s;
+        }
 
-        /* Final box */
+        /* ===================== FINAL BOX ===================== */
         .final-box {
-            text-align: center; margin-top: 20px; padding: 20px;
-            border: 1px solid #00ff41; background: rgba(0,255,65,0.03);
+            text-align: center; margin-top: 20px; padding: 25px;
+            border: 1px solid #00ff41; background: rgba(0,255,65,0.02);
             opacity: 0; transition: opacity 1.5s ease-in;
+            box-shadow: 0 0 30px rgba(0,255,65,0.05), 0 0 60px rgba(0,255,65,0.02);
         }
         .final-box.visible { opacity: 1; }
         .final-box .ip-text {
-            color: #00ff41; font-size: 1.8rem;
-            text-shadow: 0 0 15px rgba(0,255,65,0.7);
-            letter-spacing: 3px; margin: 10px 0;
+            color: #00ff41; font-size: 2rem;
+            text-shadow: 0 0 15px rgba(0,255,65,0.7), 0 0 30px rgba(0,255,65,0.3);
+            letter-spacing: 4px; margin: 15px 0;
         }
 
-        /* Flash */
+        /* ===================== SCREEN FLASH ===================== */
         .screen-flash {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #00ff41; opacity: 0; pointer-events: none; z-index: 999;
-            transition: opacity 0.1s;
+            background: #00ff41; opacity: 0; pointer-events: none; z-index: 1500;
+            transition: opacity 0.08s;
         }
-        .screen-flash.flash { opacity: 0.15; }
+        .screen-flash.flash { opacity: 0.12; }
 
+        /* ===================== SHAKE ===================== */
         @keyframes shake-hard {
             0%, 100% { transform: translate(0,0); }
-            10% { transform: translate(-3px,2px); }
-            20% { transform: translate(3px,-1px); }
-            30% { transform: translate(-2px,3px); }
-            40% { transform: translate(2px,-2px); }
-            50% { transform: translate(-3px,1px); }
-            60% { transform: translate(1px,-3px); }
-            70% { transform: translate(-1px,2px); }
-            80% { transform: translate(3px,-1px); }
-            90% { transform: translate(-2px,3px); }
+            10% { transform: translate(-4px,2px); }
+            20% { transform: translate(4px,-2px); }
+            30% { transform: translate(-3px,3px); }
+            40% { transform: translate(3px,-3px); }
+            50% { transform: translate(-4px,1px); }
+            60% { transform: translate(2px,-4px); }
+            70% { transform: translate(-2px,3px); }
+            80% { transform: translate(4px,-1px); }
+            90% { transform: translate(-3px,4px); }
         }
         .shaking { animation: shake-hard 0.15s linear infinite; }
 
-        /* Audio */
+        /* ===================== AUDIO ===================== */
         .audio-toggle {
             position: fixed; bottom: 15px; right: 15px;
-            background: rgba(0,255,65,0.08); border: 1px solid #1a3a1a;
+            background: rgba(0,255,65,0.05); border: 1px solid #0e2e0e;
             color: #00ff41; font-family: 'VT323', monospace; font-size: 0.85rem;
-            padding: 6px 12px; cursor: pointer; z-index: 500;
+            padding: 6px 12px; cursor: pointer; z-index: 1500;
             transition: all 0.3s; letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(0,255,65,0.3);
         }
-        .audio-toggle:hover { background: rgba(0,255,65,0.15); border-color: #00ff41; }
-        .audio-toggle.muted { color: #555; border-color: #222; }
+        .audio-toggle:hover { background: rgba(0,255,65,0.12); border-color: #00ff41; }
+        .audio-toggle.muted { color: #333; border-color: #111; text-shadow: none; }
 
+        /* ===================== CRT TURN ON ===================== */
+        .crt-on {
+            animation: crt-turn-on 1.2s ease-out;
+        }
+
+        @keyframes crt-turn-on {
+            0% {
+                filter: brightness(30);
+                transform: scaleY(0.005) scaleX(0.3);
+                opacity: 1;
+            }
+            10% {
+                filter: brightness(10);
+                transform: scaleY(0.005) scaleX(1);
+            }
+            30% {
+                filter: brightness(3);
+                transform: scaleY(1) scaleX(1);
+            }
+            60% {
+                filter: brightness(1.2);
+            }
+            100% {
+                filter: brightness(1);
+                transform: scaleY(1) scaleX(1);
+            }
+        }
+
+        /* ===================== RESPONSIVE ===================== */
         @media (max-width: 600px) {
-            .terminal { padding: 12px 10px 100px 10px; }
+            .terminal { padding: 15px 12px 110px 12px; }
             body { font-size: 0.95rem; }
             .sticky-note { top: auto; bottom: 50px; right: 10px; width: 155px; font-size: 0.85rem; }
             .decrypt-display { font-size: 1.3rem; letter-spacing: 3px; padding: 15px 10px; }
             .brand { font-size: 1.1rem; }
+            .crt::after { border-radius: 10px; }
         }
     </style>
 </head>
 <body>
-    <div class="scanlines"></div>
-    <div class="screen-flash" id="screen-flash"></div>
+    <div class="crt crt-on">
+        <div class="scanlines"></div>
+        <div class="flicker-line"></div>
+        <div class="crt-glow"></div>
+        <canvas id="matrix-canvas"></canvas>
+        <div class="screen-flash" id="screen-flash"></div>
 
-    <audio id="ambient-audio" loop preload="auto">
-        <source src="ambient.mp3" type="audio/mpeg">
-    </audio>
-    <button class="audio-toggle" id="audio-toggle" title="Audio an/aus">♪ AUDIO</button>
+        <audio id="ambient-audio" loop preload="auto">
+            <source src="ambient.mp3" type="audio/mpeg">
+        </audio>
+        <button class="audio-toggle" id="audio-toggle" title="Audio an/aus">♪ AUDIO</button>
 
-    <div class="sticky-note" id="sticky-note">
-        <div class="note-title">Passwort:</div>
-        <div>Nicht vergessen!!</div>
-        <div class="note-pw">Seele731</div>
-    </div>
+        <div class="sticky-note" id="sticky-note">
+            <div class="note-title">Passwort:</div>
+            <div>Nicht vergessen!!</div>
+            <div class="note-pw">Seele731</div>
+        </div>
 
-    <div class="terminal" id="terminal">
-        <!-- Everything is injected by JS -->
+        <div class="terminal" id="terminal"></div>
     </div>
 
     <script>
@@ -235,6 +398,45 @@
         let loggedIn = false;
         let decrypting = false;
         let loginAttempts = 0;
+
+        // ============================================================
+        //  MATRIX RAIN (background)
+        // ============================================================
+        (function() {
+            const canvas = document.getElementById('matrix-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h, columns, drops;
+            const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+
+            function resize() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+                columns = Math.floor(w / 16);
+                drops = new Array(columns).fill(1);
+            }
+
+            resize();
+            window.addEventListener('resize', resize);
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = '#00ff41';
+                ctx.font = '14px VT323, monospace';
+
+                for (let i = 0; i < drops.length; i++) {
+                    const char = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(char, i * 16, drops[i] * 16);
+                    if (drops[i] * 16 > h && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+                requestAnimationFrame(draw);
+            }
+
+            draw();
+        })();
 
         // ============================================================
         //  AUDIO
@@ -279,11 +481,8 @@
             const div = document.createElement('div');
             div.className = 'terminal-line';
             div.innerHTML = html;
-            if (inputLineEl) {
-                terminal.insertBefore(div, inputLineEl);
-            } else {
-                terminal.appendChild(div);
-            }
+            if (inputLineEl) terminal.insertBefore(div, inputLineEl);
+            else terminal.appendChild(div);
             scrollBottom();
             return div;
         }
@@ -293,7 +492,6 @@
         }
 
         function addEmpty() { addRaw('&nbsp;'); }
-
         function addSep() { addRaw('<span class="separator">════════════════════════════════════════════</span>'); }
 
         function addEcho(cmd) {
@@ -301,12 +499,11 @@
         }
 
         function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
         function scrollBottom() { window.scrollTo(0, document.body.scrollHeight); }
 
         function flash() {
             screenFlash.classList.add('flash');
-            setTimeout(function() { screenFlash.classList.remove('flash'); }, 100);
+            setTimeout(function() { screenFlash.classList.remove('flash'); }, 80);
         }
 
         function shake() {
@@ -315,70 +512,131 @@
         }
 
         // ============================================================
-        //  SEQUENCER — runs lines with delays
+        //  TYPEWRITER LINE — types a line character by character
+        // ============================================================
+        function typeLine(html, speed, callback) {
+            // Create a hidden element to extract text
+            const temp = document.createElement('div');
+            temp.innerHTML = html;
+            const fullText = temp.textContent;
+
+            const div = document.createElement('div');
+            div.className = 'terminal-line';
+            if (inputLineEl) terminal.insertBefore(div, inputLineEl);
+            else terminal.appendChild(div);
+
+            // We'll type using the raw HTML, revealing char by char
+            const cursor = document.createElement('span');
+            cursor.className = 'tw-cursor';
+
+            let charIndex = 0;
+            div.innerHTML = '';
+            div.appendChild(cursor);
+
+            // Build chars from full text, paired with their HTML
+            // Simple approach: type the raw text, then replace with HTML at end
+            function typeNext() {
+                if (charIndex < fullText.length) {
+                    // Insert char before cursor
+                    const c = document.createTextNode(fullText[charIndex]);
+                    div.insertBefore(c, cursor);
+                    charIndex++;
+                    scrollBottom();
+
+                    let delay = speed;
+                    const ch = fullText[charIndex - 1];
+                    if (ch === ' ') delay = speed * 0.3;
+                    else if (ch === '.' || ch === '—') delay = speed * 3;
+                    else if (ch === ',') delay = speed * 1.8;
+
+                    setTimeout(typeNext, delay);
+                } else {
+                    // Done — replace with full HTML
+                    div.innerHTML = html;
+                    if (callback) callback();
+                }
+            }
+
+            typeNext();
+        }
+
+        // ============================================================
+        //  SEQUENCER — with typewriter support
         // ============================================================
         function runSequence(lines, callback) {
             let i = 0;
             function next() {
                 if (i >= lines.length) { if (callback) callback(); return; }
                 const l = lines[i];
-                if (l.fn) { l.fn(); }
-                else { addRaw(l.html); }
                 i++;
-                setTimeout(next, l.delay || 200);
+                if (l.fn) {
+                    l.fn();
+                    setTimeout(next, l.delay || 200);
+                } else if (l.type) {
+                    // Typewriter line
+                    typeLine(l.html, l.speed || 20, function() {
+                        setTimeout(next, l.delay || 100);
+                    });
+                } else {
+                    addRaw(l.html);
+                    setTimeout(next, l.delay || 200);
+                }
             }
             next();
         }
 
         // ============================================================
-        //  BOOT SEQUENCE
+        //  BOOT SEQUENCE (typewriter)
         // ============================================================
         function startBoot() {
-            const bootLines = [
-                { html: '<span class="brand">FORSCHER-OS v0.7.3 — BIOS POST</span>', delay: 500 },
-                { fn: addSep, delay: 250 },
-                { html: 'CPU .............. Seelenreich Cortex M7      [<span class="ok">OK</span>]', delay: 300 },
-                { html: 'RAM .............. 4096 KB                     [<span class="ok">OK</span>]', delay: 250 },
-                { html: 'Netzwerk ......... Seelenreich-Brücke          [<span class="warn-text">INSTABIL</span>]', delay: 350 },
-                { html: 'Speicher ......... Fragmentiert                [<span class="warn-text">WARNUNG</span>]', delay: 300 },
-                { html: 'Verschlüsselung . Datenfragment erkannt        [<span class="ok">OK</span>]', delay: 250 },
-                { html: 'Seelen-Signatur . Forscher_Watson              [<span class="ok">GEFUNDEN</span>]', delay: 350 },
-                { fn: addSep, delay: 250 },
-                { html: 'POST abgeschlossen. Starte Terminal...', delay: 700 },
-                { fn: addEmpty, delay: 300 },
-                { html: 'Verbinde mit Seelenreich-Netzwerk...', delay: 900 },
-                { html: 'Tunneling durch Dimensionsriss ████████ ....', delay: 700 },
-                { html: 'Signalstärke: <span class="warn-text">23%</span> — Verbindung instabil', delay: 500 },
-                { html: 'Authentifizierungsmodul geladen.', delay: 400 },
-                { fn: addEmpty, delay: 200 },
-                { html: '<span class="ok">✓ Verbindung hergestellt.</span>', delay: 600 },
-                { fn: function() { flash(); }, delay: 300 },
-            ];
+            // Brief delay for CRT turn-on animation
+            setTimeout(function() {
+                const bootLines = [
+                    { html: '<span class="brand">FORSCHER-OS v0.7.3 — BIOS POST</span>', type: true, speed: 30, delay: 400 },
+                    { fn: addSep, delay: 200 },
+                    { html: 'CPU .............. Seelenreich Cortex M7      [<span class="ok">OK</span>]', type: true, speed: 12, delay: 200 },
+                    { html: 'RAM .............. 4096 KB                     [<span class="ok">OK</span>]', type: true, speed: 12, delay: 180 },
+                    { html: 'Netzwerk ......... Seelenreich-Brücke          [<span class="warn-text">INSTABIL</span>]', type: true, speed: 12, delay: 250 },
+                    { html: 'Speicher ......... Fragmentiert                [<span class="warn-text">WARNUNG</span>]', type: true, speed: 12, delay: 200 },
+                    { html: 'Verschlüsselung . Datenfragment erkannt        [<span class="ok">OK</span>]', type: true, speed: 12, delay: 180 },
+                    { html: 'Seelen-Signatur . Forscher_Watson              [<span class="ok">GEFUNDEN</span>]', type: true, speed: 12, delay: 300 },
+                    { fn: addSep, delay: 200 },
+                    { html: 'POST abgeschlossen. Starte Terminal...', type: true, speed: 25, delay: 600 },
+                    { fn: addEmpty, delay: 300 },
+                    { html: 'Verbinde mit Seelenreich-Netzwerk...', type: true, speed: 20, delay: 800 },
+                    { html: 'Tunneling durch Dimensionsriss ████████ ....', type: true, speed: 15, delay: 600 },
+                    { html: 'Signalstärke: <span class="warn-text">23%</span> — Verbindung instabil', type: true, speed: 20, delay: 400 },
+                    { html: 'Authentifizierungsmodul geladen.', type: true, speed: 20, delay: 300 },
+                    { fn: addEmpty, delay: 200 },
+                    { html: '<span class="ok">✓ Verbindung hergestellt.</span>', type: true, speed: 25, delay: 400 },
+                    { fn: function() { flash(); shake(); }, delay: 400 },
+                ];
 
-            runSequence(bootLines, startLore);
+                runSequence(bootLines, startLore);
+            }, 1300);
         }
 
         // ============================================================
-        //  LORE — types out in the terminal
+        //  LORE (amber colored, typewriter)
         // ============================================================
         function startLore() {
             const loreLines = [
                 { fn: addEmpty, delay: 400 },
                 { fn: addSep, delay: 200 },
-                { html: '<span class="brand">EINGEHENDE NACHRICHT — QUELLE: SEELENREICH</span>', delay: 600 },
+                { html: '<span class="brand">EINGEHENDE NACHRICHT — QUELLE: SEELENREICH</span>', type: true, speed: 25, delay: 500 },
                 { fn: addSep, delay: 300 },
                 { fn: addEmpty, delay: 200 },
-                { html: '<span class="lore-line">Ihr habt den Code gefunden. Dann seid ihr bereit.</span>', delay: 500 },
+                { html: '<span class="lore-line">Ihr habt den Code gefunden. Dann seid ihr bereit.</span>', type: true, speed: 30, delay: 400 },
                 { fn: addEmpty, delay: 200 },
-                { html: '<span class="lore-line">Ich sitze hier, im Seelenreich, zwischen Schatten und Stille.</span>', delay: 500 },
-                { html: '<span class="lore-line">Einst war ich wie ihr — ein Forscher, ein Spieler.</span>', delay: 500 },
-                { html: '<span class="lore-line">Der Fluch hat mich genommen. <span class="warn">Langsam. Gnadenlos.</span></span>', delay: 600 },
+                { html: '<span class="lore-line">Ich sitze hier, im Seelenreich, zwischen Schatten und Stille.</span>', type: true, speed: 30, delay: 400 },
+                { html: '<span class="lore-line">Einst war ich wie ihr — ein Forscher, ein Spieler.</span>', type: true, speed: 30, delay: 400 },
+                { html: '<span class="lore-line">Der Fluch hat mich genommen. <span class="warn">Langsam. Gnadenlos.</span></span>', type: true, speed: 35, delay: 600 },
                 { fn: addEmpty, delay: 300 },
-                { html: '<span class="lore-line">Aber die verfluchte Welt existiert noch. Der Altar wartet noch.</span>', delay: 500 },
-                { html: '<span class="lore-line">Wo ich versagt habe, könnt ihr es schaffen.</span>', delay: 500 },
+                { html: '<span class="lore-line">Aber die verfluchte Welt existiert noch. Der Altar wartet noch.</span>', type: true, speed: 30, delay: 400 },
+                { html: '<span class="lore-line">Wo ich versagt habe, könnt ihr es schaffen.</span>', type: true, speed: 30, delay: 500 },
                 { fn: addEmpty, delay: 300 },
-                { html: '<span class="lore-line">Mein Terminal ist noch aktiv.</span>', delay: 400 },
-                { html: '<span class="lore-line">Meldet euch an, um die <span class="highlight">Koordinaten der verfluchten Welt</span> zu entschlüsseln.</span>', delay: 600 },
+                { html: '<span class="lore-line">Mein Terminal ist noch aktiv.</span>', type: true, speed: 30, delay: 300 },
+                { html: '<span class="lore-line">Meldet euch an, um die <span class="highlight">Koordinaten der verfluchten Welt</span> zu entschlüsseln.</span>', type: true, speed: 25, delay: 500 },
                 { fn: addEmpty, delay: 200 },
                 { fn: addSep, delay: 200 },
                 { fn: addEmpty, delay: 300 },
@@ -388,7 +646,7 @@
         }
 
         // ============================================================
-        //  TERMINAL — login prompt
+        //  TERMINAL
         // ============================================================
         function startTerminal() {
             addLine('SYSTEM', 'Forscher-Terminal v0.7 — Bereit', 'success');
@@ -397,7 +655,6 @@
             addLine('SYSTEM', 'Gib "help" für verfügbare Befehle ein.', 'text');
             addEmpty();
 
-            // Create input line
             inputLineEl = document.createElement('div');
             inputLineEl.className = 'input-line';
             inputLineEl.innerHTML = '<span class="prompt">forscher@seelenreich:~$</span>';
@@ -410,9 +667,7 @@
             inputLineEl.appendChild(inputEl);
             terminal.appendChild(inputLineEl);
 
-            // Show sticky note
             stickyNote.classList.add('show');
-
             inputEl.focus();
             scrollBottom();
 
@@ -437,7 +692,6 @@
         function processCommand(raw) {
             const parts = raw.split(/\s+/);
             const cmd = parts[0].toLowerCase();
-
             if (loggedIn) { postLogin(cmd, parts); return; }
 
             switch(cmd) {
@@ -459,8 +713,7 @@
                     addLine('SYSTEM', 'Sitzung: ANONYM — Authentifizierung erforderlich', 'warn-text');
                     break;
                 case 'login':
-                    handleLogin(parts);
-                    break;
+                    handleLogin(parts); break;
                 case 'decrypt': case 'entschlüsseln':
                     addLine('SYSTEM', 'ZUGANG VERWEIGERT — Authentifizierung erforderlich.', 'error-text');
                     break;
@@ -483,7 +736,7 @@
 
             setTimeout(function() {
                 if (user.toLowerCase() === VALID_USER && pass === VALID_PASS) {
-                    flash(); addEmpty();
+                    flash(); shake(); addEmpty();
                     addLine('AUTH', '✓ ZUGANG GEWÄHRT', 'success');
                     addLine('AUTH', 'Willkommen zurück, Watson.', 'success');
                     addEmpty();
@@ -495,14 +748,12 @@
                 } else {
                     shake();
                     addLine('AUTH', '✗ ZUGANG VERWEIGERT', 'error-text');
-                    if (user.toLowerCase() !== VALID_USER) {
+                    if (user.toLowerCase() !== VALID_USER)
                         addLine('AUTH', 'Benutzer "' + esc(user) + '" nicht gefunden.', 'error-text');
-                    } else {
+                    else
                         addLine('AUTH', 'Passwort ungültig.', 'error-text');
-                    }
-                    if (loginAttempts >= 3) {
+                    if (loginAttempts >= 3)
                         addLine('SYSTEM', 'Tipp: Habt ihr alles auf dem Bildschirm überprüft?', 'warn-text');
-                    }
                 }
                 inputEl.disabled = false;
                 inputEl.focus();
@@ -540,8 +791,7 @@
                     addEmpty();
                     break;
                 case 'decrypt': case 'entschlüsseln':
-                    startDecryption();
-                    break;
+                    startDecryption(); break;
                 case 'login':
                     addLine('SYSTEM', 'Bereits angemeldet als Watson.', 'warn-text');
                     break;
@@ -565,10 +815,8 @@
             addLine('DECRYPT', 'Datenfragment wird geladen...', 'text');
 
             setTimeout(function() {
-                // Create display + progress
                 const displayEl = document.createElement('div');
                 displayEl.className = 'decrypt-display active';
-                displayEl.id = 'decrypt-display';
                 terminal.insertBefore(displayEl, inputLineEl);
 
                 const progEl = document.createElement('div');
@@ -609,7 +857,7 @@
                     if (s.dataset.resolved === 'false')
                         s.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
                 });
-            }, 80);
+            }, 70);
         }
 
         function runDecryption(displayEl, fillEl, progEl) {
@@ -627,8 +875,7 @@
             function next() {
                 if (indices.length === 0) {
                     clearInterval(scrambleInterval);
-                    finish(progEl);
-                    return;
+                    finish(progEl); return;
                 }
                 const idx = indices.shift();
                 const span = chars[idx];
@@ -652,15 +899,16 @@
                         scrollBottom();
                         setTimeout(next, 150 + Math.random() * 250);
                     }
-                }, 50);
+                }, 45);
             }
             setTimeout(next, 500);
         }
 
         function finish(progEl) {
             shake(); flash();
-            setTimeout(flash, 200);
-            setTimeout(flash, 400);
+            setTimeout(flash, 150);
+            setTimeout(flash, 300);
+            setTimeout(flash, 500);
             addLine('DECRYPT', 'ENTSCHLÜSSELUNG ABGESCHLOSSEN.', 'success');
             addLine('SYSTEM', 'Koordinaten extrahiert.', 'success');
 
@@ -668,14 +916,13 @@
                 progEl.style.display = 'none';
                 inputLineEl.style.display = 'none';
 
-                // Final box
                 const box = document.createElement('div');
                 box.className = 'final-box';
-                box.innerHTML = '<p class="warn">ZIEL GEFUNDEN</p>' +
+                box.innerHTML = '<p class="warn" style="font-size:1.2rem;letter-spacing:3px;">ZIEL GEFUNDEN</p>' +
                     '<p class="ip-text">' + TARGET + '</p>' +
-                    '<hr style="border:none;border-top:1px solid #1a3a1a;margin:15px 0;">' +
-                    '<p style="color:#888;font-size:1.1rem;">Die verfluchte Welt erwartet euch.</p>' +
-                    '<p style="color:#888;font-size:1.1rem;">Brecht den Fluch. Befreit mich.</p>' +
+                    '<hr style="border:none;border-top:1px solid #0e2e0e;margin:15px 0;">' +
+                    '<p style="color:#d4a030;font-size:1.1rem;text-shadow:0 0 5px rgba(212,160,48,0.25);">Die verfluchte Welt erwartet euch.</p>' +
+                    '<p style="color:#d4a030;font-size:1.1rem;text-shadow:0 0 5px rgba(212,160,48,0.25);">Brecht den Fluch. Befreit mich.</p>' +
                     '<p class="dim" style="margin-top:12px;font-size:0.9rem;">— Der Forscher</p>';
                 terminal.appendChild(box);
 
