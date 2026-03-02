@@ -165,6 +165,126 @@
         }
         .frag-success.visible { opacity: 1; }
 
+        /* ── FRAGMENT TRANSITION OVERLAY ── */
+        .frag-transition {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: all;
+        }
+        .frag-transition.active { opacity: 1; transition: opacity 0.4s ease-in; }
+
+        .ft-scanlines {
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,255,65,0.03) 2px,
+                rgba(0,255,65,0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ft-glitch-text {
+            font-family: 'VT323', monospace;
+            font-size: 1.6rem;
+            color: #00ff41;
+            text-shadow: 0 0 20px rgba(0,255,65,0.6);
+            letter-spacing: 4px;
+            z-index: 2;
+            opacity: 0;
+            animation: ft-appear 0.3s ease forwards;
+        }
+        .ft-glitch-text.delay1 { animation-delay: 0.5s; }
+        .ft-glitch-text.delay2 { animation-delay: 1.2s; }
+        .ft-glitch-text.delay3 { animation-delay: 1.9s; }
+        .ft-glitch-text.delay4 { animation-delay: 2.6s; }
+
+        @keyframes ft-appear {
+            0%   { opacity: 0; transform: translateX(-10px); }
+            60%  { opacity: 1; transform: translateX(3px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
+        .ft-progress-wrap {
+            width: 280px;
+            height: 3px;
+            background: rgba(0,255,65,0.1);
+            margin-top: 30px;
+            border-radius: 2px;
+            overflow: hidden;
+            z-index: 2;
+            opacity: 0;
+            animation: ft-appear 0.3s ease 1.0s forwards;
+        }
+        .ft-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #00ff41;
+            box-shadow: 0 0 8px rgba(0,255,65,0.5);
+        }
+        .ft-progress-bar.running {
+            animation: ft-load 2.5s ease-in-out 1.3s forwards;
+        }
+        @keyframes ft-load {
+            0%   { width: 0%; }
+            20%  { width: 25%; }
+            40%  { width: 38%; }
+            55%  { width: 55%; }
+            70%  { width: 72%; }
+            85%  { width: 88%; }
+            100% { width: 100%; }
+        }
+
+        .ft-hex-stream {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'VT323', monospace;
+            font-size: 0.75rem;
+            color: rgba(0,255,65,0.15);
+            letter-spacing: 2px;
+            max-width: 90vw;
+            text-align: center;
+            word-break: break-all;
+            z-index: 2;
+        }
+
+        .ft-flash {
+            position: fixed; inset: 0;
+            background: #00ff41;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .ft-flash.fire {
+            animation: ft-flash-anim 0.6s ease-out forwards;
+        }
+        @keyframes ft-flash-anim {
+            0%   { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
+        .ft-glitch-fx {
+            animation: ft-glitch 0.15s steps(2) infinite;
+        }
+        @keyframes ft-glitch {
+            0%   { transform: translate(0, 0); filter: hue-rotate(0deg); }
+            25%  { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
+            50%  { transform: translate(2px, -1px); filter: hue-rotate(180deg); }
+            75%  { transform: translate(1px, 2px); filter: hue-rotate(270deg); }
+            100% { transform: translate(-1px, -2px); filter: hue-rotate(360deg); }
+        }
+
         /* Boot cursor blink */
         .boot-cursor { animation: blink-cursor 0.6s steps(2) infinite; }
         @keyframes blink-cursor { 0% { opacity: 1; } 100% { opacity: 0; } }
@@ -431,7 +551,44 @@
         function showTerminalReady() {
             skipBtn.classList.add('hidden');
             addLineHtml('<span class="ok">✓ Terminal bereit.</span>', 'green');
-            showHelp();
+
+            if (breachFailed && !breachWon) {
+                showBreachFailAlert();
+            } else {
+                showHelp();
+            }
+        }
+
+        // ============================================================
+        //  BREACH FAIL ALERT — dramatic retry prompt
+        // ============================================================
+        function showBreachFailAlert() {
+            addEmpty();
+            var alertSteps = [
+                { fn: addSep, delay: 300 },
+                { html: '<span class="warn-text">⚠ SICHERHEITSWARNUNG — SEELENREICH-TERMINAL</span>', type: true, speed: 25, delay: 500 },
+                { fn: addSep, delay: 200 },
+                { fn: addEmpty, delay: 200 },
+                { html: '<span style="color:#ff4444;">Letzter Verbindungsversuch: GESCHEITERT</span>', type: true, speed: 25, delay: 400 },
+                { html: '<span style="color:#ff4444;">Status: EINDRINGLING HAT KONTROLLE ÜBERNOMMEN</span>', type: true, speed: 25, delay: 400 },
+                { fn: addEmpty, delay: 300 },
+                { html: '<span class="lore-line">Die Verteidigung wurde durchbrochen. Der Wächter hat</span>', type: true, speed: 30, delay: 300 },
+                { html: '<span class="lore-line">die Verbindung gekappt — aber das Signal ist noch da.</span>', type: true, speed: 30, delay: 400 },
+                { fn: addEmpty, delay: 200 },
+                { html: '<span class="lore-line">Die Brücke kann wiederhergestellt werden.</span>', type: true, speed: 30, delay: 400 },
+                { html: '<span class="lore-line">Aber diesmal müsst ihr schneller sein.</span>', type: true, speed: 30, delay: 500 },
+                { fn: addEmpty, delay: 300 },
+                { fn: addSep, delay: 200 },
+                { html: '<span class="ok">» Befehl verfügbar: </span><span class="highlight">reconnect seele</span>', type: true, speed: 20, delay: 400 },
+                { fn: addSep, delay: 200 },
+                { fn: addEmpty, delay: 200 },
+            ];
+
+            runSequence(alertSteps, function() {
+                inputLine.style.display = 'block';
+                cmdInput.focus();
+                scrollBottom();
+            });
         }
 
         // ============================================================
@@ -526,9 +683,8 @@
                 }
                 SFX.confirm();
                 addLine('[SYSTEM] Öffne Forscher-Fragment #0...', 'green');
-                setTimeout(function() {
-                    window.location.href = 'fragment0.html';
-                }, 1000);
+                cmdInput.disabled = true;
+                setTimeout(function() { launchFragmentTransition(); }, 600);
             }
             else if (cmd === 'help') {
                 showHelp();
@@ -614,6 +770,95 @@
                 input.value = '';
                 setTimeout(function() { errorEl.classList.remove('visible'); }, 2000);
             }
+        }
+
+        // ============================================================
+        //  FRAGMENT TRANSITION
+        // ============================================================
+        function launchFragmentTransition() {
+            // Build overlay
+            var overlay = document.createElement('div');
+            overlay.className = 'frag-transition';
+            overlay.innerHTML =
+                '<div class="ft-scanlines"></div>' +
+                '<div class="ft-glitch-text delay1">[SEKTOR /dev/seele0]</div>' +
+                '<div class="ft-glitch-text delay2">ENTSCHLÜSSELUNG ██████████ ABGESCHLOSSEN</div>' +
+                '<div class="ft-glitch-text delay3">FRAGMENT #0 WIRD GELADEN...</div>' +
+                '<div class="ft-progress-wrap"><div class="ft-progress-bar" id="ft-bar"></div></div>' +
+                '<div class="ft-glitch-text delay4" style="font-size:0.8rem;color:rgba(0,255,65,0.3);">ZUGRIFF AUTORISIERT — FORSCHER-ARCHIV</div>' +
+                '<div class="ft-hex-stream" id="ft-hex"></div>';
+
+            var flash = document.createElement('div');
+            flash.className = 'ft-flash';
+
+            document.body.appendChild(overlay);
+            document.body.appendChild(flash);
+
+            // Activate overlay (fade in)
+            requestAnimationFrame(function() {
+                overlay.classList.add('active');
+            });
+
+            // SFX: breach-style whoosh
+            try {
+                var ctx = SFXCore.getCtx();
+                var now = ctx.currentTime;
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 1.5);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(now);
+                osc.stop(now + 2);
+            } catch(e) {}
+
+            // Start progress bar animation
+            setTimeout(function() {
+                var bar = document.getElementById('ft-bar');
+                if (bar) bar.classList.add('running');
+            }, 100);
+
+            // Hex stream decoration
+            var hexEl = document.getElementById('ft-hex');
+            var hexTimer = setInterval(function() {
+                var chars = '0123456789ABCDEF';
+                var hex = '';
+                for (var i = 0; i < 60; i++) {
+                    hex += chars[Math.floor(Math.random() * 16)];
+                    if (i % 8 === 7) hex += ' ';
+                }
+                if (hexEl) hexEl.textContent = hex;
+            }, 80);
+
+            // Glitch phase at ~3.5s
+            setTimeout(function() {
+                overlay.classList.add('ft-glitch-fx');
+                // Stutter SFX
+                try {
+                    var ctx2 = SFXCore.getCtx();
+                    var now2 = ctx2.currentTime;
+                    var noise = ctx2.createBufferSource();
+                    var buf = ctx2.createBuffer(1, ctx2.sampleRate * 0.3, ctx2.sampleRate);
+                    var data = buf.getChannelData(0);
+                    for (var i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.12;
+                    noise.buffer = buf;
+                    noise.connect(ctx2.destination);
+                    noise.start(now2);
+                } catch(e) {}
+            }, 3500);
+
+            // Flash + redirect at ~4.2s
+            setTimeout(function() {
+                clearInterval(hexTimer);
+                flash.classList.add('fire');
+                SFX.confirm();
+                setTimeout(function() {
+                    window.location.href = 'fragment0.html';
+                }, 500);
+            }, 4200);
         }
 
         // ============================================================
