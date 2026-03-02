@@ -734,18 +734,20 @@
             // Simple approach: type the raw text, then replace with HTML at end
             function typeNext() {
                 if (charIndex < fullText.length) {
-                    // Insert char before cursor
-                    const c = document.createTextNode(fullText[charIndex]);
-                    div.insertBefore(c, cursor);
+                    var ch = fullText[charIndex];
                     charIndex++;
-                    requestAnimationFrame(function() { SFX.typeClick(); });
-                    scrollBottom();
 
                     let delay = speed;
-                    const ch = fullText[charIndex - 1];
                     if (ch === ' ') delay = speed * 0.3;
                     else if (ch === '.' || ch === '—') delay = speed * 3;
                     else if (ch === ',') delay = speed * 1.8;
+
+                    requestAnimationFrame(function() {
+                        var t = document.createTextNode(ch);
+                        div.insertBefore(t, cursor);
+                        scrollBottom();
+                        setTimeout(function() { SFX.typeClick(); }, 0);
+                    });
 
                     setTimeout(typeNext, delay);
                 } else {

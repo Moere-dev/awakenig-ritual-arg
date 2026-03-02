@@ -442,18 +442,20 @@
                 }
 
                 if (charIndex < fullText.length) {
-                    const c = document.createTextNode(fullText[charIndex]);
-                    el.insertBefore(c, cursor);
+                    var ch = fullText[charIndex];
                     charIndex++;
-                    requestAnimationFrame(function() { SFX.typeClick(); });
 
                     let delay = speed;
-                    const ch = fullText[charIndex - 1];
                     if (ch === ' ') delay = speed * 0.3;
                     else if (ch === '\n') delay = speed * 0.5;
                     else if (ch === '.' || ch === '—' || ch === '!') delay = speed * 3;
                     else if (ch === ',') delay = speed * 1.8;
-                    else if (ch === '—') delay = speed * 4;
+
+                    requestAnimationFrame(function() {
+                        var t = document.createTextNode(ch);
+                        el.insertBefore(t, cursor);
+                        setTimeout(function() { SFX.typeClick(); }, 0);
+                    });
 
                     setTimeout(typeNext, delay);
                 } else {
