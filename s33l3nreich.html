@@ -307,6 +307,34 @@
         }
         .shaking { animation: shake-hard 0.15s linear infinite; }
 
+        /* ===================== SKIP BUTTON ===================== */
+        .skip-btn {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            color: #555;
+            font-family: 'VT323', monospace;
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            cursor: pointer;
+            z-index: 1500;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .skip-btn:hover {
+            color: #aaa;
+            border-color: #555;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .skip-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         /* ===================== AUDIO ===================== */
         .audio-toggle {
             position: fixed; bottom: 15px; right: 15px;
@@ -370,6 +398,7 @@
             <source src="ambient.mp3" type="audio/mpeg">
         </audio>
         <button class="audio-toggle" id="audio-toggle" title="Audio an/aus">♪ AUDIO</button>
+        <button class="skip-btn" id="skip-btn">SKIP ▶▶</button>
 
         <div class="sticky-note" id="sticky-note">
             <div class="note-title">Passwort:</div>
@@ -398,6 +427,15 @@
         let loggedIn = false;
         let decrypting = false;
         let loginAttempts = 0;
+        let skipped = false;
+        const skipBtn = document.getElementById('skip-btn');
+
+        skipBtn.addEventListener('click', function() {
+            if (!skipped) {
+                skipped = true;
+                skipBtn.classList.add('hidden');
+            }
+        });
 
         // ============================================================
         //  MATRIX RAIN (background)
@@ -515,6 +553,12 @@
         //  TYPEWRITER LINE — types a line character by character
         // ============================================================
         function typeLine(html, speed, callback) {
+            if (skipped) {
+                addRaw(html);
+                if (callback) callback();
+                return;
+            }
+
             // Create a hidden element to extract text
             const temp = document.createElement('div');
             temp.innerHTML = html;
@@ -566,6 +610,17 @@
         function runSequence(lines, callback) {
             let i = 0;
             function next() {
+                if (skipped) {
+                    // Instantly dump all remaining lines
+                    while (i < lines.length) {
+                        const l = lines[i];
+                        i++;
+                        if (l.fn) l.fn();
+                        else addRaw(l.html);
+                    }
+                    if (callback) callback();
+                    return;
+                }
                 if (i >= lines.length) { if (callback) callback(); return; }
                 const l = lines[i];
                 i++;
@@ -649,6 +704,7 @@
         //  TERMINAL
         // ============================================================
         function startTerminal() {
+            skipBtn.classList.add('hidden');
             addLine('SYSTEM', 'Forscher-Terminal v0.7 — Bereit', 'success');
             addLine('SYSTEM', 'Authentifizierung erforderlich', 'warn-text');
             addLine('SYSTEM', 'Befehl: login &lt;Benutzername&gt; &lt;Passwort&gt;', 'text');
