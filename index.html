@@ -111,6 +111,7 @@
             margin-top: 6px;
             font-family: 'VT323', monospace;
             font-size: 1rem;
+            padding: 0;
         }
         .input-line .prompt {
             color: #00ff41;
@@ -218,10 +219,10 @@
         <div class="scanlines"></div>
         <div class="flicker-line"></div>
 
-        <div class="terminal-wrap" id="terminal"></div>
-
-        <div class="input-line" id="input-line">
-            <span class="prompt">user@localhost:~$ </span><input type="text" id="cmd-input" autocomplete="off" spellcheck="false" placeholder="">
+        <div class="terminal-wrap" id="terminal">
+            <div class="input-line" id="input-line">
+                <span class="prompt">user@localhost:~$ </span><input type="text" id="cmd-input" autocomplete="off" spellcheck="false" placeholder="">
+            </div>
         </div>
 
         <button class="skip-btn" id="skip-btn">SKIP ▸</button>
@@ -459,20 +460,20 @@
         function showHelp() {
             addEmpty();
             addLine('Verfügbare Befehle:', 'amber');
-            addLine('  open übertragung    — Signalübertragung öffnen', 'white');
+            addLineHtml('  <span class="highlight">open übertragung</span>    — Signalübertragung öffnen', '');
 
             if (breachFailed && !breachWon) {
-                addLine('  reconnect seele     — Zurück zum Seelenreich-Terminal', 'white');
+                addLineHtml('  <span class="highlight">reconnect seele</span>     — Zurück zum Seelenreich-Terminal', '');
             }
             if (breachWon && !fragmentUnlocked) {
-                addLine('  decrypt fragment    — Gefundenen Code entschlüsseln', 'white');
+                addLineHtml('  <span class="highlight">decrypt fragment</span>    — Gefundenen Code entschlüsseln', '');
             }
             if (fragmentUnlocked) {
-                addLine('  open fragment       — Forscher-Fragment #0 öffnen', 'white');
+                addLineHtml('  <span class="highlight">open fragment</span>       — Forscher-Fragment #0 öffnen', '');
             }
 
-            addLine('  help                — Befehle anzeigen', 'white');
-            addLine('  clear               — Terminal leeren', 'white');
+            addLineHtml('  <span class="highlight">help</span>                — Befehle anzeigen', '');
+            addLineHtml('  <span class="highlight">clear</span>               — Terminal leeren', '');
             addEmpty();
 
             // Show input
