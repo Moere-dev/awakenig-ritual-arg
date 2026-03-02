@@ -6,6 +6,201 @@
     <title>AUFZEICHNUNG // FINAL</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁</text></svg>">
+    <style>
+        /* ===================== FRAME ANALYZER OVERLAY ===================== */
+        .analyzer-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 4, 0, 0.97);
+            z-index: 2000;
+            font-family: 'VT323', monospace;
+            color: #00ff41;
+            flex-direction: column;
+        }
+        .analyzer-overlay.active { display: flex; }
+
+        .analyzer-titlebar {
+            height: 30px;
+            background: rgba(0, 255, 65, 0.08);
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+            display: flex; align-items: center;
+            padding: 0 12px;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            color: rgba(0, 255, 65, 0.6);
+            flex-shrink: 0;
+        }
+
+        .analyzer-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 30px;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        .analyzer-timeline {
+            height: 40px;
+            background: rgba(0, 255, 65, 0.03);
+            border: 1px solid rgba(0, 255, 65, 0.1);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .timeline-marker {
+            position: absolute; top: 0;
+            width: 2px; height: 100%;
+            background: #00ff41;
+            box-shadow: 0 0 8px #00ff41;
+            left: 0;
+            transition: left 0.08s linear;
+        }
+        .timeline-ticks {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 1px 2px;
+            gap: 1px;
+        }
+        .timeline-ticks .tick {
+            flex: 1;
+            background: rgba(0, 255, 65, 0.06);
+            min-width: 1px;
+        }
+        .timeline-ticks .tick.hit {
+            background: rgba(0, 255, 65, 0.35);
+            box-shadow: 0 0 4px rgba(0, 255, 65, 0.2);
+        }
+
+        .analyzer-display {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            min-height: 0;
+        }
+        .analyzer-frames {
+            flex: 1;
+            border: 1px solid rgba(0, 255, 65, 0.1);
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.5s, box-shadow 0.5s;
+        }
+        .frame-label {
+            position: absolute; top: 8px; left: 10px;
+            font-size: 0.7rem;
+            color: rgba(0, 255, 65, 0.3);
+            letter-spacing: 1px;
+        }
+        .frame-code {
+            font-size: 4rem;
+            letter-spacing: 12px;
+            color: rgba(0, 255, 65, 0.15);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
+        }
+        .frame-code .fc-char {
+            display: inline-block;
+            transition: color 0.2s, text-shadow 0.2s, transform 0.2s;
+        }
+        .frame-code .fc-char.found {
+            color: #00ff41;
+            text-shadow: 0 0 15px #00ff41, 0 0 30px rgba(0, 255, 65, 0.3);
+        }
+        .frame-code .fc-char.scanning {
+            color: rgba(0, 255, 65, 0.5);
+            animation: char-scan 0.15s ease-in-out;
+        }
+        @keyframes char-scan {
+            0% { color: rgba(0, 255, 65, 0.15); transform: scaleY(0.8); }
+            50% { color: rgba(0, 255, 65, 0.7); transform: scaleY(1.15); }
+            100% { color: rgba(0, 255, 65, 0.15); transform: scaleY(1); }
+        }
+        .frame-subtext {
+            font-size: 0.75rem;
+            color: rgba(0, 255, 65, 0.2);
+            margin-top: 15px;
+            letter-spacing: 2px;
+        }
+
+        .analyzer-log {
+            width: 260px;
+            border: 1px solid rgba(0, 255, 65, 0.1);
+            background: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+            padding: 10px;
+            font-size: 0.72rem;
+            line-height: 1.6;
+            color: rgba(0, 255, 65, 0.4);
+            flex-shrink: 0;
+        }
+        .analyzer-log .log-line { margin-bottom: 2px; }
+        .analyzer-log .log-hit { color: #00ff41; text-shadow: 0 0 5px rgba(0, 255, 65, 0.3); }
+        .analyzer-log .log-err { color: #ff4444; }
+        .analyzer-log .log-dim { color: rgba(0, 255, 65, 0.2); }
+
+        .analyzer-progress {
+            height: 24px;
+            background: rgba(0, 255, 65, 0.03);
+            border: 1px solid rgba(0, 255, 65, 0.1);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: rgba(0, 255, 65, 0.15);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .progress-label {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.72rem;
+            letter-spacing: 2px;
+            color: rgba(0, 255, 65, 0.5);
+        }
+
+        .analyzer-status {
+            height: 24px;
+            font-size: 0.75rem;
+            color: rgba(0, 255, 65, 0.4);
+            letter-spacing: 1px;
+            display: flex; align-items: center;
+            flex-shrink: 0;
+        }
+        .analyzer-status.match {
+            color: #00ff41;
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+        }
+        .analyzer-status.fail {
+            color: #ff4444;
+            text-shadow: 0 0 8px rgba(255, 68, 68, 0.3);
+        }
+
+        @keyframes analyzer-shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 50%, 90% { transform: translateX(-4px); }
+            30%, 70% { transform: translateX(4px); }
+        }
+        .analyzer-shake .analyzer-body { animation: analyzer-shake 0.4s ease; }
+
+        .analyzer-success .analyzer-frames {
+            border-color: #00ff41;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2), inset 0 0 30px rgba(0, 255, 65, 0.05);
+        }
+
+        @media (max-width: 600px) {
+            .analyzer-log { display: none; }
+            .frame-code { font-size: 2.5rem; letter-spacing: 8px; }
+            .analyzer-body { padding: 15px; }
+        }
+    </style>
 </head>
 <body>
 <div class="crt crt-on">
@@ -13,6 +208,34 @@
     <canvas class="static-canvas" id="static-canvas"></canvas>
     <div class="screen-tear" id="screen-tear"></div>
     <div class="interference-band" id="interference-band" style="height:40px;"></div>
+
+    <!-- Frame Analyzer Overlay -->
+    <div class="analyzer-overlay" id="analyzer-overlay">
+        <div class="analyzer-titlebar">
+            FRAME-ANALYZER v2.1 — REC_FINAL.mp4
+        </div>
+        <div class="analyzer-body">
+            <div class="analyzer-timeline" id="analyzer-timeline">
+                <div class="timeline-ticks" id="timeline-ticks"></div>
+                <div class="timeline-marker" id="timeline-marker"></div>
+            </div>
+            <div class="analyzer-display">
+                <div class="analyzer-frames" id="analyzer-frames">
+                    <div class="frame-label">EXTRAHIERTE ZEICHEN</div>
+                    <div class="frame-code" id="frame-code">
+                        <span class="fc-char">_</span><span class="fc-char">_</span><span class="fc-char">_</span><span class="fc-char">_</span><span class="fc-char">_</span>
+                    </div>
+                    <div class="frame-subtext" id="frame-subtext">WARTE AUF SCAN...</div>
+                </div>
+                <div class="analyzer-log" id="analyzer-log"></div>
+            </div>
+            <div class="analyzer-progress" id="analyzer-progress-bar">
+                <div class="progress-fill" id="analyzer-fill"></div>
+                <div class="progress-label" id="analyzer-progress-label">BEREIT</div>
+            </div>
+            <div class="analyzer-status" id="analyzer-status">WARTE AUF EINGABE...</div>
+        </div>
+    </div>
 
     <!-- Audio -->
     <audio id="ambient-audio" loop preload="auto">
@@ -96,7 +319,12 @@
                     setTimeout(function() { SFXCore.tone('sine', f, 0.18, 0.07); }, i * 120);
                 });
             },
-            passFail: function() { SFXCore.tone('square', 120, 0.35, 0.06); }
+            passFail: function() { SFXCore.tone('square', 120, 0.35, 0.06); },
+            scan: function() { SFXCore.tone('sine', 800 + Math.random() * 400, 0.06, 0.025); },
+            frameHit: function() {
+                SFXCore.tone('sine', 1200, 0.12, 0.04);
+                setTimeout(function() { SFXCore.tone('sine', 1600, 0.08, 0.03); }, 60);
+            }
         };
 
         // ============================================================
@@ -116,29 +344,205 @@
             }).join('');
         }
 
+        // ============================================================
+        //  FRAME ANALYZER — fullscreen forensic overlay
+        // ============================================================
+        var analyzerRunning = false;
+
+        function initTimelineTicks() {
+            var ticksEl = document.getElementById('timeline-ticks');
+            ticksEl.innerHTML = '';
+            for (var i = 0; i < 120; i++) {
+                var t = document.createElement('div');
+                t.className = 'tick';
+                t.style.height = (4 + Math.random() * 28) + 'px';
+                ticksEl.appendChild(t);
+            }
+        }
+
+        function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+        function launchAnalyzer(inputCode) {
+            if (analyzerRunning) return;
+            analyzerRunning = true;
+
+            var overlay     = document.getElementById('analyzer-overlay');
+            var marker      = document.getElementById('timeline-marker');
+            var frameCodeEl = document.getElementById('frame-code');
+            var subtext     = document.getElementById('frame-subtext');
+            var log         = document.getElementById('analyzer-log');
+            var fill        = document.getElementById('analyzer-fill');
+            var pLabel      = document.getElementById('analyzer-progress-label');
+            var status      = document.getElementById('analyzer-status');
+            var ticks       = document.getElementById('timeline-ticks');
+
+            // Reset state
+            var fcChars = frameCodeEl.querySelectorAll('.fc-char');
+            fcChars.forEach(function(c) { c.textContent = '_'; c.className = 'fc-char'; c.style.color = ''; c.style.textShadow = ''; });
+            log.innerHTML = '';
+            fill.style.width = '0%';
+            marker.style.left = '0%';
+            status.className = 'analyzer-status';
+            status.textContent = 'INITIALISIERE...';
+            pLabel.textContent = 'FRAME-SCAN: 0%';
+            subtext.textContent = 'SCANNE...';
+            overlay.classList.remove('analyzer-success', 'analyzer-shake');
+            overlay.classList.add('active');
+            initTimelineTicks();
+
+            var chars = inputCode.split('');
+            while (chars.length < 5) chars.push('?');
+
+            // Hit positions (evenly spread across 0-100 timeline)
+            var hitPositions = [];
+            for (var i = 0; i < 5; i++) {
+                hitPositions.push(12 + (i * 18) + Math.random() * 6);
+            }
+
+            function addLog(text, cls) {
+                var div = document.createElement('div');
+                div.className = 'log-line' + (cls ? ' ' + cls : '');
+                div.textContent = text;
+                log.appendChild(div);
+                log.scrollTop = log.scrollHeight;
+            }
+
+            async function run() {
+                var hash = await hashSHA256(inputCode);
+                var isCorrect = (hash === PASSWORD_HASH);
+
+                addLog('[SYS] Frame-Analyzer v2.1 geladen', 'log-dim');
+                addLog('[SYS] Datei: REC_FINAL.mp4', 'log-dim');
+                addLog('[SYS] Codec: H.264 // Bitrate: ████kbps', 'log-dim');
+                await sleep(600);
+
+                addLog('[SCAN] Starte Frame-Analyse...', '');
+                status.textContent = 'SCANNE FRAMES...';
+                await sleep(400);
+
+                // Scanning phase — move marker across timeline
+                var foundCount = 0;
+                var totalSteps = 100;
+                var allTicks = ticks.querySelectorAll('.tick');
+
+                for (var step = 0; step <= totalSteps; step++) {
+                    marker.style.left = step + '%';
+                    fill.style.width = (step * 0.7) + '%';
+                    pLabel.textContent = 'FRAME-SCAN: ' + Math.floor(step * 0.7) + '%';
+
+                    // Light up ticks as marker passes
+                    var tickIdx = Math.floor(step / totalSteps * allTicks.length);
+                    if (tickIdx < allTicks.length) {
+                        allTicks[tickIdx].style.background = 'rgba(0, 255, 65, 0.12)';
+                    }
+
+                    // Check for char hit
+                    if (foundCount < 5 && step >= hitPositions[foundCount]) {
+                        var charIdx = foundCount;
+                        SFX.frameHit();
+
+                        fcChars[charIdx].textContent = chars[charIdx];
+                        fcChars[charIdx].classList.add('scanning');
+                        subtext.textContent = 'ZEICHEN ' + (charIdx + 1) + '/5 EXTRAHIERT';
+
+                        // Mark tick as hit
+                        if (tickIdx < allTicks.length) {
+                            allTicks[tickIdx].classList.add('hit');
+                            allTicks[tickIdx].style.height = '36px';
+                        }
+
+                        var frameNum = Math.floor(Math.random() * 9000) + 1000;
+                        addLog('[HIT] Frame #' + frameNum + ' — Zeichen: ' + chars[charIdx], 'log-hit');
+
+                        await sleep(150);
+                        fcChars[charIdx].classList.remove('scanning');
+                        fcChars[charIdx].classList.add('found');
+                        foundCount++;
+
+                        if (Math.random() > 0.4) {
+                            addLog('[---] Artefakt bei Frame #' + (frameNum + Math.floor(Math.random() * 30)), 'log-dim');
+                        }
+                        await sleep(300);
+                    }
+
+                    // Random noise logs
+                    if (step % 12 === 0 && step > 5 && step < 92) {
+                        SFX.scan();
+                        addLog('[---] Prüfe Frame #' + (Math.floor(Math.random() * 9000) + 1000) + '...', 'log-dim');
+                    }
+
+                    await sleep(28 + Math.random() * 18);
+                }
+
+                addLog('[SCAN] Frame-Analyse abgeschlossen', '');
+                addLog('[SCAN] ' + foundCount + '/5 Zeichen extrahiert', foundCount === 5 ? 'log-hit' : 'log-err');
+                subtext.textContent = foundCount + '/5 ZEICHEN EXTRAHIERT';
+                await sleep(600);
+
+                // Verification phase
+                status.textContent = 'VERIFIZIERE CODE...';
+                pLabel.textContent = 'VERIFIZIERUNG: 70%';
+                addLog('[VER] Starte Hash-Verifikation...', '');
+
+                for (var v = 70; v <= 95; v += 5) {
+                    fill.style.width = v + '%';
+                    pLabel.textContent = 'VERIFIZIERUNG: ' + v + '%';
+                    await sleep(200 + Math.random() * 150);
+                }
+
+                addLog('[VER] SHA-256 Prüfsumme berechnet', 'log-dim');
+                await sleep(500);
+
+                fill.style.width = '100%';
+                pLabel.textContent = '100%';
+
+                if (isCorrect) {
+                    status.className = 'analyzer-status match';
+                    status.textContent = '✓ ÜBEREINSTIMMUNG BESTÄTIGT — ZUGANG GEWÄHRT';
+                    subtext.textContent = 'CODE VERIFIZIERT';
+                    overlay.classList.add('analyzer-success');
+                    addLog('[VER] ✓ HASH VERIFIZIERT', 'log-hit');
+                    addLog('[SYS] Entschlüsselung erfolgreich', 'log-hit');
+                    SFX.passSuccess();
+                    localStorage.setItem('arg-phase', 'aufzeichnung');
+                    await sleep(2500);
+                    window.location.href = 's33l3nreich.html';
+                } else {
+                    status.className = 'analyzer-status fail';
+                    status.textContent = '✗ KEINE ÜBEREINSTIMMUNG — ZUGANG VERWEIGERT';
+                    subtext.textContent = 'VERIFIKATION FEHLGESCHLAGEN';
+                    addLog('[VER] ✗ HASH STIMMT NICHT ÜBEREIN', 'log-err');
+                    addLog('[SYS] Code ungültig — erneut versuchen', 'log-err');
+                    SFX.passFail();
+
+                    fcChars.forEach(function(c) {
+                        c.classList.remove('found');
+                        c.style.color = '#ff4444';
+                        c.style.textShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
+                    });
+                    overlay.classList.add('analyzer-shake');
+
+                    await sleep(2200);
+                    overlay.classList.remove('active', 'analyzer-shake');
+                    input.value = '';
+                    input.disabled = false;
+                    submitBtn.disabled = false;
+                    input.focus();
+                    analyzerRunning = false;
+                }
+            }
+
+            run();
+        }
+
         async function checkPassword() {
             var value = input.value.trim();
+            if (!value) return;
             errorMsg.style.display = 'none';
             successMsg.style.display = 'none';
-
-            var hash = await hashSHA256(value);
-
-            if (hash === PASSWORD_HASH) {
-                SFX.passSuccess();
-                successMsg.style.display = 'block';
-                input.disabled = true;
-                submitBtn.disabled = true;
-                // Save progress
-                localStorage.setItem('arg-phase', 'aufzeichnung');
-                setTimeout(function() {
-                    window.location.href = 's33l3nreich.html';
-                }, 2000);
-            } else {
-                SFX.passFail();
-                errorMsg.style.display = 'block';
-                input.value = '';
-                input.focus();
-            }
+            input.disabled = true;
+            submitBtn.disabled = true;
+            launchAnalyzer(value);
         }
 
         submitBtn.addEventListener('click', checkPassword);
