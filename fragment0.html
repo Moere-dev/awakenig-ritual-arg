@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRAGMENT #0</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #000;
+            color: #b0b0b0;
+            font-family: 'VT323', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* ===================== LOCK SCREEN ===================== */
+        .lock-screen {
+            text-align: center;
+            max-width: 420px;
+            padding: 40px 30px;
+        }
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ff4444;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+            animation: lock-pulse 2s ease-in-out infinite alternate;
+        }
+        @keyframes lock-pulse {
+            0% { opacity: 0.6; text-shadow: 0 0 10px rgba(255,0,0,0.2); }
+            100% { opacity: 1; text-shadow: 0 0 30px rgba(255,0,0,0.4); }
+        }
+        .lock-title {
+            font-size: 1.3rem;
+            color: #ff4444;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+        .lock-sub {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.2);
+            margin-bottom: 30px;
+        }
+        .lock-input-wrap {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            padding: 8px 14px;
+            background: rgba(255, 0, 0, 0.03);
+        }
+        .lock-input-wrap:focus-within {
+            border-color: rgba(255, 68, 68, 0.6);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.1);
+        }
+        .lock-prompt {
+            color: rgba(255, 68, 68, 0.5);
+            font-size: 0.9rem;
+        }
+        .lock-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ff4444;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            caret-color: #ff4444;
+        }
+        .lock-input::placeholder { color: rgba(255,68,68,0.15); }
+        .lock-error {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #ff4444;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .lock-error.visible { opacity: 1; }
+        .lock-hint {
+            margin-top: 25px;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.08);
+            letter-spacing: 2px;
+        }
+
+        /* ===================== FRAGMENT CONTENT ===================== */
+        .fragment-container {
+            display: none;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 25px 60px;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        .fragment-container.unlocked {
+            display: block;
+            animation: fragment-fade-in 2s ease-out;
+        }
+        @keyframes fragment-fade-in {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .frag-header {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.15);
+        }
+        .frag-label {
+            font-size: 0.75rem;
+            color: rgba(0, 255, 65, 0.4);
+            letter-spacing: 6px;
+            margin-bottom: 8px;
+        }
+        .frag-title {
+            font-size: 1.6rem;
+            color: #00ff41;
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+            letter-spacing: 4px;
+        }
+        .frag-date {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.15);
+            margin-top: 8px;
+        }
+
+        .frag-entry {
+            margin-bottom: 28px;
+            padding-left: 15px;
+            border-left: 2px solid rgba(0, 255, 65, 0.1);
+        }
+        .frag-entry .frag-ts {
+            font-size: 0.75rem;
+            color: rgba(0, 255, 65, 0.3);
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .frag-entry p {
+            color: #a0a0a0;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin: 6px 0;
+        }
+        .frag-entry .warn-text {
+            color: #d4a030;
+            text-shadow: 0 0 5px rgba(212, 160, 48, 0.2);
+        }
+        .frag-entry .fear-text {
+            color: #ff4444;
+            text-shadow: 0 0 5px rgba(255, 68, 68, 0.2);
+        }
+        .frag-entry .dim-text {
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.85rem;
+        }
+        .frag-entry .code-inline {
+            color: #00ff41;
+            background: rgba(0, 255, 65, 0.05);
+            padding: 2px 6px;
+            letter-spacing: 1px;
+        }
+
+        .frag-corrupted {
+            color: rgba(255, 68, 68, 0.3) !important;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        .frag-corrupted span {
+            display: inline-block;
+            animation: corrupt-flicker 0.3s steps(2) infinite;
+        }
+        @keyframes corrupt-flicker {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .frag-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 255, 65, 0.1);
+            text-align: center;
+        }
+        .frag-footer p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.12);
+            letter-spacing: 2px;
+            margin: 5px 0;
+        }
+        .frag-footer .frag-sig {
+            color: rgba(0, 255, 65, 0.3);
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+
+        body.unlocked-body {
+            overflow-y: auto;
+            align-items: flex-start;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOCK SCREEN -->
+    <div class="lock-screen" id="lock-screen">
+        <div class="lock-icon">⛌</div>
+        <div class="lock-title">VERSCHLÜSSELTES FRAGMENT</div>
+        <div class="lock-sub">FORSCHER-DATENFRAGMENT #0 — AUTORISIERUNG ERFORDERLICH</div>
+        <div class="lock-input-wrap">
+            <span class="lock-prompt">CODE:</span>
+            <input type="text" class="lock-input" id="lock-input" placeholder="Zugangscode eingeben..." autocomplete="off" spellcheck="false" autofocus>
+        </div>
+        <div class="lock-error" id="lock-error">ZUGANG VERWEIGERT — UNGÜLTIGER CODE</div>
+        <div class="lock-hint">Nur wer das System verteidigt hat, kennt den Schlüssel.</div>
+    </div>
+
+    <!-- FRAGMENT CONTENT (hidden until unlocked) -->
+    <div class="fragment-container" id="fragment-content">
+        <div class="frag-header">
+            <div class="frag-label">ENTSCHLÜSSELT</div>
+            <div class="frag-title">FORSCHER-DATENFRAGMENT #0</div>
+            <div class="frag-date">Wiederhergestellt aus Partition /dev/seele0 — Verschlüsselung: AES-256-GCM</div>
+        </div>
+
+        <div class="frag-entry">
+            <div class="frag-ts">// EINTRAG 001 — DATUM: UNBEKANNT</div>
+            <p>Ich habe es gefunden. Nach Monaten der Suche — die Grenze zwischen den Welten ist kein Mythos. Sie ist real, und sie ist <span class="warn-text">dünn</span>.</p>
+            <p>Die alten Texte sprechen von einem „Seelenreich" — einer Ebene, die parallel zu unserer existiert. Ich hielt es für Metaphern. Poetische Sprache alter Mystiker.</p>
+            <p>Ich lag falsch.</p>
+        </div>
+
+        <div class="frag-entry">
+            <div class="frag-ts">// EINTRAG 002 — DATUM: ██.██.████</div>
+            <p>Das Ritual benötigt sieben Komponenten. Ich habe vier identifiziert:</p>
+            <p class="dim-text">1. Einen Ort, an dem die Grenze am dünnsten ist (Koordinaten gefunden)</p>
+            <p class="dim-text">2. Eine Frequenz — 42.7 Hz — die Resonanzfrequenz der Grenze</p>
+            <p class="dim-text">3. Ein Wort der Macht, gesprochen zum richtigen Zeitpunkt</p>
+            <p class="dim-text">4. Das Blut des Suchenden (ich vermute, das ist metaphorisch gemeint)</p>
+            <p>Die restlichen drei... <span class="frag-corrupted"><span>█</span><span>█</span><span>█</span> DATEN BESCHÄDIGT <span>█</span><span>█</span><span>█</span></span></p>
+        </div>
+
+        <div class="frag-entry">
+            <div class="frag-ts">// EINTRAG 003 — DATUM: ██.██.████</div>
+            <p>Ich höre sie jetzt. Nachts. Stimmen, die nicht von dieser Welt sind.</p>
+            <p>Sie <span class="warn-text">flüstern</span>. Nicht in Worten — in Gefühlen. Kälte. Hunger. Eine Sehnsucht so tief, dass sie physisch wehtut.</p>
+            <p>Ich glaube, sie spüren, dass ich nahe bin. Dass jemand an der Grenze kratzt.</p>
+        </div>
+
+        <div class="frag-entry">
+            <div class="frag-ts">// EINTRAG 004 — DATUM: ██.██.████</div>
+            <p class="fear-text">Etwas ist passiert.</p>
+            <p>Während der letzten Sitzung hat sich die Frequenz verändert. Von 42.7 Hz auf <span class="code-inline">6.66 Hz</span>. Das Messgerät hat Dinge aufgezeichnet, die nicht hätten da sein dürfen.</p>
+            <p>Ich habe die Aufzeichnung analysiert. Zwischen den Frequenzspitzen — versteckt im Rauschen — waren <span class="warn-text">Worte</span>.</p>
+            <p class="dim-text">„KOMM NÄHER."</p>
+            <p class="dim-text">„WIR WARTEN."</p>
+            <p class="dim-text">„DER FLUCH IST DER WEG."</p>
+        </div>
+
+        <div class="frag-entry">
+            <div class="frag-ts">// EINTRAG 005 — DATUM: ██.██.████</div>
+            <p>Ich habe den Fehler gefunden. In den alten Texten. Das Ritual öffnet nicht nur die Grenze — <span class="fear-text">es bindet den Durchführenden</span>.</p>
+            <p>Wer das Seelenreich betritt, kann nicht zurück. Nicht ohne einen Preis. Die alten Mystiker wussten das. Deswegen haben sie die Anleitung in Fragmente zerteilt und über die Welt verstreut.</p>
+            <p>Sie wollten nicht, dass jemand es vervollständigt.</p>
+            <p class="warn-text">Aber ich werde es tun.</p>
+        </div>
+
+        <div class="frag-entry">
+            <div class="frag-ts">// EINTRAG 006 — DATUM: ██.██.████</div>
+            <p>Mein letzter Eintrag, bevor ich die Grenze überschreite.</p>
+            <p>Falls ihr das lest — falls jemand den Code gefunden hat, den ich in den Servern versteckt habe — dann wisst ihr nun, was ich weiß.</p>
+            <p class="warn-text">Das Seelenreich ist real. Der Fluch ist real. Und ich bin darin gefangen.</p>
+            <p>Aber es gibt einen Weg. Die Fragmente existieren noch — verstreut, verschlüsselt, versteckt. Findet sie alle. Brecht den Fluch.</p>
+            <p>Und was auch immer ihr tut: <span class="fear-text">Vertraut dem Wächter nicht.</span></p>
+        </div>
+
+        <div class="frag-entry">
+            <div class="frag-ts">// EINTRAG 007 — DATUM: ???</div>
+            <p class="frag-corrupted">
+                <span>█</span><span>█</span><span>█</span> 
+                PARTITION ENDET HIER 
+                <span>█</span><span>█</span><span>█</span>
+                <br>
+                WEITERE FRAGMENTE AUSSTEHEND
+                <br>
+                <span>█</span><span>█</span><span>█</span> 
+                SUCHE: FRAGMENT #1 
+                <span>█</span><span>█</span><span>█</span>
+            </p>
+        </div>
+
+        <div class="frag-footer">
+            <p>ENDE DES FRAGMENTS</p>
+            <p>INTEGRITÄTSPRÜFUNG: 73% — TEILWEISE BESCHÄDIGT</p>
+            <div class="frag-sig">— Der Forscher</div>
+        </div>
+    </div>
+
+    <script src="sfx.js"></script>
+    <script>
+        var CODE_HASH = '7fd491e56c28b1fc38860045f3c26a2b32adf92a004ee4bdca9b01bd6ea487ff';
+
+        var lockScreen = document.getElementById('lock-screen');
+        var lockInput = document.getElementById('lock-input');
+        var lockError = document.getElementById('lock-error');
+        var fragmentContent = document.getElementById('fragment-content');
+
+        // Check if already unlocked
+        if (localStorage.getItem('arg-fragment0-unlocked') === 'true') {
+            unlock();
+        }
+
+        lockInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var val = lockInput.value.trim().toUpperCase();
+                if (!val) return;
+                verifyCode(val);
+            }
+        });
+
+        async function verifyCode(code) {
+            var encoded = new TextEncoder().encode(code);
+            var hashBuf = await crypto.subtle.digest('SHA-256', encoded);
+            var hashArr = Array.from(new Uint8Array(hashBuf));
+            var hashHex = hashArr.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+
+            if (hashHex === CODE_HASH) {
+                localStorage.setItem('arg-fragment0-unlocked', 'true');
+                lockInput.style.color = '#00ff41';
+                lockInput.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
+                SFXCore.tone('sine', 800, 0.3, 0.06);
+                setTimeout(function() {
+                    SFXCore.tone('sine', 1000, 0.3, 0.06);
+                }, 150);
+                setTimeout(function() {
+                    SFXCore.tone('sine', 1200, 0.3, 0.06);
+                }, 300);
+                setTimeout(unlock, 800);
+            } else {
+                lockError.classList.add('visible');
+                SFXCore.tone('square', 150, 0.2, 0.04);
+                lockInput.value = '';
+                setTimeout(function() {
+                    lockError.classList.remove('visible');
+                }, 2000);
+            }
+        }
+
+        function unlock() {
+            lockScreen.style.display = 'none';
+            fragmentContent.classList.add('unlocked');
+            document.body.classList.add('unlocked-body');
+        }
+    </script>
+</body>
+</html>

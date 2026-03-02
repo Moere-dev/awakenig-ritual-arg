@@ -524,6 +524,49 @@
         }
         .wipe-out { animation: wipe-line 0.4s ease-in forwards; }
 
+        .breach-cmd-box {
+            margin: 12px 0;
+            padding: 18px 22px;
+            border: 2px solid rgba(255, 68, 68, 0.5);
+            background: rgba(255, 0, 0, 0.06);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.08), inset 0 0 15px rgba(255, 0, 0, 0.03);
+            text-align: center;
+            animation: cmd-box-pulse 1s ease-in-out infinite alternate;
+        }
+        @keyframes cmd-box-pulse {
+            0% { border-color: rgba(255, 68, 68, 0.5); box-shadow: 0 0 20px rgba(255,0,0,0.08); }
+            100% { border-color: rgba(255, 68, 68, 0.8); box-shadow: 0 0 35px rgba(255,0,0,0.15); }
+        }
+        .breach-cmd-label {
+            font-size: 0.8rem;
+            color: rgba(255, 68, 68, 0.5);
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+        .breach-cmd-text {
+            font-size: 2rem;
+            color: #ff4444;
+            text-shadow: 0 0 15px rgba(255, 68, 68, 0.6), 0 0 30px rgba(255, 0, 0, 0.2);
+            letter-spacing: 6px;
+            font-weight: bold;
+        }
+        .breach-cmd-desc {
+            font-size: 0.85rem;
+            color: rgba(212, 160, 48, 0.6);
+            margin-top: 8px;
+            letter-spacing: 2px;
+        }
+        .breach-cmd-box.success {
+            border-color: rgba(0, 255, 65, 0.5);
+            background: rgba(0, 255, 0, 0.04);
+            animation: none;
+        }
+        .breach-cmd-box.success .breach-cmd-text {
+            color: #00ff41;
+            text-shadow: 0 0 15px rgba(0, 255, 65, 0.6);
+            text-decoration: line-through;
+        }
+
         .easter-egg-box {
             border: 1px solid #00ff41;
             background: rgba(0,20,0,0.8);
@@ -1743,6 +1786,11 @@
                 '<div class="breach-header">⚠ SICHERHEITSVERLETZUNG — EINDRINGLING ERKANNT</div>' +
                 '<div class="breach-timer" id="breach-timer">08.0</div>' +
                 '<div class="breach-terminal" id="breach-term"></div>' +
+                '<div class="breach-cmd-box" id="breach-cmd-box" style="display:none;">' +
+                    '<div class="breach-cmd-label">» EINGABE «</div>' +
+                    '<div class="breach-cmd-text" id="breach-cmd-text"></div>' +
+                    '<div class="breach-cmd-desc" id="breach-cmd-desc"></div>' +
+                '</div>' +
                 '<div class="breach-progress"><div class="bp-fill" id="breach-fill"></div></div>' +
                 '<div class="breach-input-area">' +
                     '<span class="breach-prompt">root@DEFENSE:~#</span>' +
@@ -1759,6 +1807,9 @@
             var timerEl = document.getElementById('breach-timer');
             var bInput = document.getElementById('breach-input');
             var bFill = document.getElementById('breach-fill');
+            var cmdBox = document.getElementById('breach-cmd-box');
+            var cmdText = document.getElementById('breach-cmd-text');
+            var cmdDesc = document.getElementById('breach-cmd-desc');
 
             BreachSFX.alarm();
             setTimeout(function() { BreachSFX.alarm(); }, 600);
@@ -1828,10 +1879,16 @@
                 var cmd = commands[cmdIndex];
                 bLog('', '');
                 bLog('[DEFENSE] >> Aktion erforderlich: ' + cmd.desc, 'bt-amber');
-                bLogHtml('[DEFENSE] >> Eingabe: <span style="color:#ff4444;text-shadow:0 0 8px rgba(255,0,0,0.5);letter-spacing:2px;">' + cmd.hint + '</span>', 'bt-white');
                 BreachSFX.alarm();
 
+                // Show prominent command box
+                cmdBox.style.display = '';
+                cmdBox.className = 'breach-cmd-box';
+                cmdText.textContent = cmd.hint;
+                cmdDesc.textContent = '[ ' + cmd.desc.toUpperCase() + ' ]';
+
                 bInput.value = '';
+                bInput.placeholder = cmd.hint;
                 bInput.focus();
                 bFill.style.width = ((cmdIndex / commands.length) * 100) + '%';
 
@@ -1868,6 +1925,7 @@
                         clearInterval(timerInterval);
                         BreachSFX.cmdSuccess();
                         bLog('[OK] ' + commands[cmdIndex].desc + ' — ERFOLGREICH', 'bt-green');
+                        cmdBox.classList.add('success');
                         cmdIndex++;
                         bFill.classList.add('safe');
                         bFill.style.width = ((cmdIndex / commands.length) * 100) + '%';
@@ -2026,6 +2084,8 @@
                         eggBox.classList.add('visible');
                         SFX.reveal();
                         term.scrollTop = term.scrollHeight;
+                        // Save breach victory
+                        localStorage.setItem('arg-breach-won', 'true');
                     }, 100);
                 }, 2000);
             }, 1500);

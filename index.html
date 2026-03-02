@@ -528,6 +528,12 @@
                 'ZEITSTEMPEL: DESYNCHRONISIERT',
                 'SPEICHER: 0x4A2F...0x8C01 // KORRUPT'
             ];
+
+            // If breach was won, inject subtle fragment hint
+            if (localStorage.getItem('arg-breach-won') === 'true') {
+                messages.push('PARTITION /dev/seele0 — FRAGMENT #0 VERFÜGBAR');
+                messages.push('ENTSCHLÜSSELTES FRAGMENT GEFUNDEN: fragment0.html');
+            }
             var msgIdx = 0, charIdx = 0, typing = true;
 
             function updateClock() {
