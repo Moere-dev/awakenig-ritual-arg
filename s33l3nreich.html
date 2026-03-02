@@ -370,6 +370,26 @@
         .decoder-overlay .decoder-log .log-success { color: #00ff41; }
         .decoder-overlay .decoder-log .log-warn { color: #d4a030; }
         .decoder-overlay .decoder-log .log-error { color: #ff4444; }
+
+        /* Overlay-local shake & flash (avoids CRT transform conflicts) */
+        @keyframes decoder-shake {
+            0%, 100% { transform: translate(0,0); }
+            10% { transform: translate(-3px,2px); }
+            30% { transform: translate(3px,-2px); }
+            50% { transform: translate(-2px,2px); }
+            70% { transform: translate(2px,-3px); }
+            90% { transform: translate(-3px,1px); }
+        }
+        .decoder-overlay.dec-shaking .decoder-body {
+            animation: decoder-shake 0.2s linear;
+        }
+        .decoder-overlay .decoder-flash-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #00ff41; opacity: 0; pointer-events: none;
+            transition: opacity 0.06s;
+        }
+        .decoder-overlay .decoder-flash-overlay.active { opacity: 0.08; }
+
         .decoder-overlay .decoder-shift-indicator {
             font-size: 1.3rem; color: #d4a030;
             letter-spacing: 2px;
@@ -1284,6 +1304,7 @@
             decoderOverlay = document.createElement('div');
             decoderOverlay.className = 'decoder-overlay';
             decoderOverlay.innerHTML =
+                '<div class="decoder-flash-overlay" id="dec-flash-inner"></div>' +
                 '<div class="decoder-titlebar">' +
                     '<span class="title">■ CAESAR-DEKODER</span>' +
                     '<span class="version">v1.3 // Forscher-OS</span>' +
@@ -1373,6 +1394,22 @@
         function decoderPhaseB() {
             decoderLog('Knacke Zeichen einzeln...', 'log-success');
 
+            var decFlashInner = document.getElementById('dec-flash-inner');
+
+            function decFlash() {
+                SFX.glitch();
+                if (decFlashInner) {
+                    decFlashInner.classList.add('active');
+                    setTimeout(function() { decFlashInner.classList.remove('active'); }, 80);
+                }
+            }
+            function decShake() {
+                if (decoderOverlay) {
+                    decoderOverlay.classList.add('dec-shaking');
+                    setTimeout(function() { decoderOverlay.classList.remove('dec-shaking'); }, 250);
+                }
+            }
+
             var indices = [];
             for (var i = 0; i < SHIFTED_TARGET.length; i++) {
                 if (SHIFTED_TARGET[i] !== '.' && SHIFTED_TARGET[i] !== '-') indices.push(i);
@@ -1414,9 +1451,9 @@
 
                         var pct = Math.round((resolved / total) * 100);
                         decoderStatusEl.textContent = 'Knacke Zeichen... ' + pct + '%';
-                        if (pct === 25) { flash(); decoderLog('Fortschritt: 25%', ''); }
-                        else if (pct === 50) { shake(); decoderLog('Fortschritt: 50%', 'log-warn'); }
-                        else if (pct === 75) { flash(); shake(); SFX.warn(); decoderLog('WARNUNG: Hohe Last — 75%', 'log-error'); }
+                        if (pct === 25) { decFlash(); decoderLog('Fortschritt: 25%', ''); }
+                        else if (pct === 50) { decShake(); decoderLog('Fortschritt: 50%', 'log-warn'); }
+                        else if (pct === 75) { decFlash(); decShake(); SFX.warn(); decoderLog('WARNUNG: Hohe Last — 75%', 'log-error'); }
 
                         setTimeout(crackNext, 50 + Math.random() * 70);
                     }
