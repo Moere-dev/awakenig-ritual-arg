@@ -200,6 +200,43 @@
             margin-top: 15px;
         }
 
+        .frag-cmd-bar {
+            margin-top: 30px;
+            padding: 12px 16px;
+            border: 1px solid rgba(0, 255, 65, 0.12);
+            background: rgba(0, 20, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .frag-cmd-bar:focus-within {
+            border-color: rgba(0, 255, 65, 0.35);
+            box-shadow: 0 0 12px rgba(0, 255, 65, 0.06);
+        }
+        .frag-cmd-prompt {
+            color: rgba(0, 255, 65, 0.5);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .frag-cmd-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #00ff41;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            caret-color: #00ff41;
+        }
+        .frag-cmd-input::placeholder { color: rgba(0,255,65,0.12); }
+        .frag-cmd-hint {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.1);
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
         body.unlocked-body {
             overflow-y: auto;
             align-items: flex-start;
@@ -300,6 +337,12 @@
             <p>INTEGRITÄTSPRÜFUNG: 73% — TEILWEISE BESCHÄDIGT</p>
             <div class="frag-sig">— Der Forscher</div>
         </div>
+
+        <div class="frag-cmd-bar">
+            <span class="frag-cmd-prompt">fragment0:~$</span>
+            <input type="text" class="frag-cmd-input" id="frag-cmd" placeholder="Befehl eingeben..." autocomplete="off" spellcheck="false">
+        </div>
+        <div class="frag-cmd-hint">Befehle: back — exit</div>
     </div>
 
     <script src="sfx.js"></script>
@@ -362,7 +405,29 @@
             lockScreen.style.display = 'none';
             fragmentContent.classList.add('unlocked');
             document.body.classList.add('unlocked-body');
+
+            // Focus command input after content appears
+            setTimeout(function() {
+                var fc = document.getElementById('frag-cmd');
+                if (fc) fc.focus();
+            }, 600);
         }
+
+        // Fragment command bar
+        document.getElementById('frag-cmd').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var val = this.value.trim().toLowerCase();
+                this.value = '';
+                if (val === 'back' || val === 'exit') {
+                    SFXCore.tone('sine', 600, 0.15, 0.04);
+                    document.body.style.transition = 'opacity 0.6s';
+                    document.body.style.opacity = '0';
+                    setTimeout(function() {
+                        window.location.href = 'index.html';
+                    }, 700);
+                }
+            }
+        });
     </script>
 </body>
 </html>
