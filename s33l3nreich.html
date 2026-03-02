@@ -736,18 +736,15 @@
                 if (charIndex < fullText.length) {
                     var ch = fullText[charIndex];
                     charIndex++;
+                    var t = document.createTextNode(ch);
+                    div.insertBefore(t, cursor);
+                    scrollBottom();
+                    setTimeout(function() { SFX.typeClick(); }, 18);
 
                     let delay = speed;
                     if (ch === ' ') delay = speed * 0.3;
                     else if (ch === '.' || ch === '—') delay = speed * 3;
                     else if (ch === ',') delay = speed * 1.8;
-
-                    requestAnimationFrame(function() {
-                        var t = document.createTextNode(ch);
-                        div.insertBefore(t, cursor);
-                        scrollBottom();
-                        setTimeout(function() { SFX.typeClick(); }, 0);
-                    });
 
                     setTimeout(typeNext, delay);
                 } else {
