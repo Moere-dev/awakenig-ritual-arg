@@ -336,6 +336,11 @@
         var TARGET_ENC = [22,16,93,89,82,4,3,1,67,75,2,65,21,88,65,69,18,9,75,11,4,90,86];
         var TARGET = null; // resolved after successful login
         var SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]';
+        var CAESAR_SHIFT = 3;
+        var SHIFTED_TARGET = null;
+        var phase2 = false;
+        var analyzed = false;
+        var decodeAttempts = 0;
 
         var terminal = document.getElementById('terminal');
         var stickyNote = document.getElementById('sticky-note');
@@ -397,6 +402,17 @@
                 g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.4);
                 o.connect(g); g.connect(c.destination);
                 o.start(); o.stop(c.currentTime + 0.4);
+            },
+            scan: function() {
+                var c = SFXCore.getCtx(), o = c.createOscillator(), g = c.createGain();
+                o.type = 'sine';
+                o.frequency.setValueAtTime(200, c.currentTime);
+                o.frequency.exponentialRampToValueAtTime(2000, c.currentTime + 1.5);
+                g.gain.setValueAtTime(0.04, c.currentTime);
+                g.gain.setValueAtTime(0.04, c.currentTime + 1.2);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 1.5);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + 1.5);
             }
         };
 
@@ -419,6 +435,15 @@
                 result += String.fromCharCode(TARGET_ENC[i] ^ key.charCodeAt(i % key.length));
             }
             return result;
+        }
+
+        function caesarShift(text, shift) {
+            return text.split('').map(function(ch) {
+                var code = ch.charCodeAt(0);
+                if (code >= 65 && code <= 90) return String.fromCharCode(((code - 65 + shift) % 26) + 65);
+                if (code >= 97 && code <= 122) return String.fromCharCode(((code - 97 + shift) % 26) + 97);
+                return ch;
+            }).join('');
         }
 
         // ============================================================
@@ -799,6 +824,7 @@
                     if (hashes[0] === USER_HASH && hashes[1] === PASS_HASH) {
                         // Decrypt TARGET with the entered password
                         TARGET = decryptTarget(pass);
+                        SHIFTED_TARGET = caesarShift(TARGET, CAESAR_SHIFT);
                         localStorage.setItem('arg-phase', 's33l3nreich');
                         SFX.loginSuccess();
                         flash(); shake(); addEmpty();
@@ -828,6 +854,7 @@
         }
 
         function postLogin(cmd, parts) {
+            if (phase2) { phase2Commands(cmd, parts); return; }
             switch(cmd) {
                 case 'help':
                     addEmpty();
@@ -850,6 +877,7 @@
                 case 'logs':
                     addEmpty();
                     addLine('LOG', '[Tag 1] Erste Zeichen am Altar entdeckt.', 'text');
+                    addLine('LOG', '[Tag 3] Drei Schichten. Immer drei. Die Zahl verfolgt mich.', 'warn-text');
                     addLine('LOG', '[Tag 4] Die Grenze schrumpft schneller.', 'text');
                     addLine('LOG', '[Tag 6] Ritual vorbereitet. Ich bin bereit.', 'warn-text');
                     addLine('LOG', '[Tag 7] Der Wächter... er ist zu stark.', 'error-text');
@@ -905,10 +933,10 @@
         function initDisplay(displayEl) {
             displayEl.innerHTML = '';
             decChars = [];
-            for (var i = 0; i < TARGET.length; i++) {
+            for (var i = 0; i < SHIFTED_TARGET.length; i++) {
                 var span = document.createElement('span');
-                if (TARGET[i] === '.' || TARGET[i] === '-') {
-                    span.textContent = TARGET[i];
+                if (SHIFTED_TARGET[i] === '.' || SHIFTED_TARGET[i] === '-') {
+                    span.textContent = SHIFTED_TARGET[i];
                     span.className = 'char dot';
                     span.dataset.resolved = 'true';
                 } else {
@@ -930,8 +958,8 @@
 
         function runDecryption(displayEl, fillEl, progEl) {
             var indices = [];
-            for (var i = 0; i < TARGET.length; i++) {
-                if (TARGET[i] !== '.' && TARGET[i] !== '-') indices.push(i);
+            for (var i = 0; i < SHIFTED_TARGET.length; i++) {
+                if (SHIFTED_TARGET[i] !== '.' && SHIFTED_TARGET[i] !== '-') indices.push(i);
             }
             for (var i = indices.length - 1; i > 0; i--) {
                 var j = Math.floor(Math.random() * (i + 1));
@@ -954,7 +982,7 @@
                     fc++;
                     if (fc >= fm) {
                         clearInterval(fi);
-                        span.textContent = TARGET[idx];
+                        span.textContent = SHIFTED_TARGET[idx];
                         span.className = 'char resolved';
                         span.dataset.resolved = 'true';
                         SFX.charLock();
@@ -976,10 +1004,181 @@
             SFX.reveal();
             shake();
             addLine('DECRYPT', 'ENTSCHLÜSSELUNG ABGESCHLOSSEN.', 'success');
-            addLine('SYSTEM', 'Koordinaten extrahiert.', 'success');
+            addEmpty();
 
             setTimeout(function() {
                 progEl.style.display = 'none';
+                SFX.warn();
+                addLine('SYSTEM', 'WARNUNG: Daten erscheinen inkonsistent.', 'error-text');
+                addLine('SYSTEM', 'Mögliche Restverschlüsselung erkannt.', 'error-text');
+                addEmpty();
+                addLine('SYSTEM', 'Sekundäre Analysetools verfügbar.', 'warn-text');
+                addLine('SYSTEM', 'Befehle: analyze, decode &lt;wert&gt;', 'text');
+                addLine('SYSTEM', 'Gib "help" für Details ein.', 'text');
+                addEmpty();
+                phase2 = true;
+                decrypting = false;
+                inputEl.disabled = false;
+                inputEl.focus();
+                skipBtn.classList.add('hidden');
+                scrollBottom();
+            }, 1500);
+        }
+
+        // ============================================================
+        //  PHASE 2 — CAESAR DECODE
+        // ============================================================
+        function phase2Commands(cmd, parts) {
+            switch(cmd) {
+                case 'help':
+                    addEmpty();
+                    addLine('HELP', 'Phase-2 Befehle:', 'success');
+                    addLine('HELP', 'analyze ........ Frequenzanalyse starten', 'text');
+                    addLine('HELP', 'decode &lt;wert&gt; .. Verschiebung anwenden', 'text');
+                    addLine('HELP', 'status ......... Aktueller Zustand', 'text');
+                    addLine('HELP', 'logs ........... Logeinträge anzeigen', 'text');
+                    addEmpty();
+                    break;
+                case 'analyze':
+                    runAnalysis(); break;
+                case 'decode':
+                    handleDecode(parts); break;
+                case 'status':
+                    addLine('SYSTEM', 'Phase-2: Restverschlüsselung erkannt', 'warn-text');
+                    addLine('SYSTEM', 'Analyse: ' + (analyzed ? 'ABGESCHLOSSEN' : 'AUSSTEHEND'), analyzed ? 'success' : 'warn-text');
+                    break;
+                case 'logs':
+                    addEmpty();
+                    addLine('LOG', '[Tag 1] Erste Zeichen am Altar entdeckt.', 'text');
+                    addLine('LOG', '[Tag 3] Drei Schichten. Immer drei. Die Zahl verfolgt mich.', 'warn-text');
+                    addLine('LOG', '[Tag 4] Die Grenze schrumpft schneller.', 'text');
+                    addLine('LOG', '[Tag 6] Ritual vorbereitet. Ich bin bereit.', 'warn-text');
+                    addLine('LOG', '[Tag 7] Der Wächter... er ist zu stark.', 'error-text');
+                    addLine('LOG', '[Tag 7] Das Seelenreich. Ich bin gefangen.', 'error-text');
+                    addLine('LOG', '[Tag ?] ...findet die Welt. Beendet es.', 'success');
+                    addEmpty();
+                    break;
+                default:
+                    addLine('SYSTEM', 'Unbekannter Befehl: "' + esc(cmd) + '"', 'error-text');
+                    addLine('SYSTEM', 'Gib "help" ein.', 'text');
+            }
+        }
+
+        function runAnalysis() {
+            if (analyzed) {
+                addLine('SYSTEM', 'Analyse bereits abgeschlossen. Verschiebung: +3', 'warn-text');
+                return;
+            }
+            decrypting = true;
+            inputEl.disabled = true;
+            SFX.scan();
+            addEmpty();
+            addLine('ANALYZE', 'Starte Frequenzanalyse...', 'success');
+
+            var steps = [
+                { html: '<span class="text">Zeichenverteilung wird gescannt...</span>', delay: 600 },
+                { html: '<span class="text">Häufigkeitsanalyse: ████░░░░░░ 40%</span>', delay: 500 },
+                { html: '<span class="text">Häufigkeitsanalyse: ███████░░░ 70%</span>', delay: 500 },
+                { html: '<span class="text">Häufigkeitsanalyse: ██████████ 100%</span>', delay: 400 },
+                { fn: function() { SFX.scan(); }, delay: 300 },
+                { html: '<span class="text">Mustervergleich mit bekannten Chiffren...</span>', delay: 700 },
+                { html: '<span class="warn-text">Caesar-Chiffre erkannt!</span>', delay: 500 },
+                { html: '<span class="success">Verschiebung erkannt: <strong>+3</strong> (Caesar)</span>', delay: 400 },
+                { fn: function() {
+                    addEmpty();
+                    addLine('SYSTEM', 'Verwende: decode 3', 'success');
+                    addEmpty();
+                    analyzed = true;
+                    decrypting = false;
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                    scrollBottom();
+                }, delay: 0 }
+            ];
+
+            var si = 0;
+            function nextStep() {
+                if (si >= steps.length) return;
+                var step = steps[si]; si++;
+                if (step.fn) {
+                    step.fn();
+                    if (step.delay) setTimeout(nextStep, step.delay);
+                    else nextStep();
+                } else {
+                    addRaw(step.html);
+                    scrollBottom();
+                    setTimeout(nextStep, step.delay || 300);
+                }
+            }
+            setTimeout(nextStep, 500);
+        }
+
+        function handleDecode(parts) {
+            if (parts.length < 2) {
+                addLine('SYSTEM', 'Verwendung: decode &lt;verschiebungswert&gt;', 'warn-text');
+                return;
+            }
+            var val = parseInt(parts[1], 10);
+            decodeAttempts++;
+            if (isNaN(val)) {
+                addLine('SYSTEM', 'Ungültiger Wert. Erwartet: Zahl.', 'error-text');
+                return;
+            }
+            if (val !== CAESAR_SHIFT) {
+                SFX.loginFail();
+                shake();
+                addLine('DECODE', 'Entschlüsselung fehlgeschlagen. Ungültiger Verschiebungswert.', 'error-text');
+                return;
+            }
+            // Correct!
+            SFX.loginSuccess();
+            flash();
+            addLine('DECODE', 'Verschiebung +3 bestätigt. Dekodiere...', 'success');
+            decrypting = true;
+            inputEl.disabled = true;
+            setTimeout(runFinalDecode, 800);
+        }
+
+        function runFinalDecode() {
+            var indices = [];
+            for (var i = 0; i < SHIFTED_TARGET.length; i++) {
+                if (SHIFTED_TARGET[i] !== '.' && SHIFTED_TARGET[i] !== '-') indices.push(i);
+            }
+            var pos = 0;
+
+            function morphNext() {
+                if (pos >= indices.length) {
+                    setTimeout(showFinalBox, 600);
+                    return;
+                }
+                var idx = indices[pos]; pos++;
+                var span = decChars[idx];
+                var burstCount = 0;
+                var burstMax = 3 + Math.floor(Math.random() * 3);
+                var burstInterval = setInterval(function() {
+                    span.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+                    span.className = 'char scrambling';
+                    burstCount++;
+                    if (burstCount >= burstMax) {
+                        clearInterval(burstInterval);
+                        span.textContent = TARGET[idx];
+                        span.className = 'char resolved';
+                        SFX.charLock();
+                        scrollBottom();
+                        setTimeout(morphNext, 80 + Math.random() * 60);
+                    }
+                }, 40);
+            }
+            morphNext();
+        }
+
+        function showFinalBox() {
+            SFX.reveal();
+            shake();
+            addLine('DECODE', 'DEKODIERUNG ABGESCHLOSSEN.', 'success');
+            addLine('SYSTEM', 'Koordinaten extrahiert.', 'success');
+
+            setTimeout(function() {
                 inputLineEl.style.display = 'none';
 
                 var box = document.createElement('div');
