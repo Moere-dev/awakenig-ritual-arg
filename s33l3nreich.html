@@ -1269,8 +1269,6 @@
         var decoderLogEl = null;
         var decoderStatusEl = null;
         var decoderShiftEl = null;
-        var decoderAttemptsEl = null;
-        var bruteAttempts = 0;
         var ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
         function decoderLog(text, cls) {
@@ -1296,7 +1294,6 @@
                     '<div class="decoder-shift-indicator" id="dec-shift">BRUTEFORCE: SHIFT -3</div>' +
                     '<div class="decoder-progress"><div class="fill" id="dec-fill"></div></div>' +
                     '<div class="decoder-status" id="dec-status">Initialisiere...</div>' +
-                    '<div class="decoder-status" id="dec-attempts" style="color:#ff4444;">Versuche: 0</div>' +
                     '<div class="decoder-log" id="dec-log"></div>' +
                 '</div>';
             document.body.appendChild(decoderOverlay);
@@ -1306,8 +1303,6 @@
             decoderLogEl = document.getElementById('dec-log');
             decoderStatusEl = document.getElementById('dec-status');
             decoderShiftEl = document.getElementById('dec-shift');
-            decoderAttemptsEl = document.getElementById('dec-attempts');
-            bruteAttempts = 0;
 
             // Populate chars from SHIFTED_TARGET
             decoderChars = [];
@@ -1350,10 +1345,6 @@
                     s.className = 'char bruteforce';
                     var iv = setInterval(function() {
                         s.textContent = ALPHA[Math.floor(Math.random() * ALPHA.length)];
-                        bruteAttempts++;
-                        if (bruteAttempts % 50 === 0) {
-                            decoderAttemptsEl.textContent = 'Versuche: ' + bruteAttempts;
-                        }
                     }, 40);
                     bruteIntervals.push(iv);
                 }
@@ -1365,7 +1356,7 @@
                 rapidLogCount++;
                 if (rapidLogCount <= 6) {
                     SFX.scrambleTick();
-                    decoderLog('Teste Kombination #' + bruteAttempts + '... FEHLGESCHLAGEN', 'log-error');
+                    decoderLog('Teste Kombination... FEHLGESCHLAGEN', 'log-error');
                 }
             }, 300);
 
@@ -1407,10 +1398,6 @@
                 var cycleInterval = setInterval(function() {
                     span.textContent = ALPHA[Math.floor(Math.random() * ALPHA.length)];
                     SFX.scrambleTick();
-                    bruteAttempts++;
-                    if (bruteAttempts % 5 === 0) {
-                        decoderAttemptsEl.textContent = 'Versuche: ' + bruteAttempts;
-                    }
                     cycleCount++;
 
                     if (cycleCount >= cycleMax) {
@@ -1427,9 +1414,9 @@
 
                         var pct = Math.round((resolved / total) * 100);
                         decoderStatusEl.textContent = 'Knacke Zeichen... ' + pct + '%';
-                        if (pct === 25) { flash(); decoderLog('Fortschritt: 25% — ' + bruteAttempts + ' Versuche', ''); }
-                        else if (pct === 50) { shake(); decoderLog('Fortschritt: 50% — ' + bruteAttempts + ' Versuche', 'log-warn'); }
-                        else if (pct === 75) { flash(); shake(); SFX.warn(); decoderLog('WARNUNG: Hohe Last — 75% — ' + bruteAttempts + ' Versuche', 'log-error'); }
+                        if (pct === 25) { flash(); decoderLog('Fortschritt: 25%', ''); }
+                        else if (pct === 50) { shake(); decoderLog('Fortschritt: 50%', 'log-warn'); }
+                        else if (pct === 75) { flash(); shake(); SFX.warn(); decoderLog('WARNUNG: Hohe Last — 75%', 'log-error'); }
 
                         setTimeout(crackNext, 50 + Math.random() * 70);
                     }
@@ -1452,10 +1439,8 @@
                     decoderStatusEl.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
                     decoderShiftEl.textContent = '✓ GEKNACKT';
                     decoderShiftEl.style.color = '#00ff41';
-                    decoderLog('Bruteforce erfolgreich! ' + bruteAttempts + ' Versuche', 'log-success');
+                    decoderLog('Bruteforce erfolgreich!', 'log-success');
                     decoderLog('Koordinaten extrahiert.', 'log-success');
-                    decoderAttemptsEl.textContent = 'Versuche: ' + bruteAttempts + ' ✔';
-                    decoderAttemptsEl.style.color = '#00ff41';
                     SFX.reveal();
                     setTimeout(closeDecoderApp, 2500);
                     return;
