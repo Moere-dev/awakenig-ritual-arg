@@ -82,15 +82,6 @@
             100% { opacity: 1; }
         }
 
-        /* ===================== MATRIX RAIN (canvas) ===================== */
-        #matrix-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1;
-            opacity: 0.07;
-        }
-
         /* ===================== TERMINAL ===================== */
         .terminal {
             max-width: 850px;
@@ -617,7 +608,6 @@
         <div class="scanlines"></div>
         <div class="flicker-line"></div>
         <div class="crt-glow"></div>
-        <canvas id="matrix-canvas"></canvas>
         <div class="screen-flash" id="screen-flash"></div>
         <canvas class="static-canvas" id="static-canvas" style="z-index:998;opacity:0.035;"></canvas>
         <div class="screen-tear" id="screen-tear" style="z-index:1004;"></div>
@@ -774,44 +764,6 @@
             }
         });
 
-        // ============================================================
-        //  MATRIX RAIN (background)
-        // ============================================================
-        (function() {
-            var canvas = document.getElementById('matrix-canvas');
-            var ctx = canvas.getContext('2d');
-            var w, h, columns, drops;
-            var chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
-
-            function resize() {
-                w = canvas.width = window.innerWidth;
-                h = canvas.height = window.innerHeight;
-                columns = Math.floor(w / 16);
-                drops = new Array(columns).fill(1);
-            }
-
-            resize();
-            window.addEventListener('resize', resize);
-
-            function draw() {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
-                ctx.fillRect(0, 0, w, h);
-                ctx.fillStyle = '#00ff41';
-                ctx.font = '14px VT323, monospace';
-
-                for (var i = 0; i < drops.length; i++) {
-                    var ch = chars[Math.floor(Math.random() * chars.length)];
-                    ctx.fillText(ch, i * 16, drops[i] * 16);
-                    if (drops[i] * 16 > h && Math.random() > 0.975) {
-                        drops[i] = 0;
-                    }
-                    drops[i]++;
-                }
-                requestAnimationFrame(draw);
-            }
-
-            draw();
-        })();
 
         // ============================================================
         //  INIT SHARED MODULES
