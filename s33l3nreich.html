@@ -8,7 +8,74 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁</text></svg>">
     <style>
         body { background: #050505; }
-        .container { animation: fadeIn 3s ease-in; }
+
+        /* ===================== BOOT SCREEN ===================== */
+        .boot-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        .boot-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .boot-content {
+            max-width: 650px;
+            width: 90%;
+            font-family: 'VT323', 'Courier New', monospace;
+            font-size: 1rem;
+            color: #aaa;
+            line-height: 1.7;
+        }
+
+        .boot-line {
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .boot-line.visible {
+            opacity: 1;
+        }
+
+        .boot-line .ok {
+            color: #00ff41;
+        }
+
+        .boot-line .fail {
+            color: #ff4444;
+        }
+
+        .boot-line .warn {
+            color: #ffaa00;
+        }
+
+        .boot-line .brand {
+            color: #00ff41;
+            font-size: 1.2rem;
+            text-shadow: 0 0 8px rgba(0,255,65,0.3);
+        }
+
+        .boot-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1em;
+            background: #aaa;
+            vertical-align: text-bottom;
+            animation: boot-blink 0.6s step-end infinite;
+        }
+
+        @keyframes boot-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
 
         /* ===================== STICKY NOTE ===================== */
         .sticky-note {
@@ -26,6 +93,11 @@
             transform: rotate(3deg);
             z-index: 500;
             border-bottom-right-radius: 30px 8px;
+            display: none;
+        }
+
+        .sticky-note.show {
+            display: block;
         }
 
         .sticky-note::before {
@@ -57,6 +129,21 @@
             letter-spacing: 2px;
         }
 
+        /* ===================== MAIN CONTENT (hidden during boot) ===================== */
+        .main-content {
+            display: none;
+        }
+
+        .main-content.show {
+            display: block;
+            animation: fadeIn 1.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* ===================== TERMINAL ===================== */
         .terminal {
             margin: 30px 0;
@@ -75,28 +162,12 @@
             word-break: break-all;
         }
 
-        .terminal-line .prefix {
-            color: #00ff41;
-        }
+        .terminal-line .prefix { color: #00ff41; }
+        .terminal-line .text { color: #888; }
+        .terminal-line .success { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.4); }
+        .terminal-line .error-text { color: #ff4444; }
+        .terminal-line .warn-text { color: #ffaa00; }
 
-        .terminal-line .text {
-            color: #888;
-        }
-
-        .terminal-line .success {
-            color: #00ff41;
-            text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
-        }
-
-        .terminal-line .error-text {
-            color: #ff4444;
-        }
-
-        .terminal-line .warn-text {
-            color: #ffaa00;
-        }
-
-        /* Input line */
         .input-line {
             display: flex;
             align-items: center;
@@ -121,9 +192,7 @@
             letter-spacing: 1px;
         }
 
-        .terminal-input::placeholder {
-            color: #1a3a1a;
-        }
+        .terminal-input::placeholder { color: #1a3a1a; }
 
         /* ===================== DECRYPTION DISPLAY ===================== */
         .decrypt-display {
@@ -135,7 +204,7 @@
             border: 1px solid #1a3a1a;
             background: #0a0a0a;
             color: #00ff41;
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+            text-shadow: 0 0 10px rgba(0,255,65,0.6);
             font-family: 'VT323', monospace;
             min-height: 70px;
             display: none;
@@ -144,9 +213,7 @@
             word-break: break-all;
         }
 
-        .decrypt-display.active {
-            display: flex;
-        }
+        .decrypt-display.active { display: flex; }
 
         .decrypt-display .char {
             display: inline-block;
@@ -154,190 +221,152 @@
             text-align: center;
         }
 
-        .decrypt-display .char.scrambling {
-            color: #335533;
-            text-shadow: none;
-        }
+        .decrypt-display .char.scrambling { color: #335533; text-shadow: none; }
+        .decrypt-display .char.resolved { color: #00ff41; text-shadow: 0 0 10px #00ff41, 0 0 20px rgba(0,255,65,0.4); }
+        .decrypt-display .char.dot { color: #00ff41; }
 
-        .decrypt-display .char.resolved {
-            color: #00ff41;
-            text-shadow: 0 0 10px #00ff41, 0 0 20px rgba(0, 255, 65, 0.4);
-        }
-
-        .decrypt-display .char.dot {
-            color: #00ff41;
-        }
-
-        /* Progress bar */
         .progress-bar {
-            width: 100%;
-            height: 3px;
-            background: #111;
-            margin: 15px 0;
-            border-radius: 2px;
-            overflow: hidden;
-            display: none;
+            width: 100%; height: 3px; background: #111;
+            margin: 15px 0; border-radius: 2px; overflow: hidden; display: none;
         }
-
-        .progress-bar.active {
-            display: block;
-        }
-
+        .progress-bar.active { display: block; }
         .progress-bar .fill {
-            height: 100%;
-            width: 0%;
-            background: #00ff41;
-            box-shadow: 0 0 10px #00ff41;
-            transition: width 0.3s;
+            height: 100%; width: 0%; background: #00ff41;
+            box-shadow: 0 0 10px #00ff41; transition: width 0.3s;
         }
 
-        /* Final reveal */
         .final-message {
-            text-align: center;
-            margin-top: 30px;
-            padding: 25px;
-            border: 1px solid #00ff41;
-            background: rgba(0, 255, 65, 0.03);
-            opacity: 0;
-            transition: opacity 1.5s ease-in;
+            text-align: center; margin-top: 30px; padding: 25px;
+            border: 1px solid #00ff41; background: rgba(0,255,65,0.03);
+            opacity: 0; transition: opacity 1.5s ease-in;
         }
-
-        .final-message.visible {
-            opacity: 1;
-        }
-
+        .final-message.visible { opacity: 1; }
         .final-message .ip-text {
-            color: #00ff41;
-            font-size: 1.8rem;
-            text-shadow: 0 0 15px rgba(0, 255, 65, 0.7);
-            letter-spacing: 3px;
-            margin: 15px 0;
+            color: #00ff41; font-size: 1.8rem;
+            text-shadow: 0 0 15px rgba(0,255,65,0.7);
+            letter-spacing: 3px; margin: 15px 0;
         }
+        .final-message .lore-text { color: #888; font-size: 1.1rem; margin-top: 15px; }
 
-        .final-message .lore-text {
-            color: #888;
-            font-size: 1.1rem;
-            margin-top: 15px;
-        }
-
-        /* Screen flash */
         .screen-flash {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #00ff41;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 999;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #00ff41; opacity: 0; pointer-events: none; z-index: 999;
             transition: opacity 0.1s;
         }
+        .screen-flash.flash { opacity: 0.15; }
 
-        .screen-flash.flash {
-            opacity: 0.15;
-        }
-
-        /* Shake */
         @keyframes shake-hard {
-            0%, 100% { transform: translate(0, 0); }
-            10% { transform: translate(-3px, 2px); }
-            20% { transform: translate(3px, -1px); }
-            30% { transform: translate(-2px, 3px); }
-            40% { transform: translate(2px, -2px); }
-            50% { transform: translate(-3px, 1px); }
-            60% { transform: translate(1px, -3px); }
-            70% { transform: translate(-1px, 2px); }
-            80% { transform: translate(3px, -1px); }
-            90% { transform: translate(-2px, 3px); }
+            0%, 100% { transform: translate(0,0); }
+            10% { transform: translate(-3px,2px); }
+            20% { transform: translate(3px,-1px); }
+            30% { transform: translate(-2px,3px); }
+            40% { transform: translate(2px,-2px); }
+            50% { transform: translate(-3px,1px); }
+            60% { transform: translate(1px,-3px); }
+            70% { transform: translate(-1px,2px); }
+            80% { transform: translate(3px,-1px); }
+            90% { transform: translate(-2px,3px); }
         }
+        .shaking { animation: shake-hard 0.15s linear infinite; }
 
-        .shaking {
-            animation: shake-hard 0.15s linear infinite;
+        /* Audio toggle */
+        .audio-toggle {
+            position: fixed; bottom: 15px; right: 15px;
+            background: rgba(0,255,65,0.08); border: 1px solid #1a3a1a;
+            color: #00ff41; font-family: 'VT323', monospace; font-size: 0.85rem;
+            padding: 6px 12px; cursor: pointer; z-index: 500;
+            transition: all 0.3s; letter-spacing: 1px;
         }
+        .audio-toggle:hover { background: rgba(0,255,65,0.15); border-color: #00ff41; }
+        .audio-toggle.muted { color: #555; border-color: #222; }
 
         @media (max-width: 600px) {
             .sticky-note { top: auto; bottom: 15px; right: 10px; width: 155px; font-size: 0.85rem; }
             .decrypt-display { font-size: 1.3rem; letter-spacing: 3px; padding: 15px 10px; }
             .terminal { min-height: 220px; font-size: 0.95rem; }
+            .boot-content { font-size: 0.85rem; }
         }
     </style>
 </head>
 <body>
+    <!-- ===================== BOOT SCREEN ===================== -->
+    <div class="boot-screen" id="boot-screen">
+        <div class="boot-content" id="boot-content"></div>
+    </div>
+
     <div class="scanlines"></div>
     <div class="screen-flash" id="screen-flash"></div>
 
-    <!-- ===================== STICKY NOTE ===================== -->
+    <!-- Audio -->
+    <audio id="ambient-audio" loop preload="auto">
+        <source src="ambient.mp3" type="audio/mpeg">
+    </audio>
+    <button class="audio-toggle" id="audio-toggle" title="Audio an/aus">♪ AUDIO</button>
+
+    <!-- Sticky Note -->
     <div class="sticky-note" id="sticky-note">
         <div class="note-title">Passwort:</div>
         <div>Nicht vergessen!!</div>
         <div class="note-pw">Seele731</div>
     </div>
 
-    <div class="container">
+    <!-- Main Content (hidden until boot finishes) -->
+    <div class="main-content" id="main-content">
+        <div class="container">
 
-        <h1 class="glitch">Das Seelenreich</h1>
-        <p class="date-stamp">LETZTER EINTRAG // SIGNAL: SCHWACH // VERBINDUNG: INSTABIL</p>
+            <h1 class="glitch">Das Seelenreich</h1>
+            <p class="date-stamp">LETZTER EINTRAG // SIGNAL: SCHWACH // VERBINDUNG: INSTABIL</p>
 
-        <hr class="divider">
-
-        <div class="entry">
-            <p>Ihr habt den Code gefunden. Dann seid ihr bereit.</p>
-            <p>Ich sitze hier, im Seelenreich, zwischen Schatten und Stille.
-            Einst war ich wie ihr — ein Forscher, ein Spieler.
-            Der Fluch hat mich genommen. <span class="warn">Langsam. Gnadenlos.</span></p>
-            <p>Aber die verfluchte Welt existiert noch. Der Altar wartet noch.
-            Wo ich versagt habe, könnt ihr es schaffen.</p>
-            <p>Mein Forschungsterminal ist noch aktiv. 
-            Meldet euch an, um die <span class="highlight">Koordinaten der verfluchten Welt</span> zu entschlüsseln.</p>
-        </div>
-
-        <hr class="divider">
-
-        <!-- ===================== TERMINAL ===================== -->
-        <div class="terminal" id="terminal">
-            <div class="terminal-line">
-                <span class="prefix">[SYSTEM]</span> <span class="text">Forscher-Terminal v0.7 — Verbindung hergestellt</span>
-            </div>
-            <div class="terminal-line">
-                <span class="prefix">[SYSTEM]</span> <span class="warn-text">WARNUNG: Authentifizierung erforderlich</span>
-            </div>
-            <div class="terminal-line">
-                <span class="prefix">[SYSTEM]</span> <span class="text">Befehl: login &lt;Benutzername&gt; &lt;Passwort&gt;</span>
-            </div>
-            <div class="terminal-line" style="margin-bottom:0;">
-                <span class="prefix">[SYSTEM]</span> <span class="text">Gib "help" für verfügbare Befehle ein.</span>
-            </div>
-            <!-- Input line -->
-            <div class="input-line" id="input-line">
-                <span class="prompt">forscher@seelenreich:~$</span>
-                <input 
-                    type="text" 
-                    id="terminal-input" 
-                    class="terminal-input" 
-                    placeholder="Befehl eingeben..."
-                    autocomplete="off"
-                    spellcheck="false"
-                    autofocus
-                >
-            </div>
-        </div>
-
-        <!-- ===================== DECRYPTION DISPLAY ===================== -->
-        <div class="decrypt-display" id="decrypt-display"></div>
-
-        <div class="progress-bar" id="progress-bar">
-            <div class="fill" id="progress-fill"></div>
-        </div>
-
-        <!-- ===================== FINAL REVEAL ===================== -->
-        <div class="final-message" id="final-message">
-            <p class="warn">ENTSCHLÜSSELUNG ABGESCHLOSSEN</p>
-            <p class="ip-text" id="final-ip"></p>
             <hr class="divider">
-            <p class="lore-text">Die verfluchte Welt erwartet euch.</p>
-            <p class="lore-text">Brecht den Fluch. Befreit mich.</p>
-            <p class="dim" style="margin-top: 15px; font-size: 0.9rem;">— Der Forscher</p>
-        </div>
 
+            <div class="entry">
+                <p>Ihr habt den Code gefunden. Dann seid ihr bereit.</p>
+                <p>Ich sitze hier, im Seelenreich, zwischen Schatten und Stille.
+                Einst war ich wie ihr — ein Forscher, ein Spieler.
+                Der Fluch hat mich genommen. <span class="warn">Langsam. Gnadenlos.</span></p>
+                <p>Aber die verfluchte Welt existiert noch. Der Altar wartet noch.
+                Wo ich versagt habe, könnt ihr es schaffen.</p>
+                <p>Mein Forschungsterminal ist noch aktiv.
+                Meldet euch an, um die <span class="highlight">Koordinaten der verfluchten Welt</span> zu entschlüsseln.</p>
+            </div>
+
+            <hr class="divider">
+
+            <div class="terminal" id="terminal">
+                <div class="terminal-line">
+                    <span class="prefix">[SYSTEM]</span> <span class="text">Forscher-Terminal v0.7 — Verbindung hergestellt</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prefix">[SYSTEM]</span> <span class="warn-text">WARNUNG: Authentifizierung erforderlich</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prefix">[SYSTEM]</span> <span class="text">Befehl: login &lt;Benutzername&gt; &lt;Passwort&gt;</span>
+                </div>
+                <div class="terminal-line" style="margin-bottom:0;">
+                    <span class="prefix">[SYSTEM]</span> <span class="text">Gib "help" für verfügbare Befehle ein.</span>
+                </div>
+                <div class="input-line" id="input-line">
+                    <span class="prompt">forscher@seelenreich:~$</span>
+                    <input type="text" id="terminal-input" class="terminal-input"
+                        placeholder="Befehl eingeben..." autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+
+            <div class="decrypt-display" id="decrypt-display"></div>
+            <div class="progress-bar" id="progress-bar">
+                <div class="fill" id="progress-fill"></div>
+            </div>
+
+            <div class="final-message" id="final-message">
+                <p class="warn">ENTSCHLÜSSELUNG ABGESCHLOSSEN</p>
+                <p class="ip-text" id="final-ip"></p>
+                <hr class="divider">
+                <p class="lore-text">Die verfluchte Welt erwartet euch.</p>
+                <p class="lore-text">Brecht den Fluch. Befreit mich.</p>
+                <p class="dim" style="margin-top: 15px; font-size: 0.9rem;">— Der Forscher</p>
+            </div>
+
+        </div>
     </div>
 
     <script>
@@ -345,9 +374,125 @@
         //  CONFIG
         // ============================================================
         const TARGET = 'eu8573000.g-portal.game';
-        const VALID_USER = 'watson';       // case-insensitive
-        const VALID_PASS = 'Seele731';     // case-sensitive
+        const VALID_USER = 'watson';
+        const VALID_PASS = 'Seele731';
         const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]';
+
+        // ============================================================
+        //  AUDIO
+        // ============================================================
+        const audio = document.getElementById('ambient-audio');
+        const audioBtn = document.getElementById('audio-toggle');
+        let audioPlaying = false;
+        audio.volume = 1.0;
+
+        function tryPlayAudio() {
+            audio.play().then(function() {
+                audioPlaying = true;
+                audioBtn.textContent = '♪ AUDIO';
+                audioBtn.classList.remove('muted');
+            }).catch(function() {
+                audioPlaying = false;
+                audioBtn.textContent = '♪ AUDIO AUS';
+                audioBtn.classList.add('muted');
+            });
+        }
+        tryPlayAudio();
+
+        document.addEventListener('click', function startOnce() {
+            if (!audioPlaying) tryPlayAudio();
+            document.removeEventListener('click', startOnce);
+        }, { once: false });
+
+        audioBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (audioPlaying) {
+                audio.pause(); audioPlaying = false;
+                audioBtn.textContent = '♪ AUDIO AUS';
+                audioBtn.classList.add('muted');
+            } else {
+                audio.play(); audioPlaying = true;
+                audioBtn.textContent = '♪ AUDIO';
+                audioBtn.classList.remove('muted');
+            }
+        });
+
+        // ============================================================
+        //  BOOT SEQUENCE
+        // ============================================================
+        const bootScreen = document.getElementById('boot-screen');
+        const bootContent = document.getElementById('boot-content');
+        const mainContent = document.getElementById('main-content');
+        const stickyNote = document.getElementById('sticky-note');
+
+        const bootLines = [
+            { text: 'FORSCHER-OS v0.7.3 — BIOS POST', cls: 'brand', delay: 400 },
+            { text: '════════════════════════════════════════', cls: '', delay: 200 },
+            { text: 'CPU ............ Seelenreich Cortex M7      [<span class="ok">OK</span>]', delay: 300 },
+            { text: 'RAM ............ 4096 KB                     [<span class="ok">OK</span>]', delay: 250 },
+            { text: 'Netzwerk ....... Seelenreich-Brücke          [<span class="warn">INSTABIL</span>]', delay: 350 },
+            { text: 'Speicher ....... Fragmentiert                [<span class="warn">WARNUNG</span>]', delay: 300 },
+            { text: 'Verschlüsselung Datenfragment erkannt        [<span class="ok">OK</span>]', delay: 250 },
+            { text: 'Seelen-Signatur Forscher_Watson              [<span class="ok">GEFUNDEN</span>]', delay: 350 },
+            { text: '════════════════════════════════════════', cls: '', delay: 200 },
+            { text: 'POST abgeschlossen. Starte Terminal...', cls: '', delay: 600 },
+            { text: '', cls: '', delay: 300 },
+            { text: 'Verbinde mit Seelenreich-Netzwerk...', cls: '', delay: 800 },
+            { text: 'Tunneling durch Dimensionsriss ████████ ....', cls: '', delay: 600 },
+            { text: 'Signalstärke: <span class="warn">23%</span> — Verbindung instabil', cls: '', delay: 400 },
+            { text: 'Authentifizierungsmodul geladen.', cls: '', delay: 300 },
+            { text: '', cls: '', delay: 200 },
+            { text: '<span class="ok">✓ Terminal bereit. Warte auf Eingabe...</span>', cls: '', delay: 500 },
+        ];
+
+        function runBoot() {
+            let i = 0;
+
+            function showNext() {
+                if (i >= bootLines.length) {
+                    // Boot done — transition to main content
+                    setTimeout(function() {
+                        bootScreen.classList.add('fade-out');
+                        setTimeout(function() {
+                            bootScreen.style.display = 'none';
+                            mainContent.classList.add('show');
+                            stickyNote.classList.add('show');
+                            document.getElementById('terminal-input').focus();
+                        }, 800);
+                    }, 600);
+                    return;
+                }
+
+                const line = bootLines[i];
+                const div = document.createElement('div');
+                div.className = 'boot-line';
+
+                if (line.cls) {
+                    div.innerHTML = '<span class="' + line.cls + '">' + line.text + '</span>';
+                } else {
+                    div.innerHTML = line.text || '&nbsp;';
+                }
+
+                bootContent.appendChild(div);
+
+                // Show with slight delay for visibility effect
+                setTimeout(function() {
+                    div.classList.add('visible');
+                }, 30);
+
+                // Auto-scroll
+                bootContent.scrollTop = bootContent.scrollHeight;
+
+                i++;
+                setTimeout(showNext, line.delay);
+            }
+
+            // Small initial delay
+            setTimeout(showNext, 500);
+        }
+
+        // Start boot on page load
+        runBoot();
 
         // ============================================================
         //  ELEMENTS
@@ -361,7 +506,6 @@
         const finalIp = document.getElementById('final-ip');
         const progressBar = document.getElementById('progress-bar');
         const progressFill = document.getElementById('progress-fill');
-        const stickyNote = document.getElementById('sticky-note');
 
         let loggedIn = false;
         let decrypting = false;
@@ -404,13 +548,11 @@
                 const raw = terminalInput.value.trim();
                 terminalInput.value = '';
                 if (!raw || decrypting) return;
-
                 addEchoLine(raw);
                 processCommand(raw);
             }
         });
 
-        // Click anywhere on terminal to focus input
         terminal.addEventListener('click', function() {
             if (!decrypting) terminalInput.focus();
         });
@@ -420,7 +562,6 @@
             const cmd = parts[0].toLowerCase();
 
             if (loggedIn) {
-                // After login, only decrypt command matters
                 handlePostLoginCommand(cmd, parts);
                 return;
             }
@@ -435,27 +576,22 @@
                     addLine('HELP', 'whoami ............. Aktuelle Sitzung', 'text');
                     addEmptyLine();
                     break;
-
                 case 'status':
                     addLine('SYSTEM', 'Verbindung: INSTABIL', 'warn-text');
                     addLine('SYSTEM', 'Verschlüsselte Datenfragmente: 1', 'text');
                     addLine('SYSTEM', 'Authentifizierung: AUSSTEHEND', 'error-text');
                     break;
-
                 case 'whoami':
                     addLine('SYSTEM', 'Sitzung: ANONYM — Authentifizierung erforderlich', 'warn-text');
                     break;
-
                 case 'login':
                     handleLogin(parts);
                     break;
-
                 case 'decrypt':
                 case 'entschlüsseln':
                     addLine('SYSTEM', 'ZUGANG VERWEIGERT — Authentifizierung erforderlich.', 'error-text');
                     addLine('SYSTEM', 'Befehl: login &lt;Benutzername&gt; &lt;Passwort&gt;', 'text');
                     break;
-
                 default:
                     addLine('SYSTEM', 'Unbekannter Befehl: "' + escapeHtml(cmd) + '"', 'error-text');
                     addLine('SYSTEM', 'Gib "help" für verfügbare Befehle ein.', 'text');
@@ -477,12 +613,10 @@
             loginAttempts++;
 
             addLine('AUTH', 'Authentifiziere Benutzer "' + escapeHtml(user) + '"...', 'text');
-
-            // Simulate delay
             terminalInput.disabled = true;
+
             setTimeout(function() {
                 if (user.toLowerCase() === VALID_USER && pass === VALID_PASS) {
-                    // SUCCESS
                     flash();
                     addEmptyLine();
                     addLine('AUTH', '✓ ZUGANG GEWÄHRT', 'success');
@@ -493,16 +627,13 @@
                     loggedIn = true;
                     stickyNote.style.display = 'none';
                 } else {
-                    // FAIL
                     shake();
                     addLine('AUTH', '✗ ZUGANG VERWEIGERT', 'error-text');
-
                     if (user.toLowerCase() !== VALID_USER) {
                         addLine('AUTH', 'Benutzer "' + escapeHtml(user) + '" nicht gefunden.', 'error-text');
                     } else {
                         addLine('AUTH', 'Passwort ungültig.', 'error-text');
                     }
-
                     if (loginAttempts >= 3) {
                         addLine('SYSTEM', 'Tipp: Habt ihr alles auf dem Bildschirm überprüft?', 'warn-text');
                     }
@@ -513,7 +644,7 @@
         }
 
         // ============================================================
-        //  POST-LOGIN COMMANDS
+        //  POST-LOGIN
         // ============================================================
         function handlePostLoginCommand(cmd, parts) {
             switch(cmd) {
@@ -527,17 +658,14 @@
                     addLine('HELP', 'logs ....... Letzte Logeinträge', 'text');
                     addEmptyLine();
                     break;
-
                 case 'status':
                     addLine('SYSTEM', 'Verbindung: INSTABIL', 'warn-text');
                     addLine('SYSTEM', 'Verschlüsselte Datenfragmente: 1', 'text');
                     addLine('SYSTEM', 'Authentifizierung: WATSON ✓', 'success');
                     break;
-
                 case 'whoami':
                     addLine('SYSTEM', 'Sitzung: Watson — Authentifiziert', 'success');
                     break;
-
                 case 'logs':
                     addEmptyLine();
                     addLine('LOG', '[Tag 1] Erste Zeichen am Altar entdeckt.', 'text');
@@ -548,16 +676,13 @@
                     addLine('LOG', '[Tag ?] ...findet die Welt. Beendet es.', 'success');
                     addEmptyLine();
                     break;
-
                 case 'decrypt':
                 case 'entschlüsseln':
                     startDecryption();
                     break;
-
                 case 'login':
                     addLine('SYSTEM', 'Bereits angemeldet als Watson.', 'warn-text');
                     break;
-
                 default:
                     addLine('SYSTEM', 'Unbekannter Befehl: "' + escapeHtml(cmd) + '"', 'error-text');
                     addLine('SYSTEM', 'Gib "help" für verfügbare Befehle ein.', 'text');
@@ -579,7 +704,7 @@
         }
 
         // ============================================================
-        //  DECRYPTION SEQUENCE
+        //  DECRYPTION
         // ============================================================
         let chars = [];
         let scrambleInterval;
@@ -587,18 +712,15 @@
         function startDecryption() {
             decrypting = true;
             terminalInput.disabled = true;
-
             addEmptyLine();
             addLine('DECRYPT', 'Starte Entschlüsselungsprotokoll...', 'success');
             addLine('DECRYPT', 'Datenfragment wird geladen...', 'text');
 
-            // Show the decrypt display
             setTimeout(function() {
                 display.classList.add('active');
                 progressBar.classList.add('active');
                 initDisplay();
                 shake();
-
                 setTimeout(function() {
                     addLine('DECRYPT', 'Entschlüsselung läuft...', 'warn-text');
                     runDecryption();
@@ -623,7 +745,6 @@
                 display.appendChild(span);
                 chars.push(span);
             }
-
             scrambleInterval = setInterval(function() {
                 chars.forEach(function(span) {
                     if (span.dataset.resolved === 'false') {
@@ -636,19 +757,14 @@
         function runDecryption() {
             let unresolvedIndices = [];
             for (let i = 0; i < TARGET.length; i++) {
-                if (TARGET[i] !== '.' && TARGET[i] !== '-') {
-                    unresolvedIndices.push(i);
-                }
+                if (TARGET[i] !== '.' && TARGET[i] !== '-') unresolvedIndices.push(i);
             }
-
-            // Shuffle
             for (let i = unresolvedIndices.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 const tmp = unresolvedIndices[i];
                 unresolvedIndices[i] = unresolvedIndices[j];
                 unresolvedIndices[j] = tmp;
             }
-
             const total = unresolvedIndices.length;
             let resolved = 0;
 
@@ -658,12 +774,10 @@
                     finishSequence();
                     return;
                 }
-
                 const idx = unresolvedIndices.shift();
                 const span = chars[idx];
                 let flickerCount = 0;
                 const flickerMax = 6 + Math.floor(Math.random() * 6);
-
                 const flickerInterval = setInterval(function() {
                     span.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
                     flickerCount++;
@@ -675,54 +789,37 @@
                         flash();
                         resolved++;
                         progressFill.style.width = ((resolved / total) * 100) + '%';
-
                         const pct = Math.round((resolved / total) * 100);
-                        if (pct === 25) {
-                            addLine('DECRYPT', 'Erste Datenschicht entschlüsselt... 25%', 'text');
-                            shake();
-                        } else if (pct === 50) {
-                            addLine('DECRYPT', 'Fragmentrekonstruktion bei 50%...', 'warn-text');
-                            shake();
-                        } else if (pct === 75) {
-                            addLine('SYSTEM', 'WARNUNG: Instabile Verbindung zum Seelenreich!', 'error-text');
-                            shake();
-                        }
-
-                        const delay = 150 + Math.random() * 250;
-                        setTimeout(resolveNext, delay);
+                        if (pct === 25) { addLine('DECRYPT', 'Erste Datenschicht entschlüsselt... 25%', 'text'); shake(); }
+                        else if (pct === 50) { addLine('DECRYPT', 'Fragmentrekonstruktion bei 50%...', 'warn-text'); shake(); }
+                        else if (pct === 75) { addLine('SYSTEM', 'WARNUNG: Instabile Verbindung zum Seelenreich!', 'error-text'); shake(); }
+                        setTimeout(resolveNext, 150 + Math.random() * 250);
                     }
                 }, 50);
             }
-
             setTimeout(resolveNext, 500);
         }
 
         function finishSequence() {
-            shake();
-            flash();
+            shake(); flash();
             setTimeout(flash, 200);
             setTimeout(flash, 400);
-
             addLine('DECRYPT', 'ENTSCHLÜSSELUNG ABGESCHLOSSEN.', 'success');
             addLine('SYSTEM', 'Koordinaten der verfluchten Welt extrahiert.', 'success');
             progressFill.style.width = '100%';
-
             setTimeout(function() {
                 finalIp.textContent = TARGET;
                 finalMessage.classList.add('visible');
                 progressBar.style.display = 'none';
                 inputLine.style.display = 'none';
-
                 addEmptyLine();
                 addLine('FORSCHER', 'Ihr habt mich gefunden... brecht den Fluch.', 'success');
             }, 1500);
         }
 
-        // Keep focus on input
         document.addEventListener('click', function() {
-            if (!decrypting) terminalInput.focus();
+            if (!decrypting && mainContent.classList.contains('show')) terminalInput.focus();
         });
-        terminalInput.focus();
     </script>
 </body>
 </html>

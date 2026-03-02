@@ -9,6 +9,18 @@
 </head>
 <body>
     <div class="scanlines"></div>
+
+    <!-- Audio -->
+    <audio id="ambient-audio" loop preload="auto">
+        <source src="ambient.mp3" type="audio/mpeg">
+    </audio>
+    <button class="audio-toggle" id="audio-toggle" title="Audio an/aus" style="
+        position:fixed; bottom:15px; right:15px; background:rgba(0,255,65,0.08);
+        border:1px solid #1a3a1a; color:#00ff41; font-family:'VT323',monospace;
+        font-size:0.85rem; padding:6px 12px; cursor:pointer; z-index:500;
+        transition:all 0.3s; letter-spacing:1px;
+    ">♪ AUDIO</button>
+
     <div class="container">
 
         <h1 class="glitch">Letzte Aufzeichnung</h1>
@@ -16,21 +28,23 @@
 
         <hr class="divider">
 
-        <!-- ============================================
-             WICHTIG: Ersetze DEINE_VIDEO_ID mit deiner
-             echten YouTube Video-ID!
-             
-             Beispiel: Wenn dein Video-Link ist
-             https://www.youtube.com/watch?v=abc123xyz
-             dann ist die ID: abc123xyz
-        ============================================ -->
         <div class="video-wrapper">
             <iframe 
-                src="https://www.youtube.com/embed/flx536aew2w" 
-                allow="accelerometer; autoplay; encrypted-media; gyroscope" 
-                allowfullscreen>
+                src="https://www.youtube.com/embed/flx536aew2w?rel=0&modestbranding=1" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen
+                referrerpolicy="no-referrer-when-downgrade"
+                loading="lazy">
             </iframe>
         </div>
+
+        <!-- Fallback link in case embed doesn't work -->
+        <p style="text-align:center; margin-top:10px;">
+            <a href="https://youtu.be/flx536aew2w" target="_blank" 
+               style="color:#555; font-size:0.85rem; text-decoration:none; border-bottom:1px solid #333;">
+                Video lädt nicht? Hier klicken ►
+            </a>
+        </p>
 
         <div class="entry">
             <p>Dies ist meine letzte Nachricht. Ich habe <span class="highlight">5 Zeichen</span> 
@@ -62,8 +76,52 @@
     </div>
 
     <script>
-        const PASSWORD = '82941';
+        // ============================================================
+        //  AUDIO
+        // ============================================================
+        const audio = document.getElementById('ambient-audio');
+        const audioBtn = document.getElementById('audio-toggle');
+        let audioPlaying = false;
+        audio.volume = 1.0;
 
+        function tryPlayAudio() {
+            audio.play().then(function() {
+                audioPlaying = true;
+                audioBtn.textContent = '♪ AUDIO';
+                audioBtn.style.color = '#00ff41';
+                audioBtn.style.borderColor = '#1a3a1a';
+            }).catch(function() {
+                audioPlaying = false;
+                audioBtn.textContent = '♪ AUDIO AUS';
+                audioBtn.style.color = '#555';
+                audioBtn.style.borderColor = '#222';
+            });
+        }
+
+        tryPlayAudio();
+
+        document.addEventListener('click', function startAudioOnce() {
+            if (!audioPlaying) tryPlayAudio();
+            document.removeEventListener('click', startAudioOnce);
+        }, { once: false });
+
+        audioBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (audioPlaying) {
+                audio.pause(); audioPlaying = false;
+                audioBtn.textContent = '♪ AUDIO AUS';
+                audioBtn.style.color = '#555';
+            } else {
+                audio.play(); audioPlaying = true;
+                audioBtn.textContent = '♪ AUDIO';
+                audioBtn.style.color = '#00ff41';
+            }
+        });
+
+        // ============================================================
+        //  PASSWORD
+        // ============================================================
+        const PASSWORD = '82941';
         const input = document.getElementById('password-input');
         const submitBtn = document.getElementById('submit-btn');
         const errorMsg = document.getElementById('error-msg');
@@ -75,7 +133,6 @@
             successMsg.style.display = 'none';
 
             if (value === PASSWORD) {
-                // Success — show message, then redirect
                 successMsg.style.display = 'block';
                 input.disabled = true;
                 submitBtn.disabled = true;
@@ -83,7 +140,6 @@
                     window.location.href = 's33l3nreich.html';
                 }, 2000);
             } else {
-                // Wrong password
                 errorMsg.style.display = 'block';
                 input.value = '';
                 input.focus();
@@ -94,10 +150,7 @@
         input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') checkPassword();
         });
-
-        // Auto-focus the input
         input.focus();
     </script>
 </body>
-
 </html>
