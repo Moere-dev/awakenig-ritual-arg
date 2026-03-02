@@ -394,51 +394,74 @@ body {
 /* ===================== AUDIO TOGGLE BUTTON ===================== */
 .audio-toggle {
     position: fixed;
-    bottom: 15px;
-    right: 15px;
-    background: rgba(0, 255, 65, 0.08);
-    border: 1px solid #1a3a1a;
-    color: #00ff41;
+    bottom: 18px;
+    right: 18px;
+    background: rgba(0, 255, 65, 0.04);
+    border: 1px solid rgba(0, 255, 65, 0.15);
+    color: rgba(0, 255, 65, 0.5);
     font-family: 'VT323', monospace;
-    font-size: 0.85rem;
-    padding: 6px 12px;
+    font-size: 0.8rem;
+    padding: 5px 10px;
     cursor: pointer;
     z-index: 500;
-    transition: all 0.3s;
-    letter-spacing: 1px;
+    transition: color 0.3s, border-color 0.3s, text-shadow 0.3s, background 0.3s, box-shadow 0.3s;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 0 0 4px rgba(0, 255, 65, 0.2);
+    box-shadow: 0 0 8px rgba(0, 255, 65, 0.03) inset;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    outline: none;
 }
 
 .audio-toggle:hover {
-    background: rgba(0, 255, 65, 0.15);
-    border-color: #00ff41;
+    background: rgba(0, 255, 65, 0.08);
+    border-color: rgba(0, 255, 65, 0.4);
+    color: #00ff41;
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+    box-shadow: 0 0 12px rgba(0, 255, 65, 0.06) inset, 0 0 6px rgba(0, 255, 65, 0.08);
 }
 
 .audio-toggle.muted {
-    color: #555;
-    border-color: #222;
+    color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.06);
+    text-shadow: none;
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: none;
+}
+
+.audio-toggle.muted:hover {
+    color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* ===================== SKIP BUTTON ===================== */
 .skip-btn {
     position: fixed;
-    bottom: 15px;
-    left: 15px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid #333;
-    color: #555;
+    bottom: 18px;
+    left: 18px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.15);
     font-family: 'VT323', monospace;
-    font-size: 0.85rem;
-    padding: 6px 14px;
+    font-size: 0.8rem;
+    padding: 5px 10px;
     cursor: pointer;
     z-index: 500;
-    transition: all 0.3s;
-    letter-spacing: 1px;
+    transition: color 0.3s, border-color 0.3s, text-shadow 0.3s, background 0.3s, box-shadow 0.3s;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    outline: none;
 }
 
 .skip-btn:hover {
-    color: #aaa;
-    border-color: #555;
-    background: rgba(255, 255, 255, 0.1);
+    color: rgba(0, 255, 65, 0.5);
+    border-color: rgba(0, 255, 65, 0.2);
+    background: rgba(0, 255, 65, 0.04);
+    text-shadow: 0 0 6px rgba(0, 255, 65, 0.2);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.04) inset;
 }
 
 .skip-btn.hidden {

@@ -16,13 +16,13 @@ var AudioToggle = (function() {
 
             function setPlaying() {
                 playing = true;
-                btn.textContent = '\u266A AUDIO';
+                btn.textContent = 'SND:ON';
                 btn.classList.remove('muted');
             }
 
             function setStopped() {
                 playing = false;
-                btn.textContent = '\u266A AUDIO AUS';
+                btn.textContent = 'SND:OFF';
                 btn.classList.add('muted');
             }
 
@@ -32,7 +32,7 @@ var AudioToggle = (function() {
 
             // Handle missing audio file gracefully
             audio.addEventListener('error', function() {
-                btn.textContent = '\u266A N/A';
+                btn.textContent = 'SND:N/A';
                 btn.disabled = true;
                 btn.classList.add('muted');
             });
