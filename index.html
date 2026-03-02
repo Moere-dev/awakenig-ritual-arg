@@ -3,537 +3,654 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>██████ ÜBERTRAGUNG</title>
-    <link rel="stylesheet" href="style.css">
+    <title>TERMINAL</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁</text></svg>">
+    <link rel="stylesheet" href="style.css">
     <style>
-        /* ===================== RGB GLITCH ===================== */
-        .glitch-rgb {
-            position: relative;
-            color: #00ff41;
-            font-size: 2.2rem;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            text-shadow: 0 0 10px #00ff41;
-            animation: glitch-skew 4s infinite linear alternate-reverse;
+        body {
+            background: #000;
+            color: #b0b0b0;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        .glitch-rgb::before,
-        .glitch-rgb::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .glitch-rgb::before {
-            color: #ff0040;
-            text-shadow: 0 0 10px #ff0040;
-            animation: glitch-before 3s infinite linear alternate-reverse;
-            clip-path: inset(0 0 65% 0);
-        }
-
-        .glitch-rgb::after {
-            color: #0ff;
-            text-shadow: 0 0 10px #0ff;
-            animation: glitch-after 2.5s infinite linear alternate-reverse;
-            clip-path: inset(60% 0 0 0);
-        }
-
-        @keyframes glitch-before {
-            0%, 87%, 91%, 95%, 100% { transform: translateX(0); }
-            88% { transform: translateX(-8px) skewX(-2deg); }
-            92% { transform: translateX(5px) skewX(1deg); }
-            96% { transform: translateX(-3px); }
-        }
-
-        @keyframes glitch-after {
-            0%, 83%, 89%, 93%, 100% { transform: translateX(0); }
-            84% { transform: translateX(6px) skewX(2deg); }
-            90% { transform: translateX(-4px) skewX(-1deg); }
-            94% { transform: translateX(7px); }
-        }
-
-        @keyframes glitch-skew {
-            0%, 92%, 94%, 96%, 100% { transform: skewX(0deg); }
-            93% { transform: skewX(0.5deg); }
-            95% { transform: skewX(-0.3deg); }
-        }
-
-        /* ===================== TYPEWRITER CURSOR ===================== */
-        .tw-cursor {
-            display: inline-block;
-            width: 9px;
-            height: 1.15em;
-            background: #00ff41;
-            vertical-align: text-bottom;
-            margin-left: 1px;
-            animation: cursor-blink 0.6s step-end infinite;
-            box-shadow: 0 0 6px rgba(0,255,65,0.5);
-        }
-
-        @keyframes cursor-blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* ===================== TYPEWRITER BLOCKS ===================== */
-        .typewriter-block {
-            visibility: hidden;
-            min-height: 0;
-        }
-
-        .typewriter-block.typing,
-        .typewriter-block.done {
-            visibility: visible;
-        }
-
-        /* ===================== GLITCH LINE EFFECT ===================== */
-        .glitch-line {
+        /* CRT effect */
+        .crt::before {
+            content: '';
             position: fixed;
-            left: 0;
+            top: -5%; left: -5%;
+            width: 110%; height: 110%;
+            pointer-events: none;
+            z-index: 1001;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 60%,
+                rgba(0,0,0,0.35) 80%,
+                rgba(0,0,0,0.75) 100%
+            );
+        }
+        .crt::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1002;
+            box-shadow:
+                inset 0 0 80px rgba(0,0,0,0.6),
+                inset 0 0 160px rgba(0,0,0,0.3);
+            border-radius: 18px;
+        }
+
+        .audio-toggle { z-index: 1500; }
+
+        .terminal-wrap {
+            flex: 1;
+            max-width: 750px;
             width: 100%;
-            height: 2px;
-            background: rgba(0, 255, 65, 0.15);
-            pointer-events: none;
-            z-index: 998;
-            animation: glitch-line-move 8s linear infinite;
-            box-shadow: 0 0 8px rgba(0, 255, 65, 0.2);
+            margin: 0 auto;
+            padding: 30px 25px 120px;
+            position: relative;
+            z-index: 1;
         }
 
-        @keyframes glitch-line-move {
-            0% { top: -2px; }
-            100% { top: 100vh; }
+        .line {
+            margin-bottom: 2px;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .line.dim { color: rgba(0, 255, 65, 0.2); }
+        .line.green { color: #00ff41; text-shadow: 0 0 5px rgba(0,255,65,0.3); }
+        .line.amber { color: #d4a030; text-shadow: 0 0 5px rgba(212,160,48,0.2); }
+        .line.red { color: #ff4444; text-shadow: 0 0 5px rgba(255,68,68,0.2); }
+        .line.white { color: #e0e0e0; }
+        .line.success { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.4); }
+        .line .ok { color: #00ff41; }
+        .line .warn-text { color: #d4a030; text-shadow: 0 0 5px rgba(212,160,48,0.3); }
+        .line .brand {
+            color: #00ff41;
+            text-shadow: 0 0 10px rgba(0,255,65,0.4);
+            letter-spacing: 2px;
+        }
+        .line .highlight { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.4); }
+        .line .lore-line { color: #a0a0a0; }
+
+        .separator {
+            border: none;
+            border-top: 1px solid rgba(0, 255, 65, 0.12);
+            margin: 6px 0;
         }
 
-        /* ===================== HIDDEN CTA ===================== */
-        .cta-hidden {
+        .skip-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 20px;
+            z-index: 1500;
+            background: transparent;
+            border: 1px solid rgba(0, 255, 65, 0.08);
+            color: rgba(0, 255, 65, 0.15);
+            font-family: 'VT323', monospace;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        .skip-btn:hover {
+            color: #00ff41;
+            border-color: rgba(0, 255, 65, 0.3);
+            text-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+        }
+        .skip-btn.hidden { display: none; }
+
+        .input-line {
+            display: none;
+            margin-top: 6px;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+        }
+        .input-line .prompt {
+            color: #00ff41;
+            text-shadow: 0 0 5px rgba(0,255,65,0.3);
+        }
+        .input-line input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #00ff41;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            caret-color: #00ff41;
+            width: calc(100% - 120px);
+        }
+        .input-line input::placeholder { color: rgba(0,255,65,0.15); }
+
+        /* Fragment unlock section */
+        .fragment-section {
+            display: none;
+            margin-top: 20px;
+            padding: 15px 20px;
+            border: 1px solid rgba(0, 255, 65, 0.15);
+            background: rgba(0, 20, 0, 0.3);
+        }
+        .fragment-section.active { display: block; }
+        .frag-prompt-text {
+            color: #d4a030;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px rgba(212,160,48,0.2);
+        }
+        .frag-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .frag-input-wrap .fprompt {
+            color: #00ff41;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .frag-input-wrap input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #00ff41;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            caret-color: #00ff41;
+        }
+        .frag-input-wrap input::placeholder { color: rgba(0,255,65,0.15); }
+        .frag-error {
+            color: #ff4444;
+            font-size: 0.85rem;
+            margin-top: 8px;
             opacity: 0;
-            transform: translateY(15px);
-            transition: opacity 1.5s ease-in, transform 1s ease-out;
-            pointer-events: none;
+            transition: opacity 0.3s;
         }
-
-        .cta-hidden.revealed {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: all;
+        .frag-error.visible { opacity: 1; }
+        .frag-success {
+            color: #00ff41;
+            font-size: 0.95rem;
+            margin-top: 8px;
+            text-shadow: 0 0 8px rgba(0,255,65,0.4);
+            opacity: 0;
+            transition: opacity 0.5s;
         }
+        .frag-success.visible { opacity: 1; }
 
-        @media (max-width: 600px) {
-            .glitch-rgb { font-size: 1.5rem; letter-spacing: 2px; }
-        }
+        /* Boot cursor blink */
+        .boot-cursor { animation: blink-cursor 0.6s steps(2) infinite; }
+        @keyframes blink-cursor { 0% { opacity: 1; } 100% { opacity: 0; } }
 
-        /* ===================== STATUS BAR ===================== */
+        /* Status bar */
         .status-bar {
             position: fixed;
             bottom: 0; left: 0;
-            width: 100%; height: 28px;
-            background: rgba(0, 8, 0, 0.92);
-            border-top: 1px solid rgba(0, 255, 65, 0.12);
-            z-index: 500;
-            display: flex; align-items: center;
+            width: 100%;
+            height: 28px;
+            background: rgba(0, 10, 0, 0.9);
+            border-top: 1px solid rgba(0, 255, 65, 0.08);
+            display: flex;
+            align-items: center;
             padding: 0 15px;
-            font-size: 0.75rem;
-            color: rgba(0, 255, 65, 0.45);
-            letter-spacing: 1px;
-            gap: 20px;
-        }
-        .status-bar .sb-left {
-            flex: 1; overflow: hidden; white-space: nowrap;
-        }
-        .status-bar .sb-right {
             font-size: 0.7rem;
             color: rgba(0, 255, 65, 0.25);
-            white-space: nowrap;
+            z-index: 100;
         }
-        /* Push fixed buttons above status bar */
-        body .audio-toggle { bottom: 38px; }
-        body .skip-btn { bottom: 38px; }
-
-        /* ===================== AMBIENT WIDGETS ===================== */
-        .widget-signal {
-            position: fixed; top: 15px; left: 15px;
-            z-index: 500;
-            font-size: 0.72rem;
-            color: rgba(0, 255, 65, 0.35);
-            letter-spacing: 1px;
-            pointer-events: none;
-        }
-        .widget-signal .sig-dot {
-            display: inline-block;
-            width: 5px; height: 5px;
-            border-radius: 50%;
-            background: rgba(0, 255, 65, 0.6);
-            margin-right: 5px;
-            vertical-align: middle;
-            box-shadow: 0 0 4px rgba(0, 255, 65, 0.3);
-            animation: sig-pulse 2s ease-in-out infinite;
-        }
-        @keyframes sig-pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(0, 255, 65, 0.3); }
-            50% { opacity: 0.3; box-shadow: 0 0 1px rgba(0, 255, 65, 0.1); }
-        }
-        .widget-hex {
-            position: fixed; top: 0; right: 6px;
-            z-index: 400;
-            font-size: 0.55rem;
-            color: rgba(0, 255, 65, 0.07);
-            line-height: 1.5;
-            pointer-events: none;
-            overflow: hidden;
-            height: 100vh; width: 80px;
-            text-align: right;
-            padding-top: 40px;
-        }
-
-        /* ===================== SIGNAL DECAY ===================== */
-        .decay-active .static-canvas { transition: opacity 2s; }
-        .decay-corrupt {
-            display: inline;
-            color: #00ff41;
-            text-shadow: 0 0 3px #00ff41;
-            animation: corrupt-flicker 0.4s infinite alternate;
-        }
-        @keyframes corrupt-flicker {
-            0% { opacity: 1; }
-            100% { opacity: 0.4; }
-        }
-        .cta-link.decay-urgent {
-            animation: cta-urgent 0.6s ease-in-out infinite alternate;
-        }
-        @keyframes cta-urgent {
-            0% { border-color: #00ff41; color: #00ff41; }
-            100% { border-color: #ff4444; color: #ff4444; text-shadow: 0 0 8px rgba(255, 68, 68, 0.4); }
-        }
+        .status-bar .sb-left { flex: 1; overflow: hidden; white-space: nowrap; }
+        .status-bar .sb-right { text-align: right; white-space: nowrap; }
 
         @media (max-width: 600px) {
-            .widget-hex { display: none; }
-            .status-bar { font-size: 0.65rem; padding: 0 10px; }
+            .terminal-wrap { padding: 15px 12px 100px; }
+            body { font-size: 0.95rem; }
+            .crt::after { border-radius: 10px; }
         }
     </style>
 </head>
 <body>
-<div class="crt crt-on">
-    <div class="overlay"></div>
-    <div class="glitch-line"></div>
-    <canvas class="static-canvas" id="static-canvas"></canvas>
-    <div class="screen-tear" id="screen-tear"></div>
-    <div class="interference-band" id="interference-band" style="height:40px;"></div>
+    <div class="crt crt-on">
+        <div class="scanlines"></div>
+        <div class="flicker-line"></div>
 
-    <!-- Ambient Widgets -->
-    <div class="widget-signal" id="widget-signal">
-        <span class="sig-dot"></span>SIGNAL: <span id="sig-pct">87</span>%
-    </div>
-    <div class="widget-hex" id="widget-hex"></div>
+        <div class="terminal-wrap" id="terminal"></div>
 
-    <!-- Audio -->
-    <audio id="ambient-audio" loop preload="auto">
-        <source src="ambient.mp3" type="audio/mpeg">
-    </audio>
-    <button class="audio-toggle" id="audio-toggle" title="Audio an/aus">SND:ON</button>
-
-    <!-- Skip button -->
-    <button class="skip-btn" id="skip-btn">[SKIP]</button>
-
-    <!-- Continue prompt (shown if progress exists) -->
-    <div class="continue-prompt" id="continue-prompt" style="display:none;"></div>
-
-    <div class="container">
-
-        <h1 class="glitch-rgb" data-text="⚠ Übertragung Empfangen">⚠ Übertragung Empfangen</h1>
-        <p class="date-stamp">QUELLE: UNBEKANNT // DATUM: ██.██.████ // STATUS: FRAGMENTIERT</p>
-
-        <hr class="divider">
-
-        <!-- BLOCK 1 -->
-        <div class="entry">
-            <div class="typewriter-block" id="tw-1">
-                <p>Wenn ihr das hier lest, bin ich bereits fort.</p>
-            </div>
+        <div class="input-line" id="input-line">
+            <span class="prompt">user@localhost:~$ </span><input type="text" id="cmd-input" autocomplete="off" spellcheck="false" placeholder="">
         </div>
 
-        <!-- BLOCK 2 -->
-        <div class="entry">
-            <div class="typewriter-block" id="tw-2">
-                <p>Ich habe eine Welt gefunden tief verborgen, von etwas <span class="highlight">Altem</span> bewacht.
-                Eine Welt, deren Grenzen schrumpfen. Deren Himmel sich verdunkelt.
-                Deren Altar nach Opfern verlangt.</p>
-            </div>
+        <button class="skip-btn" id="skip-btn">SKIP ▸</button>
+
+        <div class="status-bar">
+            <div class="sb-left" id="sb-msg"></div>
+            <div class="sb-right" id="sb-clock"></div>
         </div>
-
-        <!-- BLOCK 3 -->
-        <div class="entry">
-            <div class="typewriter-block" id="tw-3">
-                <p>Ich habe versucht, den Fluch zu brechen. Ich habe die Zeichen gesammelt,
-                das Ritual begonnen. Aber der <span class="warn">Wächter</span> war stärker als ich.</p>
-            </div>
-        </div>
-
-        <!-- BLOCK 4 -->
-        <div class="entry">
-            <div class="typewriter-block" id="tw-4">
-                <p>Jetzt bin ich hier. Im Seelenreich. Gefangen zwischen den Welten.</p>
-            </div>
-        </div>
-
-        <hr class="divider">
-
-        <!-- BLOCK 5 -->
-        <div class="entry">
-            <div class="typewriter-block" id="tw-5">
-                <p>Ich habe alles dokumentiert. Alles aufgezeichnet.
-                Meine letzte Aufzeichnung enthält den Schlüssel,
-                aber ihr müsst <span class="highlight">genau hinsehen</span>.</p>
-            </div>
-        </div>
-
-        <!-- BLOCK 6 -->
-        <div class="entry">
-            <div class="typewriter-block" id="tw-6">
-                <p class="warn">Die Zeit läuft ab. Die Grenze schrumpft weiter.</p>
-                <p>Findet den Code. Findet die Welt. Beendet, was ich nicht konnte.</p>
-            </div>
-        </div>
-
-        <hr class="divider">
-
-        <a href="aufzeichnung.html" class="cta-link cta-hidden" id="cta-button">► Aufzeichnung Ansehen</a>
-
     </div>
 
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="sb-left" id="sb-msg"></div>
-        <div class="sb-right" id="sb-clock"></div>
-    </div>
-</div>
-
-    <!-- Shared modules -->
     <script src="sfx.js"></script>
     <script src="atmosphere.js"></script>
     <script src="audio-toggle.js"></script>
 
     <script>
         // ============================================================
-        //  PROGRESS PERSISTENCE
-        // ============================================================
-        (function() {
-            var phase = localStorage.getItem('arg-phase');
-            if (phase === 'aufzeichnung' || phase === 's33l3nreich') {
-                var prompt = document.getElementById('continue-prompt');
-                var target = phase === 's33l3nreich' ? 's33l3nreich.html' : 'aufzeichnung.html';
-                var label = phase === 's33l3nreich' ? 'SEELENREICH ►' : 'AUFZEICHNUNG ►';
-                prompt.style.display = 'block';
-                prompt.innerHTML = '<a class="continue-link" href="' + target + '">WEITER: ' + label + '</a>'
-                    + '<button class="reset-btn" id="reset-btn">FORTSCHRITT LÖSCHEN</button>';
-                document.getElementById('reset-btn').addEventListener('click', function() {
-                    localStorage.removeItem('arg-phase');
-                    prompt.style.display = 'none';
-                });
-            }
-        })();
-
-        // ============================================================
-        //  INIT AUDIO
+        //  INIT
         // ============================================================
         AudioToggle.init();
+        ATMO.init({ drone: true, crackle: true });
+
+        var terminal = document.getElementById('terminal');
+        var inputLine = document.getElementById('input-line');
+        var cmdInput = document.getElementById('cmd-input');
+        var breachWon = localStorage.getItem('arg-breach-won') === 'true';
+        var breachFailed = localStorage.getItem('arg-breach-failed') === 'true';
+        var fragmentUnlocked = localStorage.getItem('arg-fragment0-unlocked') === 'true';
+
+        var CODE_HASH = '7fd491e56c28b1fc38860045f3c26a2b32adf92a004ee4bdca9b01bd6ea487ff';
 
         // ============================================================
-        //  PAGE-SPECIFIC SFX
+        //  HELPERS
+        // ============================================================
+        function addLine(text, cls) {
+            var d = document.createElement('div');
+            d.className = 'line' + (cls ? ' ' + cls : '');
+            d.textContent = text;
+            terminal.appendChild(d);
+            scrollBottom();
+        }
+        function addLineHtml(html, cls) {
+            var d = document.createElement('div');
+            d.className = 'line' + (cls ? ' ' + cls : '');
+            d.innerHTML = html;
+            terminal.appendChild(d);
+            scrollBottom();
+        }
+        function addEmpty() { addLine('', ''); }
+        function scrollBottom() { window.scrollTo(0, document.body.scrollHeight); }
+
+        // ============================================================
+        //  SFX
         // ============================================================
         var SFX = {
-            typeClick: SFXCore.typeClick,
-            ctaReveal: function() {
-                var c = SFXCore.getCtx(), o = c.createOscillator(), g = c.createGain();
-                o.type = 'sine';
-                o.frequency.setValueAtTime(300, c.currentTime);
-                o.frequency.exponentialRampToValueAtTime(800, c.currentTime + 0.5);
-                g.gain.setValueAtTime(0.05, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.8);
-                o.connect(g); g.connect(c.destination);
-                o.start(); o.stop(c.currentTime + 0.8);
+            keyPress: SFXCore.keyPress,
+            boot: function() { SFXCore.tone('square', 800, 0.08, 0.04); },
+            confirm: function() {
+                SFXCore.tone('sine', 600, 0.15, 0.05);
+                setTimeout(function() { SFXCore.tone('sine', 900, 0.15, 0.05); }, 100);
+            },
+            error: function() { SFXCore.tone('square', 150, 0.15, 0.04); },
+            unlock: function() {
+                [600, 800, 1000, 1200].forEach(function(f, i) {
+                    setTimeout(function() { SFXCore.tone('sine', f, 0.2, 0.06); }, i * 100);
+                });
             }
         };
 
         // ============================================================
-        //  TYPEWRITER ENGINE (terminal-style, char by char with cursor)
-        //  Uses requestAnimationFrame so sound + visual are in the same frame
+        //  TYPEWRITER ENGINE — char by char with cursor
         // ============================================================
-        const blockData = [
-            { id: 'tw-1', delay: 1000 },
-            { id: 'tw-2', delay: 300 },
-            { id: 'tw-3', delay: 300 },
-            { id: 'tw-4', delay: 300 },
-            { id: 'tw-5', delay: 300 },
-            { id: 'tw-6', delay: 300 }
-        ];
+        var skipped = false;
+        var skipBtn = document.getElementById('skip-btn');
 
-        const skipBtn = document.getElementById('skip-btn');
-        let skipped = false;
-        let typewriterDone = false;
+        function typeLine(html, speed, callback) {
+            if (skipped) { addLineHtml(html, ''); if (callback) callback(); return; }
+            var d = document.createElement('div');
+            d.className = 'line';
+            terminal.appendChild(d);
 
-        // Store original HTML for each block before we touch it
-        const blocksOriginal = [];
-        blockData.forEach(function(bd) {
-            const el = document.getElementById(bd.id);
-            blocksOriginal.push({
-                el: el,
-                html: el.innerHTML,
-                text: el.textContent,
-                delay: bd.delay
-            });
-        });
+            var temp = document.createElement('span');
+            temp.innerHTML = html;
+            var plainText = temp.textContent;
+
+            var cursor = document.createElement('span');
+            cursor.textContent = '█';
+            cursor.style.animation = 'blink-cursor 0.6s steps(2) infinite';
+            d.appendChild(cursor);
+
+            var charIdx = 0;
+            var lastTime = 0;
+
+            function tick(ts) {
+                if (skipped) {
+                    d.innerHTML = html;
+                    if (callback) callback();
+                    return;
+                }
+                if (lastTime === 0) lastTime = ts;
+                if (ts - lastTime < speed) { requestAnimationFrame(tick); return; }
+
+                if (charIdx < plainText.length) {
+                    var ch = plainText[charIdx];
+                    charIdx++;
+                    d.insertBefore(document.createTextNode(ch), cursor);
+                    if (ch !== ' ') SFX.boot();
+                    lastTime = ts;
+                    requestAnimationFrame(tick);
+                } else {
+                    d.innerHTML = html;
+                    scrollBottom();
+                    if (callback) callback();
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function addSep() {
+            var hr = document.createElement('hr');
+            hr.className = 'separator';
+            terminal.appendChild(hr);
+        }
+
+        // ============================================================
+        //  SEQUENCE RUNNER — like s33l3nreich
+        // ============================================================
+        function runSequence(steps, callback) {
+            var i = 0;
+            function next() {
+                if (skipped) {
+                    // instant-show remaining
+                    for (var j = i; j < steps.length; j++) {
+                        var s = steps[j];
+                        if (s.fn) { s.fn(); }
+                        else if (s.html) { addLineHtml(s.html, ''); }
+                    }
+                    if (callback) callback();
+                    return;
+                }
+                if (i >= steps.length) { if (callback) callback(); return; }
+                var step = steps[i];
+                i++;
+                setTimeout(function() {
+                    if (skipped) { next(); return; }
+                    if (step.fn) {
+                        step.fn();
+                        next();
+                    } else if (step.html && step.type) {
+                        typeLine(step.html, step.speed || 20, next);
+                    } else if (step.html) {
+                        addLineHtml(step.html, '');
+                        next();
+                    }
+                }, step.delay || 0);
+            }
+            next();
+        }
 
         // ============================================================
         //  SKIP
         // ============================================================
-        function revealAll() {
-            skipped = true;
-            blocksOriginal.forEach(function(b) {
-                b.el.innerHTML = b.html;
-                b.el.classList.add('typing', 'done');
-                b.el.querySelectorAll('.tw-cursor').forEach(function(c) { c.remove(); });
-            });
-            document.getElementById('cta-button').classList.add('revealed');
-            skipBtn.classList.add('hidden');
-            typewriterDone = true;
-        }
-
         skipBtn.addEventListener('click', function() {
-            if (!typewriterDone) revealAll();
+            if (!skipped) {
+                skipped = true;
+                // Sequence runner will fast-forward
+            }
         });
 
         // ============================================================
-        //  TYPE A BLOCK — char by char with blinking cursor
-        //  Uses requestAnimationFrame so sound + visual are in the same frame
+        //  BOOT SEQUENCE — typewriter style
         // ============================================================
-        function typeBlock(blockInfo, speed, callback) {
-            if (skipped) { if (callback) callback(); return; }
-
-            const el = blockInfo.el;
-            const fullText = blockInfo.text;
-            const fullHtml = blockInfo.html;
-
-            el.innerHTML = '';
-            el.classList.add('typing');
-
-            const cursor = document.createElement('span');
-            cursor.className = 'tw-cursor';
-            el.appendChild(cursor);
-
-            let charIndex = 0;
-            let lastCharTime = 0;
-            let currentDelay = 0;
-
-            function tick(timestamp) {
-                if (skipped) {
-                    el.innerHTML = fullHtml;
-                    el.classList.add('done');
-                    if (callback) callback();
-                    return;
-                }
-
-                if (lastCharTime === 0) lastCharTime = timestamp;
-
-                if (timestamp - lastCharTime < currentDelay) {
-                    requestAnimationFrame(tick);
-                    return;
-                }
-
-                if (charIndex < fullText.length) {
-                    var ch = fullText[charIndex];
-                    charIndex++;
-                    var t = document.createTextNode(ch);
-                    el.insertBefore(t, cursor);
-
-                    if (ch !== ' ' && ch !== '\n') SFX.typeClick();
-
-                    currentDelay = speed;
-                    if (ch === ' ') currentDelay = speed * 0.3;
-                    else if (ch === '\n') currentDelay = speed * 0.5;
-                    else if (ch === '.' || ch === '—' || ch === '!') currentDelay = speed * 3;
-                    else if (ch === ',') currentDelay = speed * 1.8;
-
-                    lastCharTime = timestamp;
-                    requestAnimationFrame(tick);
-                } else {
-                    el.innerHTML = fullHtml;
-                    el.classList.add('done');
-                    if (callback) callback();
-                }
-            }
-
-            requestAnimationFrame(tick);
-        }
-
-        // ============================================================
-        //  SEQUENCE — type all blocks one after another
-        // ============================================================
-        function typeSequence(index) {
-            if (skipped) return;
-
-            if (index >= blocksOriginal.length) {
-                setTimeout(function() {
-                    SFX.ctaReveal();
-                    document.getElementById('cta-button').classList.add('revealed');
-                    skipBtn.classList.add('hidden');
-                    typewriterDone = true;
-                    // Save progress
-                    localStorage.setItem('arg-phase', 'index');
-                }, 500);
-                return;
-            }
-
-            const blockInfo = blocksOriginal[index];
-
+        function startBoot() {
             setTimeout(function() {
-                if (skipped) return;
-                typeBlock(blockInfo, 30, function() {
-                    typeSequence(index + 1);
-                });
-            }, blockInfo.delay);
+                SFX.boot();
+                var bootSteps = [
+                    { html: '<span class="brand">FORSCHER-TERMINAL v1.0 — BIOS POST</span>', type: true, speed: 25, delay: 400 },
+                    { fn: addSep, delay: 200 },
+                    { html: 'CPU .............. Intel 486DX2-66             [<span class="ok">OK</span>]', type: true, speed: 12, delay: 200 },
+                    { html: 'RAM .............. 640 KB konventionell        [<span class="ok">OK</span>]', type: true, speed: 12, delay: 180 },
+                    { html: 'Festplatte ....... /dev/seele0                 [<span class="ok">ONLINE</span>]', type: true, speed: 12, delay: 200 },
+                    { html: 'Netzwerk ......... TUNNEL-4A                   [<span class="ok">VERBUNDEN</span>]', type: true, speed: 12, delay: 180 },
+                    { html: 'Verschlüsselung . AES-256-GCM                 [<span class="ok">AKTIV</span>]', type: true, speed: 12, delay: 200 },
+                    { html: 'Signalempfänger . Seelenreich-Brücke          [<span class="warn-text">INSTABIL</span>]', type: true, speed: 12, delay: 250 },
+                    { fn: addSep, delay: 200 },
+                    { html: 'POST abgeschlossen. Lade Betriebssystem...', type: true, speed: 20, delay: 600 },
+                    { fn: addEmpty, delay: 400 },
+                    { html: 'Initialisiere Dateisystem... ████████████ OK', type: true, speed: 15, delay: 400 },
+                    { html: 'Lade Signalnetz-Treiber...', type: true, speed: 20, delay: 500 },
+                    { html: '<span class="ok">✓ System bereit.</span>', type: true, speed: 25, delay: 400 },
+                ];
+
+                runSequence(bootSteps, startLore);
+            }, 1300);
         }
 
-        // Start after initial pause
-        setTimeout(function() {
-            typeSequence(0);
-        }, 1500);
+        // ============================================================
+        //  LORE — atmospheric intro
+        // ============================================================
+        function startLore() {
+            var loreSteps = [
+                { fn: addEmpty, delay: 400 },
+                { fn: addSep, delay: 200 },
+                { html: '<span class="brand">EINGEHENDE NACHRICHT — QUELLE: UNBEKANNT</span>', type: true, speed: 25, delay: 500 },
+                { fn: addSep, delay: 300 },
+                { fn: addEmpty, delay: 200 },
+                { html: '<span class="lore-line">Ihr habt dieses Terminal gefunden. Das ist kein Zufall.</span>', type: true, speed: 30, delay: 400 },
+                { fn: addEmpty, delay: 200 },
+                { html: '<span class="lore-line">Ich habe es für euch vorbereitet — eine Verbindung</span>', type: true, speed: 30, delay: 300 },
+                { html: '<span class="lore-line">zu einem Ort, den niemand kennen sollte.</span>', type: true, speed: 30, delay: 400 },
+                { fn: addEmpty, delay: 300 },
+                { html: '<span class="lore-line">In den Dateien dieses Servers liegt eine <span class="highlight">Übertragung</span>.</span>', type: true, speed: 30, delay: 400 },
+                { html: '<span class="lore-line">Öffnet sie. Folgt dem Signal. Findet, was ich hinterlassen habe.</span>', type: true, speed: 30, delay: 500 },
+                { fn: addEmpty, delay: 200 },
+                { html: '<span class="lore-line"><span class="warn-text">Aber seid vorsichtig. Ihr seid nicht die Einzigen, die zuhören.</span></span>', type: true, speed: 35, delay: 600 },
+                { fn: addEmpty, delay: 200 },
+                { fn: addSep, delay: 200 },
+                { fn: addEmpty, delay: 300 },
+            ];
+
+            runSequence(loreSteps, showTerminalReady);
+        }
 
         // ============================================================
-        //  ATMOSPHERE — use shared engine
+        //  TERMINAL READY — show commands
         // ============================================================
-        ATMO.init();
+        function showTerminalReady() {
+            skipBtn.classList.add('hidden');
+            addLineHtml('<span class="ok">✓ Terminal bereit.</span>', 'green');
+            showHelp();
+        }
 
         // ============================================================
-        //  STATUS BAR — cycling system messages
+        //  HELP & COMMANDS
+        // ============================================================
+        function showHelp() {
+            addEmpty();
+            addLine('Verfügbare Befehle:', 'amber');
+            addLine('  open übertragung    — Signalübertragung öffnen', 'white');
+
+            if (breachFailed && !breachWon) {
+                addLine('  reconnect seele     — Zurück zum Seelenreich-Terminal', 'white');
+            }
+            if (breachWon && !fragmentUnlocked) {
+                addLine('  decrypt fragment    — Gefundenen Code entschlüsseln', 'white');
+            }
+            if (fragmentUnlocked) {
+                addLine('  open fragment       — Forscher-Fragment #0 öffnen', 'white');
+            }
+
+            addLine('  help                — Befehle anzeigen', 'white');
+            addLine('  clear               — Terminal leeren', 'white');
+            addEmpty();
+
+            // Show input
+            inputLine.style.display = 'block';
+            cmdInput.focus();
+        }
+
+        // ============================================================
+        //  COMMAND PROCESSING
+        // ============================================================
+        cmdInput.addEventListener('keydown', function(e) {
+            if (e.key.length === 1) SFX.keyPress();
+            if (e.key === 'Enter') {
+                var raw = cmdInput.value.trim();
+                cmdInput.value = '';
+                if (!raw) return;
+
+                addLine('user@localhost:~$ ' + raw, 'white');
+                processCommand(raw);
+            }
+        });
+
+        function processCommand(raw) {
+            var cmd = raw.toLowerCase().trim();
+
+            if (cmd === 'open übertragung' || cmd === 'open uebertragung' || cmd === 'open übertragung') {
+                SFX.confirm();
+                addLine('[SYSTEM] Verbinde mit Signalübertragung...', 'green');
+                addLine('[SYSTEM] Tunnel aufgebaut. Weiterleitung...', 'green');
+                setTimeout(function() {
+                    window.location.href = 'uebertragung.html';
+                }, 1200);
+            }
+            else if (cmd === 'reconnect seele' || cmd === 'reconnect seelenreich') {
+                if (!breachFailed || breachWon) {
+                    SFX.error();
+                    addLine('[FEHLER] Befehl nicht verfügbar.', 'red');
+                    return;
+                }
+                SFX.confirm();
+                addLine('[SYSTEM] Wiederverbindung zum Seelenreich-Terminal...', 'amber');
+                addLine('[SYSTEM] Vorherige Sitzung wird geladen...', 'amber');
+                addLine('[WARNUNG] Eindringling noch aktiv — Vorbereiten...', 'red');
+                setTimeout(function() {
+                    localStorage.removeItem('arg-breach-failed');
+                    window.location.href = 's33l3nreich.html?breach=retry';
+                }, 2000);
+            }
+            else if (cmd === 'decrypt fragment' || cmd === 'decrypt fragment0') {
+                if (!breachWon) {
+                    SFX.error();
+                    addLine('[FEHLER] Befehl nicht verfügbar.', 'red');
+                    return;
+                }
+                if (fragmentUnlocked) {
+                    addLine('[SYSTEM] Fragment bereits entschlüsselt. Nutze: open fragment', 'amber');
+                    return;
+                }
+                SFX.confirm();
+                addLine('[SYSTEM] Verschlüsseltes Fragment erkannt auf /dev/seele0', 'amber');
+                addLine('[SYSTEM] Autorisierungscode erforderlich.', 'amber');
+                addEmpty();
+                showFragmentInput();
+            }
+            else if (cmd === 'open fragment' || cmd === 'open fragment0') {
+                if (!fragmentUnlocked) {
+                    SFX.error();
+                    addLine('[FEHLER] Fragment nicht entschlüsselt.', 'red');
+                    return;
+                }
+                SFX.confirm();
+                addLine('[SYSTEM] Öffne Forscher-Fragment #0...', 'green');
+                setTimeout(function() {
+                    window.location.href = 'fragment0.html';
+                }, 1000);
+            }
+            else if (cmd === 'help') {
+                showHelp();
+            }
+            else if (cmd === 'clear') {
+                terminal.innerHTML = '';
+            }
+            else {
+                SFX.error();
+                addLine('[FEHLER] Unbekannter Befehl: ' + raw, 'red');
+                addLine('Tippe "help" für verfügbare Befehle.', 'dim');
+            }
+        }
+
+        // ============================================================
+        //  FRAGMENT UNLOCK — code input section
+        // ============================================================
+        function showFragmentInput() {
+            inputLine.style.display = 'none';
+
+            var section = document.createElement('div');
+            section.className = 'fragment-section active';
+            section.innerHTML =
+                '<div class="frag-prompt-text">Gib den Autorisierungscode ein:</div>' +
+                '<div class="frag-input-wrap">' +
+                    '<span class="fprompt">CODE:~$ </span>' +
+                    '<input type="text" id="frag-code-input" autocomplete="off" spellcheck="false" placeholder="XXXX-XX-XXXXXX">' +
+                '</div>' +
+                '<div class="frag-error" id="frag-error">ZUGANG VERWEIGERT — UNGÜLTIGER CODE</div>' +
+                '<div class="frag-success" id="frag-success"></div>';
+            terminal.appendChild(section);
+            scrollBottom();
+
+            var fragInput = document.getElementById('frag-code-input');
+            var fragError = document.getElementById('frag-error');
+            var fragSuccess = document.getElementById('frag-success');
+
+            fragInput.focus();
+
+            fragInput.addEventListener('keydown', function(e) {
+                if (e.key.length === 1) SFX.keyPress();
+                if (e.key === 'Enter') {
+                    var val = fragInput.value.trim().toUpperCase();
+                    if (!val) return;
+                    verifyFragmentCode(val, fragInput, fragError, fragSuccess, section);
+                }
+            });
+        }
+
+        async function verifyFragmentCode(code, input, errorEl, successEl, section) {
+            var encoded = new TextEncoder().encode(code);
+            var hashBuf = await crypto.subtle.digest('SHA-256', encoded);
+            var hashArr = Array.from(new Uint8Array(hashBuf));
+            var hashHex = hashArr.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+
+            if (hashHex === CODE_HASH) {
+                // SUCCESS
+                localStorage.setItem('arg-fragment0-unlocked', 'true');
+                fragmentUnlocked = true;
+                input.disabled = true;
+                input.style.color = '#00ff41';
+                input.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
+                SFX.unlock();
+
+                successEl.textContent = '[ENTSCHLÜSSELT] Fragment #0 verfügbar.';
+                successEl.classList.add('visible');
+
+                setTimeout(function() {
+                    section.remove();
+                    inputLine.style.display = 'block';
+                    addEmpty();
+                    addLine('[SYSTEM] FORSCHER-DATENFRAGMENT #0 — ENTSCHLÜSSELT', 'success');
+                    addLine('[SYSTEM] Neuer Befehl verfügbar: open fragment', 'green');
+                    addEmpty();
+                    cmdInput.focus();
+                }, 2000);
+            } else {
+                // FAIL
+                SFX.error();
+                errorEl.classList.add('visible');
+                input.value = '';
+                setTimeout(function() { errorEl.classList.remove('visible'); }, 2000);
+            }
+        }
+
+        // ============================================================
+        //  STATUS BAR
         // ============================================================
         (function() {
             var sbMsg = document.getElementById('sb-msg');
             var sbClock = document.getElementById('sb-clock');
             var messages = [
-                'EMPFANGE SIGNAL...',
-                'PAKETINTEGRITÄT: 78%',
-                'FREQUENZ: 42.7 Hz // KANAL: OFFEN',
-                'LATENZ: ███ms',
-                'SIGNALSTÄRKE: ABNEHMEND',
+                'TERMINAL BEREIT',
                 'VERSCHLÜSSELUNG: AES-256-GCM',
-                'DATENKANAL: TUNNEL-4A AKTIV',
-                'FRAGMENTIERUNG: 23 PAKETE AUSSTEHEND',
-                'QUELLSIGNAL: NICHT VERIFIZIERT',
-                'ROUTING: 7 KNOTEN // STABIL',
-                'ZEITSTEMPEL: DESYNCHRONISIERT',
-                'SPEICHER: 0x4A2F...0x8C01 // KORRUPT'
+                'TUNNEL-4A: AKTIV',
+                'LATENZ: ███ms',
+                'PAKETSTATUS: STABIL'
             ];
 
-            // If breach was won, inject subtle fragment hint
-            if (localStorage.getItem('arg-breach-won') === 'true') {
-                messages.push('PARTITION /dev/seele0 — FRAGMENT #0 VERFÜGBAR');
-                messages.push('ENTSCHLÜSSELTES FRAGMENT GEFUNDEN: fragment0.html');
+            if (breachWon) {
+                messages.push('PARTITION /dev/seele0: FRAGMENT ERKANNT');
             }
+
             var msgIdx = 0, charIdx = 0, typing = true;
 
             function updateClock() {
@@ -564,155 +681,13 @@
                     setTimeout(tickMsg, 300);
                 }
             }
-            setTimeout(tickMsg, 2000);
+            setTimeout(tickMsg, 500);
         })();
 
         // ============================================================
-        //  AMBIENT WIDGETS — signal indicator + hex scroll
+        //  START
         // ============================================================
-        (function() {
-            var sigPct = document.getElementById('sig-pct');
-            var hexEl  = document.getElementById('widget-hex');
-
-            // Fluctuate signal percentage
-            setInterval(function() {
-                var jitter = Math.floor(Math.random() * 7) - 3;
-                var val = 87 + jitter;
-                if (val > 99) val = 99;
-                if (val < 40) val = 40;
-                sigPct.textContent = val;
-            }, 1800);
-
-            // Hex scroll
-            function randHex(len) {
-                var s = '';
-                for (var i = 0; i < len; i++) s += '0123456789ABCDEF'[Math.floor(Math.random() * 16)];
-                return s;
-            }
-            var hexLines = [];
-            var maxLines = 60;
-            for (var i = 0; i < maxLines; i++) hexLines.push(randHex(8));
-            hexEl.textContent = hexLines.join('\n');
-
-            setInterval(function() {
-                hexLines.push(randHex(8));
-                if (hexLines.length > maxLines) hexLines.shift();
-                hexEl.textContent = hexLines.join('\n');
-            }, 250);
-        })();
-
-        // ============================================================
-        //  SIGNAL DECAY — progressive corruption after typewriter ends
-        // ============================================================
-        (function() {
-            var decayStarted = false;
-            var staticCanvas = document.getElementById('static-canvas');
-            var corruptChars = '█▓▒░╬╠╣╩╦╗╔╚╝│─┼▄▀';
-
-            function startDecay() {
-                if (decayStarted) return;
-                decayStarted = true;
-                document.body.classList.add('decay-active');
-
-                // Phase 1: Increase static (0-20s)
-                var t1 = 0;
-                var phase1 = setInterval(function() {
-                    t1++;
-                    var opacity = 0.04 + (t1 / 200) * 0.06;
-                    staticCanvas.style.opacity = Math.min(opacity, 0.10);
-                    if (t1 >= 200) clearInterval(phase1);
-                }, 100);
-
-                // Phase 2: Corrupt random chars (20-40s)
-                setTimeout(function() {
-                    var phase2 = setInterval(function() {
-                        var nodes = [];
-                        document.querySelectorAll('.entry p').forEach(function(p) {
-                            var w = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
-                            var n;
-                            while (n = w.nextNode()) {
-                                if (n.textContent.trim().length > 0) nodes.push(n);
-                            }
-                        });
-                        if (nodes.length === 0) return;
-                        var node = nodes[Math.floor(Math.random() * nodes.length)];
-                        var txt = node.textContent;
-                        var ci = Math.floor(Math.random() * txt.length);
-                        if (txt[ci] === ' ' || txt[ci] === '\n') return;
-                        var rc = corruptChars[Math.floor(Math.random() * corruptChars.length)];
-                        var span = document.createElement('span');
-                        span.className = 'decay-corrupt';
-                        span.textContent = rc;
-                        var before = txt.slice(0, ci);
-                        var after  = txt.slice(ci + 1);
-                        var parent = node.parentNode;
-                        var frag = document.createDocumentFragment();
-                        if (before) frag.appendChild(document.createTextNode(before));
-                        frag.appendChild(span);
-                        if (after) frag.appendChild(document.createTextNode(after));
-                        parent.replaceChild(frag, node);
-                    }, 600);
-
-                    // Phase 3: Heavy corruption + CTA urgency (40-60s)
-                    setTimeout(function() {
-                        clearInterval(phase2);
-                        var ctaBtn = document.getElementById('cta-button');
-                        if (ctaBtn && ctaBtn.classList.contains('revealed')) {
-                            ctaBtn.classList.add('decay-urgent');
-                        }
-                        var phase3 = setInterval(function() {
-                            var freshNodes = [];
-                            document.querySelectorAll('.entry p').forEach(function(p) {
-                                var w = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
-                                var n;
-                                while (n = w.nextNode()) {
-                                    if (n.textContent.trim().length > 0) freshNodes.push(n);
-                                }
-                            });
-                            if (freshNodes.length === 0) { clearInterval(phase3); return; }
-                            for (var k = 0; k < 3; k++) {
-                                var node = freshNodes[Math.floor(Math.random() * freshNodes.length)];
-                                var txt = node.textContent;
-                                if (!txt || txt.length === 0) continue;
-                                var ci = Math.floor(Math.random() * txt.length);
-                                if (txt[ci] === ' ') continue;
-                                var rc = corruptChars[Math.floor(Math.random() * corruptChars.length)];
-                                var span = document.createElement('span');
-                                span.className = 'decay-corrupt';
-                                span.textContent = rc;
-                                var before = txt.slice(0, ci);
-                                var after  = txt.slice(ci + 1);
-                                var parent = node.parentNode;
-                                var frag = document.createDocumentFragment();
-                                if (before) frag.appendChild(document.createTextNode(before));
-                                frag.appendChild(span);
-                                if (after) frag.appendChild(document.createTextNode(after));
-                                parent.replaceChild(frag, node);
-                            }
-                            var curOp = parseFloat(staticCanvas.style.opacity) || 0.04;
-                            staticCanvas.style.opacity = Math.min(curOp + 0.002, 0.18);
-                        }, 300);
-                    }, 20000);
-                }, 20000);
-
-                // Signal widget decay
-                var sigDecay = 87;
-                var sigPctEl = document.getElementById('sig-pct');
-                var sigInterval = setInterval(function() {
-                    sigDecay -= Math.random() * 2;
-                    if (sigDecay < 5) { sigDecay = Math.random() * 3; clearInterval(sigInterval); }
-                    sigPctEl.textContent = Math.floor(sigDecay);
-                }, 1000);
-            }
-
-            // Watch for typewriter completion
-            var decayWatch = setInterval(function() {
-                if (typewriterDone && !decayStarted) {
-                    clearInterval(decayWatch);
-                    setTimeout(startDecay, 5000);
-                }
-            }, 500);
-        })();
+        setTimeout(function() { startBoot(); }, 500);
     </script>
 </body>
 </html>
