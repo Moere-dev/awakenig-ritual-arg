@@ -97,6 +97,34 @@
             50% { opacity: 0; }
         }
 
+        /* ===================== SKIP BUTTON ===================== */
+        .skip-btn {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            color: #555;
+            font-family: 'VT323', monospace;
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            cursor: pointer;
+            z-index: 500;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .skip-btn:hover {
+            color: #aaa;
+            border-color: #555;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .skip-btn.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         /* ===================== AUDIO BUTTON ===================== */
         .audio-toggle {
             position: fixed;
@@ -181,6 +209,9 @@
     </audio>
     <button class="audio-toggle" id="audio-toggle" title="Audio an/aus">♪ AUDIO</button>
 
+    <!-- Skip button -->
+    <button class="skip-btn" id="skip-btn">SKIP ▶▶</button>
+
     <div class="container">
 
         <h1 class="glitch-rgb" data-text="⚠ Übertragung Empfangen">⚠ Übertragung Empfangen</h1>
@@ -246,13 +277,13 @@
 
     <script>
         // ============================================================
-        //  AMBIENT AUDIO (autoplay with fallback)
+        //  AMBIENT AUDIO — FULL VOLUME
         // ============================================================
         const audio = document.getElementById('ambient-audio');
         const audioBtn = document.getElementById('audio-toggle');
         let audioPlaying = false;
 
-        audio.volume = 0.3;
+        audio.volume = 1.0;
 
         function tryPlayAudio() {
             audio.play().then(function() {
@@ -260,7 +291,6 @@
                 audioBtn.textContent = '♪ AUDIO';
                 audioBtn.classList.remove('muted');
             }).catch(function() {
-                // Autoplay blocked — wait for interaction
                 audioPlaying = false;
                 audioBtn.textContent = '♪ AUDIO AUS';
                 audioBtn.classList.add('muted');
@@ -269,7 +299,6 @@
 
         tryPlayAudio();
 
-        // Start on first interaction if autoplay blocked
         document.addEventListener('click', function startAudioOnce() {
             if (!audioPlaying) {
                 tryPlayAudio();
@@ -293,7 +322,7 @@
         });
 
         // ============================================================
-        //  TYPEWRITER ENGINE
+        //  TYPEWRITER ENGINE + SKIP
         // ============================================================
         const blocks = [
             document.getElementById('tw-1'),
@@ -304,8 +333,32 @@
             document.getElementById('tw-6')
         ];
 
+        const skipBtn = document.getElementById('skip-btn');
+        let skipped = false;
+        let typewriterDone = false;
+
+        function revealAll() {
+            skipped = true;
+            blocks.forEach(function(block) {
+                block.classList.add('typing', 'done');
+                block.querySelectorAll('.tw-char').forEach(function(c) {
+                    c.classList.add('visible');
+                });
+                // Remove any lingering cursors
+                block.querySelectorAll('.tw-cursor').forEach(function(c) {
+                    c.remove();
+                });
+            });
+            document.getElementById('cta-button').classList.add('revealed');
+            skipBtn.classList.add('hidden');
+            typewriterDone = true;
+        }
+
+        skipBtn.addEventListener('click', function() {
+            if (!typewriterDone) revealAll();
+        });
+
         function prepareBlock(block) {
-            // Wrap every text character in a span, preserving HTML tags
             const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, null, false);
             const textNodes = [];
             while (walker.nextNode()) textNodes.push(walker.currentNode);
@@ -324,21 +377,27 @@
         }
 
         function typeBlock(block, speed, callback) {
+            if (skipped) { if (callback) callback(); return; }
+
             block.classList.add('typing');
             const chars = block.querySelectorAll('.tw-char');
             let i = 0;
 
-            // Add cursor
             const cursor = document.createElement('span');
             cursor.className = 'tw-cursor';
             block.appendChild(cursor);
 
             function typeNext() {
+                if (skipped) {
+                    cursor.remove();
+                    if (callback) callback();
+                    return;
+                }
+
                 if (i < chars.length) {
                     chars[i].classList.add('visible');
                     i++;
 
-                    // Variable speed — faster for spaces, slower for punctuation
                     let delay = speed;
                     const char = chars[i - 1].textContent;
                     if (char === ' ') delay = speed * 0.3;
@@ -347,7 +406,6 @@
 
                     setTimeout(typeNext, delay);
                 } else {
-                    // Done typing this block
                     block.classList.add('done');
                     cursor.remove();
                     if (callback) callback();
@@ -357,15 +415,16 @@
             typeNext();
         }
 
-        // Prepare all blocks
         blocks.forEach(prepareBlock);
 
-        // Chain all blocks sequentially
         function typeSequence(index) {
+            if (skipped) return;
+
             if (index >= blocks.length) {
-                // All done — reveal the CTA button
                 setTimeout(function() {
                     document.getElementById('cta-button').classList.add('revealed');
+                    skipBtn.classList.add('hidden');
+                    typewriterDone = true;
                 }, 500);
                 return;
             }
@@ -374,13 +433,13 @@
             const delay = parseInt(block.dataset.delay) || 300;
 
             setTimeout(function() {
+                if (skipped) return;
                 typeBlock(block, 35, function() {
                     typeSequence(index + 1);
                 });
             }, delay);
         }
 
-        // Start the typewriter after a brief pause
         setTimeout(function() {
             typeSequence(0);
         }, 1500);
