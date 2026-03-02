@@ -547,6 +547,39 @@
             margin-top: 8px;
             letter-spacing: 2px;
         }
+        .breach-cmd-timer-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 0, 0, 0.15);
+            margin-top: 12px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .breach-cmd-timer-fill {
+            height: 100%;
+            width: 100%;
+            background: #ff4444;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
+            transition: width 0.1s linear;
+        }
+        .breach-cmd-timer-fill.warning {
+            background: #d4a030;
+            box-shadow: 0 0 8px rgba(212, 160, 48, 0.5);
+        }
+        .breach-cmd-timer-fill.critical {
+            background: #ff2222;
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.7);
+            animation: timer-bar-pulse 0.3s ease-in-out infinite alternate;
+        }
+        @keyframes timer-bar-pulse {
+            0% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .breach-cmd-box.success .breach-cmd-timer-fill {
+            background: #00ff41;
+            box-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+            animation: none;
+        }
         .breach-cmd-box.success {
             border-color: rgba(0, 255, 65, 0.5);
             background: rgba(0, 255, 0, 0.04);
@@ -1742,6 +1775,7 @@
                     '<div class="breach-cmd-label">» EINGABE «</div>' +
                     '<div class="breach-cmd-text" id="breach-cmd-text"></div>' +
                     '<div class="breach-cmd-desc" id="breach-cmd-desc"></div>' +
+                    '<div class="breach-cmd-timer-bar"><div class="breach-cmd-timer-fill" id="breach-cmd-timer-fill"></div></div>' +
                 '</div>' +
                 '<div class="breach-progress"><div class="bp-fill" id="breach-fill"></div></div>' +
                 '<div class="breach-input-area">' +
@@ -1762,6 +1796,7 @@
             var cmdBox = document.getElementById('breach-cmd-box');
             var cmdText = document.getElementById('breach-cmd-text');
             var cmdDesc = document.getElementById('breach-cmd-desc');
+            var cmdTimerFill = document.getElementById('breach-cmd-timer-fill');
 
             BreachSFX.alarm();
             setTimeout(function() { BreachSFX.alarm(); }, 600);
@@ -1895,19 +1930,29 @@
                 timeLeft = cmd.timeLimit;
                 timerEl.textContent = (timeLeft / 1000).toFixed(1);
                 timerEl.classList.remove('critical');
+                cmdTimerFill.style.width = '100%';
+                cmdTimerFill.className = 'breach-cmd-timer-fill';
 
                 clearInterval(timerInterval);
                 timerInterval = setInterval(function() {
                     timeLeft -= 100;
                     if (timeLeft <= 0) {
                         clearInterval(timerInterval);
+                        cmdTimerFill.style.width = '0%';
                         breachLost = true;
                         bLog('[SYSTEM] ZEIT ABGELAUFEN', 'bt-red');
                         breachDefeat(overlay, term);
                         return;
                     }
                     timerEl.textContent = (timeLeft / 1000).toFixed(1);
-                    if (timeLeft <= 3000) timerEl.classList.add('critical');
+                    var pct = (timeLeft / cmd.timeLimit) * 100;
+                    cmdTimerFill.style.width = pct + '%';
+                    if (timeLeft <= 2000) {
+                        timerEl.classList.add('critical');
+                        cmdTimerFill.className = 'breach-cmd-timer-fill critical';
+                    } else if (timeLeft <= 4000) {
+                        cmdTimerFill.className = 'breach-cmd-timer-fill warning';
+                    }
                 }, 100);
             }
 
