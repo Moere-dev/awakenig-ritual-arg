@@ -91,61 +91,6 @@
             visibility: visible;
         }
 
-        /* ===================== SKIP BUTTON ===================== */
-        .skip-btn {
-            position: fixed;
-            bottom: 15px;
-            left: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #333;
-            color: #555;
-            font-family: 'VT323', monospace;
-            font-size: 0.85rem;
-            padding: 6px 14px;
-            cursor: pointer;
-            z-index: 500;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-        }
-
-        .skip-btn:hover {
-            color: #aaa;
-            border-color: #555;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .skip-btn.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* ===================== AUDIO BUTTON ===================== */
-        .audio-toggle {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            background: rgba(0, 255, 65, 0.08);
-            border: 1px solid #1a3a1a;
-            color: #00ff41;
-            font-family: 'VT323', monospace;
-            font-size: 0.85rem;
-            padding: 6px 12px;
-            cursor: pointer;
-            z-index: 500;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-        }
-
-        .audio-toggle:hover {
-            background: rgba(0, 255, 65, 0.15);
-            border-color: #00ff41;
-        }
-
-        .audio-toggle.muted {
-            color: #555;
-            border-color: #222;
-        }
-
         /* ===================== GLITCH LINE EFFECT ===================== */
         .glitch-line {
             position: fixed;
@@ -162,16 +107,6 @@
         @keyframes glitch-line-move {
             0% { top: -2px; }
             100% { top: 100vh; }
-        }
-
-        /* ===================== CTA PULSE ===================== */
-        .cta-link {
-            animation: cta-pulse 3s ease-in-out infinite;
-        }
-
-        @keyframes cta-pulse {
-            0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 65, 0.2); }
-            50% { box-shadow: 0 0 20px rgba(0, 255, 65, 0.5), 0 0 40px rgba(0, 255, 65, 0.15); }
         }
 
         /* ===================== HIDDEN CTA ===================== */
@@ -194,9 +129,9 @@
     </style>
 </head>
 <body>
-    <div class="scanlines"></div>
+<div class="crt crt-on">
+    <div class="overlay"></div>
     <div class="glitch-line"></div>
-    <div class="vignette"></div>
     <canvas class="static-canvas" id="static-canvas"></canvas>
     <div class="screen-tear" id="screen-tear"></div>
     <div class="interference-band" id="interference-band" style="height:40px;"></div>
@@ -209,6 +144,9 @@
 
     <!-- Skip button -->
     <button class="skip-btn" id="skip-btn">SKIP ▶▶</button>
+
+    <!-- Continue prompt (shown if progress exists) -->
+    <div class="continue-prompt" id="continue-prompt" style="display:none;"></div>
 
     <div class="container">
 
@@ -272,101 +210,58 @@
         <a href="aufzeichnung.html" class="cta-link cta-hidden" id="cta-button">► Aufzeichnung Ansehen</a>
 
     </div>
+</div>
+
+    <!-- Shared modules -->
+    <script src="sfx.js"></script>
+    <script src="atmosphere.js"></script>
+    <script src="audio-toggle.js"></script>
 
     <script>
         // ============================================================
-        //  AMBIENT AUDIO
+        //  PROGRESS PERSISTENCE
         // ============================================================
-        const audio = document.getElementById('ambient-audio');
-        const audioBtn = document.getElementById('audio-toggle');
-        let audioPlaying = false;
-
-        audio.volume = 1.0;
-
-        function tryPlayAudio() {
-            audio.play().then(function() {
-                audioPlaying = true;
-                audioBtn.textContent = '♪ AUDIO';
-                audioBtn.classList.remove('muted');
-            }).catch(function() {
-                audioPlaying = false;
-                audioBtn.textContent = '♪ AUDIO AUS';
-                audioBtn.classList.add('muted');
-            });
-        }
-
-        tryPlayAudio();
-
-        document.addEventListener('click', function startAudioOnce() {
-            if (!audioPlaying) tryPlayAudio();
-            document.removeEventListener('click', startAudioOnce);
-        }, { once: false });
-
-        audioBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (audioPlaying) {
-                audio.pause(); audioPlaying = false;
-                audioBtn.textContent = '♪ AUDIO AUS'; audioBtn.classList.add('muted');
-            } else {
-                audio.play(); audioPlaying = true;
-                audioBtn.textContent = '♪ AUDIO'; audioBtn.classList.remove('muted');
+        (function() {
+            var phase = localStorage.getItem('arg-phase');
+            if (phase === 'aufzeichnung' || phase === 's33l3nreich') {
+                var prompt = document.getElementById('continue-prompt');
+                var target = phase === 's33l3nreich' ? 's33l3nreich.html' : 'aufzeichnung.html';
+                var label = phase === 's33l3nreich' ? 'SEELENREICH ►' : 'AUFZEICHNUNG ►';
+                prompt.style.display = 'block';
+                prompt.innerHTML = '<a class="continue-link" href="' + target + '">WEITER: ' + label + '</a>'
+                    + '<button class="reset-btn" id="reset-btn">FORTSCHRITT LÖSCHEN</button>';
+                document.getElementById('reset-btn').addEventListener('click', function() {
+                    localStorage.removeItem('arg-phase');
+                    prompt.style.display = 'none';
+                });
             }
-        });
-
-        // ============================================================
-        //  SOUND EFFECTS ENGINE (Web Audio API — no files needed)
-        // ============================================================
-        const SFX = (function() {
-            let ctx, _lastClick = 0;
-            function getCtx() {
-                if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if (ctx.state === 'suspended') ctx.resume();
-                return ctx;
-            }
-            function tone(type, freq, dur, vol) {
-                var c = getCtx(), o = c.createOscillator(), g = c.createGain();
-                o.type = type; o.frequency.value = freq;
-                g.gain.setValueAtTime(vol || 0.08, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
-                o.connect(g); g.connect(c.destination);
-                o.start(); o.stop(c.currentTime + dur);
-            }
-            function noise(dur, vol, highpass) {
-                var c = getCtx(), rate = c.sampleRate;
-                var buf = c.createBuffer(1, rate * dur, rate);
-                var data = buf.getChannelData(0);
-                for (var i = 0; i < data.length; i++)
-                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (rate * dur * 0.3));
-                var src = c.createBufferSource(); src.buffer = buf;
-                var g = c.createGain(); g.gain.value = vol;
-                if (highpass) {
-                    var f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = highpass;
-                    src.connect(f); f.connect(g);
-                } else { src.connect(g); }
-                g.connect(c.destination); src.start();
-            }
-            return {
-                typeClick: function() {
-                    var now = Date.now();
-                    if (now - _lastClick < 8) return;
-                    _lastClick = now;
-                    noise(0.012, 0.04 + Math.random() * 0.04, 3000 + Math.random() * 2000);
-                },
-                ctaReveal: function() {
-                    var c = getCtx(), o = c.createOscillator(), g = c.createGain();
-                    o.type = 'sine';
-                    o.frequency.setValueAtTime(300, c.currentTime);
-                    o.frequency.exponentialRampToValueAtTime(800, c.currentTime + 0.5);
-                    g.gain.setValueAtTime(0.05, c.currentTime);
-                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.8);
-                    o.connect(g); g.connect(c.destination);
-                    o.start(); o.stop(c.currentTime + 0.8);
-                }
-            };
         })();
 
         // ============================================================
+        //  INIT AUDIO
+        // ============================================================
+        AudioToggle.init();
+
+        // ============================================================
+        //  PAGE-SPECIFIC SFX
+        // ============================================================
+        var SFX = {
+            typeClick: SFXCore.typeClick,
+            ctaReveal: function() {
+                var c = SFXCore.getCtx(), o = c.createOscillator(), g = c.createGain();
+                o.type = 'sine';
+                o.frequency.setValueAtTime(300, c.currentTime);
+                o.frequency.exponentialRampToValueAtTime(800, c.currentTime + 0.5);
+                g.gain.setValueAtTime(0.05, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.8);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + 0.8);
+            }
+        };
+
+        // ============================================================
         //  TYPEWRITER ENGINE (terminal-style, char by char with cursor)
+        //  Uses requestAnimationFrame so sound + visual are in the same frame
         // ============================================================
         const blockData = [
             { id: 'tw-1', delay: 1000 },
@@ -401,7 +296,6 @@
             blocksOriginal.forEach(function(b) {
                 b.el.innerHTML = b.html;
                 b.el.classList.add('typing', 'done');
-                // Remove any cursor
                 b.el.querySelectorAll('.tw-cursor').forEach(function(c) { c.remove(); });
             });
             document.getElementById('cta-button').classList.add('revealed');
@@ -424,7 +318,6 @@
             const fullText = blockInfo.text;
             const fullHtml = blockInfo.html;
 
-            // Clear block, show it, add cursor
             el.innerHTML = '';
             el.classList.add('typing');
 
@@ -444,10 +337,8 @@
                     return;
                 }
 
-                // First frame — initialise timing
                 if (lastCharTime === 0) lastCharTime = timestamp;
 
-                // Check if enough time has passed since last character
                 if (timestamp - lastCharTime < currentDelay) {
                     requestAnimationFrame(tick);
                     return;
@@ -459,10 +350,8 @@
                     var t = document.createTextNode(ch);
                     el.insertBefore(t, cursor);
 
-                    // Play click sound in sync — same frame as the DOM update
                     if (ch !== ' ' && ch !== '\n') SFX.typeClick();
 
-                    // Calculate delay until next character
                     currentDelay = speed;
                     if (ch === ' ') currentDelay = speed * 0.3;
                     else if (ch === '\n') currentDelay = speed * 0.5;
@@ -472,7 +361,6 @@
                     lastCharTime = timestamp;
                     requestAnimationFrame(tick);
                 } else {
-                    // Done — restore original HTML with formatting
                     el.innerHTML = fullHtml;
                     el.classList.add('done');
                     if (callback) callback();
@@ -494,6 +382,8 @@
                     document.getElementById('cta-button').classList.add('revealed');
                     skipBtn.classList.add('hidden');
                     typewriterDone = true;
+                    // Save progress
+                    localStorage.setItem('arg-phase', 'index');
                 }, 500);
                 return;
             }
@@ -514,170 +404,8 @@
         }, 1500);
 
         // ============================================================
-        //  ATMOSPHERE ENGINE — subtle immersive effects
+        //  ATMOSPHERE — use shared engine
         // ============================================================
-        const ATMO = (function() {
-            let droneOsc1, droneOsc2, droneGain, crackleTimer, flickerTimer, tearTimer, interferenceTimer;
-            let staticCtx, staticCanvas, staticW, staticH;
-
-            // --- LOW DRONE ---
-            function startDrone() {
-                var c = SFX.__getCtx ? SFX.__getCtx() : (function() {
-                    var a = new (window.AudioContext || window.webkitAudioContext)();
-                    if (a.state === 'suspended') a.resume();
-                    return a;
-                })();
-                droneGain = c.createGain();
-                droneGain.gain.value = 0;
-                droneGain.connect(c.destination);
-
-                droneOsc1 = c.createOscillator();
-                droneOsc1.type = 'sine';
-                droneOsc1.frequency.value = 48;
-                droneOsc1.connect(droneGain);
-                droneOsc1.start();
-
-                droneOsc2 = c.createOscillator();
-                droneOsc2.type = 'sine';
-                droneOsc2.frequency.value = 50.5; // slight detune = eerie beating
-                droneOsc2.connect(droneGain);
-                droneOsc2.start();
-
-                // Fade in slowly
-                droneGain.gain.linearRampToValueAtTime(0.025, c.currentTime + 4);
-
-                // Slow volume modulation
-                var lfo = c.createOscillator();
-                var lfoGain = c.createGain();
-                lfo.type = 'sine';
-                lfo.frequency.value = 0.15; // very slow
-                lfoGain.gain.value = 0.008;
-                lfo.connect(lfoGain);
-                lfoGain.connect(droneGain.gain);
-                lfo.start();
-            }
-
-            // --- RANDOM CRACKLE ---
-            function scheduleCrackle() {
-                var delay = 4000 + Math.random() * 12000; // 4-16 seconds
-                crackleTimer = setTimeout(function() {
-                    var c;
-                    try { c = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
-                    if (c.state === 'suspended') c.resume();
-                    var rate = c.sampleRate;
-                    var dur = 0.04 + Math.random() * 0.08;
-                    var buf = c.createBuffer(1, rate * dur, rate);
-                    var data = buf.getChannelData(0);
-                    for (var i = 0; i < data.length; i++) {
-                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (rate * dur * 0.2));
-                    }
-                    var src = c.createBufferSource(); src.buffer = buf;
-                    var g = c.createGain(); g.gain.value = 0.015 + Math.random() * 0.015;
-                    var bp = c.createBiquadFilter(); bp.type = 'bandpass';
-                    bp.frequency.value = 2000 + Math.random() * 4000;
-                    bp.Q.value = 0.5;
-                    src.connect(bp); bp.connect(g); g.connect(c.destination);
-                    src.start();
-                    scheduleCrackle();
-                }, delay);
-            }
-
-            // --- STATIC CANVAS ---
-            function initStatic() {
-                staticCanvas = document.getElementById('static-canvas');
-                if (!staticCanvas) return;
-                staticCtx = staticCanvas.getContext('2d');
-                function resize() {
-                    staticW = staticCanvas.width = window.innerWidth;
-                    staticH = staticCanvas.height = window.innerHeight;
-                }
-                resize();
-                window.addEventListener('resize', resize);
-                renderStatic();
-            }
-
-            function renderStatic() {
-                if (!staticCtx) return;
-                var imageData = staticCtx.createImageData(staticW, staticH);
-                var data = imageData.data;
-                // Sparse noise — only update ~10% of pixels for performance
-                for (var i = 0; i < data.length; i += 4) {
-                    if (Math.random() < 0.1) {
-                        var v = Math.random() * 255;
-                        data[i] = data[i+1] = data[i+2] = v;
-                        data[i+3] = 12; // very low alpha
-                    }
-                }
-                staticCtx.putImageData(imageData, 0, 0);
-                requestAnimationFrame(renderStatic);
-            }
-
-            // --- SCREEN FLICKER ---
-            function scheduleFlicker() {
-                var delay = 6000 + Math.random() * 15000; // 6-21 seconds
-                flickerTimer = setTimeout(function() {
-                    document.body.classList.add('flickering');
-                    setTimeout(function() {
-                        document.body.classList.remove('flickering');
-                        // Occasionally double-flicker
-                        if (Math.random() < 0.3) {
-                            setTimeout(function() {
-                                document.body.classList.add('flickering');
-                                setTimeout(function() {
-                                    document.body.classList.remove('flickering');
-                                }, 80);
-                            }, 120);
-                        }
-                    }, 80);
-                    scheduleFlicker();
-                }, delay);
-            }
-
-            // --- SCREEN TEAR ---
-            function scheduleTear() {
-                var delay = 10000 + Math.random() * 20000; // 10-30 seconds
-                tearTimer = setTimeout(function() {
-                    var tear = document.getElementById('screen-tear');
-                    if (tear) {
-                        tear.style.top = (Math.random() * 100) + '%';
-                        tear.classList.add('active');
-                        setTimeout(function() { tear.classList.remove('active'); }, 100 + Math.random() * 100);
-                    }
-                    scheduleTear();
-                }, delay);
-            }
-
-            // --- INTERFERENCE ---
-            function scheduleInterference() {
-                var delay = 15000 + Math.random() * 25000; // 15-40 seconds
-                interferenceTimer = setTimeout(function() {
-                    var band = document.getElementById('interference-band');
-                    if (band) {
-                        band.style.top = (Math.random() * 80 + 10) + '%';
-                        band.style.height = (20 + Math.random() * 60) + 'px';
-                        band.classList.add('active');
-                        setTimeout(function() { band.classList.remove('active'); }, 150);
-                    }
-                    scheduleInterference();
-                }, delay);
-            }
-
-            return {
-                init: function() {
-                    initStatic();
-                    scheduleFlicker();
-                    scheduleTear();
-                    scheduleInterference();
-                    // Drone starts on first user interaction
-                    document.addEventListener('click', function startDroneOnce() {
-                        startDrone();
-                        scheduleCrackle();
-                        document.removeEventListener('click', startDroneOnce);
-                    }, { once: true });
-                }
-            };
-        })();
-
         ATMO.init();
     </script>
 </body>

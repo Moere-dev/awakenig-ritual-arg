@@ -17,7 +17,25 @@ body {
     min-height: 100vh;
 }
 
-/* ===================== SCANLINES ===================== */
+/* ===================== SCANLINES + VIGNETTE (combined for fewer composite layers) ===================== */
+.overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.15) 0px,
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 3px
+        ),
+        radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.65) 100%);
+}
+
+/* Legacy class kept for backward compat */
 .scanlines {
     position: fixed;
     top: 0; left: 0;
@@ -279,7 +297,7 @@ body {
     margin: 40px 0;
 }
 
-/* ===================== ATMOSPHERE — VIGNETTE ===================== */
+/* ===================== ATMOSPHERE — VIGNETTE (standalone, for pages not using .overlay) ===================== */
 .vignette {
     position: fixed;
     top: 0; left: 0;
@@ -287,12 +305,6 @@ body {
     pointer-events: none;
     z-index: 999;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.65) 100%);
-    animation: vignette-breathe 8s ease-in-out infinite;
-}
-
-@keyframes vignette-breathe {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
 }
 
 /* ===================== ATMOSPHERE — STATIC CANVAS ===================== */
@@ -304,6 +316,11 @@ body {
     z-index: 997;
     opacity: 0.04;
     mix-blend-mode: screen;
+}
+
+/* ===================== ATMOSPHERE — GLITCH LINE ===================== */
+.glitch-line {
+    will-change: top;
 }
 
 /* ===================== ATMOSPHERE — SCREEN TEAR ===================== */
@@ -372,4 +389,144 @@ body {
     .password-input { width: 150px; font-size: 1.2rem; }
     .submit-btn { margin-left: 0; margin-top: 10px; display: block; }
     .fragment-box { font-size: 1.2rem; letter-spacing: 4px; padding: 15px; }
+}
+
+/* ===================== AUDIO TOGGLE BUTTON ===================== */
+.audio-toggle {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    background: rgba(0, 255, 65, 0.08);
+    border: 1px solid #1a3a1a;
+    color: #00ff41;
+    font-family: 'VT323', monospace;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    cursor: pointer;
+    z-index: 500;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+}
+
+.audio-toggle:hover {
+    background: rgba(0, 255, 65, 0.15);
+    border-color: #00ff41;
+}
+
+.audio-toggle.muted {
+    color: #555;
+    border-color: #222;
+}
+
+/* ===================== SKIP BUTTON ===================== */
+.skip-btn {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid #333;
+    color: #555;
+    font-family: 'VT323', monospace;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    cursor: pointer;
+    z-index: 500;
+    transition: all 0.3s;
+    letter-spacing: 1px;
+}
+
+.skip-btn:hover {
+    color: #aaa;
+    border-color: #555;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.skip-btn.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ===================== CRT WRAPPER ===================== */
+.crt {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.crt-on {
+    animation: crt-turn-on 1.2s ease-out forwards;
+}
+
+@keyframes crt-turn-on {
+    0% {
+        filter: brightness(30);
+        transform: scaleY(0.005) scaleX(0.3);
+        opacity: 1;
+    }
+    10% {
+        filter: brightness(10);
+        transform: scaleY(0.005) scaleX(1);
+    }
+    30% {
+        filter: brightness(3);
+        transform: scaleY(1) scaleX(1);
+    }
+    60% {
+        filter: brightness(1.2);
+    }
+    100% {
+        filter: brightness(1);
+        transform: scaleY(1) scaleX(1);
+    }
+}
+
+/* ===================== PROGRESS / CONTINUE PROMPT ===================== */
+.continue-prompt {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 500;
+    text-align: right;
+}
+
+.continue-link {
+    display: inline-block;
+    padding: 8px 18px;
+    color: #00ff41;
+    border: 1px solid #00ff41;
+    text-decoration: none;
+    font-family: 'VT323', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    background: rgba(0, 255, 65, 0.05);
+    transition: all 0.3s;
+    animation: cta-pulse 3s ease-in-out infinite;
+}
+
+.continue-link:hover {
+    background: #00ff41;
+    color: #0a0a0a;
+}
+
+@keyframes cta-pulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(0, 255, 65, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(0, 255, 65, 0.5), 0 0 40px rgba(0, 255, 65, 0.15); }
+}
+
+.reset-btn {
+    display: block;
+    margin-top: 8px;
+    background: none;
+    border: none;
+    color: #333;
+    font-family: 'VT323', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-align: right;
+    width: 100%;
+}
+
+.reset-btn:hover {
+    color: #ff4444;
 }

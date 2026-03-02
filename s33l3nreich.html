@@ -5,30 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DAS SEELENREICH</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁</text></svg>">
+    <link rel="stylesheet" href="style.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        /* ===================== CRT BODY ===================== */
+        /* ===================== PAGE OVERRIDES ===================== */
         body {
             background: #000;
             color: #b0b0b0;
-            font-family: 'VT323', 'Courier New', monospace;
             font-size: 1.1rem;
-            line-height: 1.6;
-            overflow-x: hidden;
-            min-height: 100vh;
         }
 
-        /* ===================== CRT WRAPPER ===================== */
-        .crt {
-            position: relative;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        /* CRT curvature + vignette */
+        /* CRT curvature + vignette (page-specific barrel effect) */
         .crt::before {
             content: '';
             position: fixed;
@@ -58,19 +44,9 @@
             border-radius: 18px;
         }
 
-        /* ===================== SCANLINES ===================== */
-        .scanlines {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none; z-index: 1000;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0,0,0,0.12) 0px,
-                rgba(0,0,0,0.12) 1px,
-                transparent 1px,
-                transparent 3px
-            );
-        }
+        /* z-index overrides — CRT layers need higher values on this page */
+        .skip-btn, .audio-toggle { z-index: 1500; }
+        .audio-toggle { text-shadow: 0 0 5px rgba(0,255,65,0.3); }
 
         /* Horizontal flicker line */
         .flicker-line {
@@ -307,74 +283,6 @@
         }
         .shaking { animation: shake-hard 0.15s linear infinite; }
 
-        /* ===================== SKIP BUTTON ===================== */
-        .skip-btn {
-            position: fixed;
-            bottom: 15px;
-            left: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #333;
-            color: #555;
-            font-family: 'VT323', monospace;
-            font-size: 0.85rem;
-            padding: 6px 14px;
-            cursor: pointer;
-            z-index: 1500;
-            transition: all 0.3s;
-            letter-spacing: 1px;
-        }
-
-        .skip-btn:hover {
-            color: #aaa;
-            border-color: #555;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .skip-btn.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* ===================== AUDIO ===================== */
-        .audio-toggle {
-            position: fixed; bottom: 15px; right: 15px;
-            background: rgba(0,255,65,0.05); border: 1px solid #0e2e0e;
-            color: #00ff41; font-family: 'VT323', monospace; font-size: 0.85rem;
-            padding: 6px 12px; cursor: pointer; z-index: 1500;
-            transition: all 0.3s; letter-spacing: 1px;
-            text-shadow: 0 0 5px rgba(0,255,65,0.3);
-        }
-        .audio-toggle:hover { background: rgba(0,255,65,0.12); border-color: #00ff41; }
-        .audio-toggle.muted { color: #333; border-color: #111; text-shadow: none; }
-
-        /* ===================== CRT TURN ON ===================== */
-        .crt-on {
-            animation: crt-turn-on 1.2s ease-out;
-        }
-
-        @keyframes crt-turn-on {
-            0% {
-                filter: brightness(30);
-                transform: scaleY(0.005) scaleX(0.3);
-                opacity: 1;
-            }
-            10% {
-                filter: brightness(10);
-                transform: scaleY(0.005) scaleX(1);
-            }
-            30% {
-                filter: brightness(3);
-                transform: scaleY(1) scaleX(1);
-            }
-            60% {
-                filter: brightness(1.2);
-            }
-            100% {
-                filter: brightness(1);
-                transform: scaleY(1) scaleX(1);
-            }
-        }
-
         /* ===================== RESPONSIVE ===================== */
         @media (max-width: 600px) {
             .terminal { padding: 15px 12px 110px 12px; }
@@ -383,69 +291,6 @@
             .decrypt-display { font-size: 1.3rem; letter-spacing: 3px; padding: 15px 10px; }
             .brand { font-size: 1.1rem; }
             .crt::after { border-radius: 10px; }
-        }
-
-        /* ===================== ATMOSPHERE ===================== */
-        .static-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            mix-blend-mode: screen;
-        }
-
-        .screen-tear {
-            position: fixed;
-            left: 0;
-            width: 100%;
-            height: 0;
-            pointer-events: none;
-            background: rgba(0, 255, 65, 0.06);
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.1);
-            opacity: 0;
-            transition: none;
-        }
-
-        .screen-tear.active {
-            opacity: 1;
-            height: 3px;
-        }
-
-        .interference-band {
-            position: fixed;
-            left: -5%;
-            width: 110%;
-            pointer-events: none;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                rgba(0, 255, 65, 0.03) 1px,
-                transparent 2px
-            );
-            opacity: 0;
-            transform: translateX(0);
-        }
-
-        .interference-band.active {
-            opacity: 1;
-            animation: interference-slide 0.15s linear;
-        }
-
-        @keyframes interference-slide {
-            0% { transform: translateX(-3px); }
-            25% { transform: translateX(2px); }
-            50% { transform: translateX(-1px); }
-            75% { transform: translateX(3px); }
-            100% { transform: translateX(0); }
-        }
-
-        @keyframes page-flicker {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.92; }
-        }
-
-        .flickering {
-            animation: page-flicker 0.08s ease-in-out;
         }
     </style>
 </head>
@@ -475,27 +320,110 @@
         <div class="terminal" id="terminal"></div>
     </div>
 
+    <!-- Shared modules -->
+    <script src="sfx.js"></script>
+    <script src="atmosphere.js"></script>
+    <script src="audio-toggle.js"></script>
+
     <script>
         // ============================================================
         //  CONFIG
         // ============================================================
-        const TARGET = 'eu8573000.g-portal.game';
-        const VALID_USER = 'watson';
-        const VALID_PASS = 'Seele731';
-        const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]';
+        // Credentials stored as SHA-256 hashes (not plaintext)
+        var USER_HASH = '3f8d40ad6a1d0038b8c334303fe06e70df25a1b78220855f6acc3aec951ffb3b';
+        var PASS_HASH = '9d2d2de840247dea9e1be80b1fe76360c77f4672715cba7622db2551c11b6e34';
+        // TARGET XOR-encrypted with password (key: seele731), revealed only after login
+        var TARGET_ENC = [22,16,93,89,82,4,3,1,67,75,2,65,21,88,65,69,18,9,75,11,4,90,86];
+        var TARGET = null; // resolved after successful login
+        var SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*!?<>{}[]';
 
-        const terminal = document.getElementById('terminal');
-        const stickyNote = document.getElementById('sticky-note');
-        const screenFlash = document.getElementById('screen-flash');
+        var terminal = document.getElementById('terminal');
+        var stickyNote = document.getElementById('sticky-note');
+        var screenFlash = document.getElementById('screen-flash');
 
-        let inputEl = null;
-        let inputLineEl = null;
-        let loggedIn = false;
-        let decrypting = false;
-        let loginAttempts = 0;
-        let skipped = false;
-        const skipBtn = document.getElementById('skip-btn');
+        var inputEl = null;
+        var inputLineEl = null;
+        var loggedIn = false;
+        var decrypting = false;
+        var loginAttempts = 0;
+        var skipped = false;
+        var skipBtn = document.getElementById('skip-btn');
 
+        // ============================================================
+        //  PAGE-SPECIFIC SFX (built on shared SFXCore)
+        // ============================================================
+        var SFX = {
+            typeClick: SFXCore.typeClick,
+            keyPress: SFXCore.keyPress,
+            bootBeep: function() { SFXCore.tone('square', 800, 0.15, 0.08); },
+            glitch: function() { SFXCore.noise(0.07, 0.1); },
+            loginSuccess: function() {
+                [600, 800, 1000].forEach(function(f, i) {
+                    setTimeout(function() { SFXCore.tone('sine', f, 0.18, 0.08); }, i * 100);
+                });
+            },
+            loginFail: function() {
+                var c = SFXCore.getCtx(), o = c.createOscillator(), g = c.createGain();
+                o.type = 'sawtooth';
+                o.frequency.setValueAtTime(300, c.currentTime);
+                o.frequency.linearRampToValueAtTime(100, c.currentTime + 0.3);
+                g.gain.setValueAtTime(0.06, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + 0.3);
+            },
+            charLock: function() { SFXCore.tone('sine', 1200 + Math.random() * 400, 0.08, 0.1); },
+            scrambleTick: function() { SFXCore.tone('square', 200 + Math.random() * 300, 0.015, 0.02); },
+            reveal: function() {
+                var c = SFXCore.getCtx();
+                [200, 300, 400, 500, 600].forEach(function(freq) {
+                    var o = c.createOscillator(), g = c.createGain();
+                    o.type = 'sine'; o.frequency.value = freq;
+                    g.gain.setValueAtTime(0.05, c.currentTime);
+                    g.gain.linearRampToValueAtTime(0.07, c.currentTime + 0.5);
+                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 3);
+                    o.connect(g); g.connect(c.destination);
+                    o.start(); o.stop(c.currentTime + 3);
+                });
+            },
+            warn: function() {
+                var c = SFXCore.getCtx(), o = c.createOscillator(), g = c.createGain();
+                o.type = 'sawtooth';
+                o.frequency.setValueAtTime(800, c.currentTime);
+                o.frequency.setValueAtTime(400, c.currentTime + 0.1);
+                o.frequency.setValueAtTime(800, c.currentTime + 0.2);
+                o.frequency.setValueAtTime(400, c.currentTime + 0.3);
+                g.gain.setValueAtTime(0.04, c.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.4);
+                o.connect(g); g.connect(c.destination);
+                o.start(); o.stop(c.currentTime + 0.4);
+            }
+        };
+
+        // ============================================================
+        //  CRYPTO HELPERS
+        // ============================================================
+        function sha256(str) {
+            var enc = new TextEncoder();
+            return crypto.subtle.digest('SHA-256', enc.encode(str)).then(function(buf) {
+                return Array.from(new Uint8Array(buf)).map(function(b) {
+                    return b.toString(16).padStart(2, '0');
+                }).join('');
+            });
+        }
+
+        function decryptTarget(passKey) {
+            var key = passKey.toLowerCase();
+            var result = '';
+            for (var i = 0; i < TARGET_ENC.length; i++) {
+                result += String.fromCharCode(TARGET_ENC[i] ^ key.charCodeAt(i % key.length));
+            }
+            return result;
+        }
+
+        // ============================================================
+        //  SKIP BUTTON
+        // ============================================================
         skipBtn.addEventListener('click', function() {
             if (!skipped) {
                 skipped = true;
@@ -507,10 +435,10 @@
         //  MATRIX RAIN (background)
         // ============================================================
         (function() {
-            const canvas = document.getElementById('matrix-canvas');
-            const ctx = canvas.getContext('2d');
-            let w, h, columns, drops;
-            const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
+            var canvas = document.getElementById('matrix-canvas');
+            var ctx = canvas.getContext('2d');
+            var w, h, columns, drops;
+            var chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF';
 
             function resize() {
                 w = canvas.width = window.innerWidth;
@@ -528,9 +456,9 @@
                 ctx.fillStyle = '#00ff41';
                 ctx.font = '14px VT323, monospace';
 
-                for (let i = 0; i < drops.length; i++) {
-                    const char = chars[Math.floor(Math.random() * chars.length)];
-                    ctx.fillText(char, i * 16, drops[i] * 16);
+                for (var i = 0; i < drops.length; i++) {
+                    var ch = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(ch, i * 16, drops[i] * 16);
                     if (drops[i] * 16 > h && Math.random() > 0.975) {
                         drops[i] = 0;
                     }
@@ -543,132 +471,39 @@
         })();
 
         // ============================================================
-        //  AUDIO
+        //  INIT SHARED MODULES
         // ============================================================
-        const audio = document.getElementById('ambient-audio');
-        const audioBtn = document.getElementById('audio-toggle');
-        let audioPlaying = false;
-        audio.volume = 1.0;
+        AudioToggle.init('ambient-audio', 'audio-toggle');
 
-        function tryPlayAudio() {
-            audio.play().then(function() {
-                audioPlaying = true;
-                audioBtn.textContent = '♪ AUDIO';
-                audioBtn.classList.remove('muted');
-            }).catch(function() {
-                audioPlaying = false;
-                audioBtn.textContent = '♪ AUDIO AUS';
-                audioBtn.classList.add('muted');
-            });
-        }
-        tryPlayAudio();
-        document.addEventListener('click', function s() {
-            if (!audioPlaying) tryPlayAudio();
-            document.removeEventListener('click', s);
-        }, { once: false });
-
-        audioBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (audioPlaying) {
-                audio.pause(); audioPlaying = false;
-                audioBtn.textContent = '♪ AUDIO AUS'; audioBtn.classList.add('muted');
-            } else {
-                audio.play(); audioPlaying = true;
-                audioBtn.textContent = '♪ AUDIO'; audioBtn.classList.remove('muted');
-            }
+        ATMO.init({
+            droneFreq1: 42,
+            droneFreq2: 44.5,
+            droneGain: 0.022,
+            droneFadeIn: 5,
+            lfoFreq: 0.12,
+            lfoGain: 0.006,
+            extraOscillators: [{ type: 'triangle', freq: 28, gain: 0.012, fadeIn: 6 }],
+            crackleDelay: [3000, 10000],
+            crackleDur: [0.04, 0.1],
+            crackleGain: [0.012, 0.018],
+            crackleBandpass: [1500, 5000],
+            staticPixelChance: 0.08,
+            staticAlpha: 10,
+            flickerDelay: [5000, 12000],
+            doubleFlickerChance: 0.4,
+            doubleFlickerGap: 100,
+            tearDelay: [8000, 18000],
+            tearRemoval: [80, 120],
+            interferenceDelay: [12000, 22000],
+            interferenceHeight: [15, 50],
+            interferenceRemoval: 120
         });
-
-        // ============================================================
-        //  SOUND EFFECTS ENGINE (Web Audio API — no files needed)
-        // ============================================================
-        const SFX = (function() {
-            let ctx, _lastClick = 0;
-            function getCtx() {
-                if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if (ctx.state === 'suspended') ctx.resume();
-                return ctx;
-            }
-            function tone(type, freq, dur, vol) {
-                var c = getCtx(), o = c.createOscillator(), g = c.createGain();
-                o.type = type; o.frequency.value = freq;
-                g.gain.setValueAtTime(vol || 0.08, c.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
-                o.connect(g); g.connect(c.destination);
-                o.start(); o.stop(c.currentTime + dur);
-            }
-            function noise(dur, vol, highpass) {
-                var c = getCtx(), rate = c.sampleRate;
-                var buf = c.createBuffer(1, rate * dur, rate);
-                var data = buf.getChannelData(0);
-                for (var i = 0; i < data.length; i++)
-                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (rate * dur * 0.3));
-                var src = c.createBufferSource(); src.buffer = buf;
-                var g = c.createGain(); g.gain.value = vol;
-                if (highpass) {
-                    var f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = highpass;
-                    src.connect(f); f.connect(g);
-                } else { src.connect(g); }
-                g.connect(c.destination); src.start();
-            }
-            return {
-                typeClick: function() {
-                    var now = Date.now();
-                    if (now - _lastClick < 8) return;
-                    _lastClick = now;
-                    noise(0.012, 0.04 + Math.random() * 0.04, 3000 + Math.random() * 2000);
-                },
-                bootBeep: function() { tone('square', 800, 0.15, 0.08); },
-                glitch: function() { noise(0.07, 0.1); },
-                loginSuccess: function() {
-                    [600, 800, 1000].forEach(function(f, i) {
-                        setTimeout(function() { tone('sine', f, 0.18, 0.08); }, i * 100);
-                    });
-                },
-                loginFail: function() {
-                    var c = getCtx(), o = c.createOscillator(), g = c.createGain();
-                    o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(300, c.currentTime);
-                    o.frequency.linearRampToValueAtTime(100, c.currentTime + 0.3);
-                    g.gain.setValueAtTime(0.06, c.currentTime);
-                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.3);
-                    o.connect(g); g.connect(c.destination);
-                    o.start(); o.stop(c.currentTime + 0.3);
-                },
-                charLock: function() { tone('sine', 1200 + Math.random() * 400, 0.08, 0.1); },
-                scrambleTick: function() { tone('square', 200 + Math.random() * 300, 0.015, 0.02); },
-                reveal: function() {
-                    var c = getCtx();
-                    [200, 300, 400, 500, 600].forEach(function(freq) {
-                        var o = c.createOscillator(), g = c.createGain();
-                        o.type = 'sine'; o.frequency.value = freq;
-                        g.gain.setValueAtTime(0.05, c.currentTime);
-                        g.gain.linearRampToValueAtTime(0.07, c.currentTime + 0.5);
-                        g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 3);
-                        o.connect(g); g.connect(c.destination);
-                        o.start(); o.stop(c.currentTime + 3);
-                    });
-                },
-                keyPress: function() { noise(0.012, 0.04, 4000); },
-                warn: function() {
-                    var c = getCtx(), o = c.createOscillator(), g = c.createGain();
-                    o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(800, c.currentTime);
-                    o.frequency.setValueAtTime(400, c.currentTime + 0.1);
-                    o.frequency.setValueAtTime(800, c.currentTime + 0.2);
-                    o.frequency.setValueAtTime(400, c.currentTime + 0.3);
-                    g.gain.setValueAtTime(0.04, c.currentTime);
-                    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.4);
-                    o.connect(g); g.connect(c.destination);
-                    o.start(); o.stop(c.currentTime + 0.4);
-                }
-            };
-        })();
 
         // ============================================================
         //  HELPERS
         // ============================================================
         function addRaw(html) {
-            const div = document.createElement('div');
+            var div = document.createElement('div');
             div.className = 'terminal-line';
             div.innerHTML = html;
             if (inputLineEl) terminal.insertBefore(div, inputLineEl);
@@ -703,8 +538,7 @@
         }
 
         // ============================================================
-        //  TYPEWRITER LINE — types a line character by character
-        //  Uses requestAnimationFrame so sound + visual are in the same frame
+        //  TYPEWRITER LINE — uses requestAnimationFrame for sync
         // ============================================================
         function typeLine(html, speed, callback) {
             if (skipped) {
@@ -713,26 +547,24 @@
                 return;
             }
 
-            // Create a hidden element to extract text
-            const temp = document.createElement('div');
+            var temp = document.createElement('div');
             temp.innerHTML = html;
-            const fullText = temp.textContent;
+            var fullText = temp.textContent;
 
-            const div = document.createElement('div');
+            var div = document.createElement('div');
             div.className = 'terminal-line';
             if (inputLineEl) terminal.insertBefore(div, inputLineEl);
             else terminal.appendChild(div);
 
-            // We'll type using the raw HTML, revealing char by char
-            const cursor = document.createElement('span');
+            var cursor = document.createElement('span');
             cursor.className = 'tw-cursor';
 
-            let charIndex = 0;
+            var charIndex = 0;
             div.innerHTML = '';
             div.appendChild(cursor);
 
-            let lastCharTime = 0;
-            let currentDelay = 0;
+            var lastCharTime = 0;
+            var currentDelay = 0;
 
             function tick(timestamp) {
                 if (skipped) {
@@ -755,7 +587,6 @@
                     div.insertBefore(t, cursor);
                     scrollBottom();
 
-                    // Play click sound in sync — same frame as the DOM update
                     if (ch !== ' ' && ch !== '\n') SFX.typeClick();
 
                     currentDelay = speed;
@@ -766,7 +597,6 @@
                     lastCharTime = timestamp;
                     requestAnimationFrame(tick);
                 } else {
-                    // Done — replace with full HTML
                     div.innerHTML = html;
                     if (callback) callback();
                 }
@@ -776,15 +606,14 @@
         }
 
         // ============================================================
-        //  SEQUENCER — with typewriter support
+        //  SEQUENCER
         // ============================================================
         function runSequence(lines, callback) {
-            let i = 0;
+            var i = 0;
             function next() {
                 if (skipped) {
-                    // Instantly dump all remaining lines
                     while (i < lines.length) {
-                        const l = lines[i];
+                        var l = lines[i];
                         i++;
                         if (l.fn) l.fn();
                         else addRaw(l.html);
@@ -793,13 +622,12 @@
                     return;
                 }
                 if (i >= lines.length) { if (callback) callback(); return; }
-                const l = lines[i];
+                var l = lines[i];
                 i++;
                 if (l.fn) {
                     l.fn();
                     setTimeout(next, l.delay || 200);
                 } else if (l.type) {
-                    // Typewriter line
                     typeLine(l.html, l.speed || 20, function() {
                         setTimeout(next, l.delay || 100);
                     });
@@ -812,13 +640,12 @@
         }
 
         // ============================================================
-        //  BOOT SEQUENCE (typewriter)
+        //  BOOT SEQUENCE
         // ============================================================
         function startBoot() {
-            // Brief delay for CRT turn-on animation
             setTimeout(function() {
                 SFX.bootBeep();
-                const bootLines = [
+                var bootLines = [
                     { html: '<span class="brand">FORSCHER-OS v0.7.3 — BIOS POST</span>', type: true, speed: 30, delay: 400 },
                     { fn: addSep, delay: 200 },
                     { html: 'CPU .............. Seelenreich Cortex M7      [<span class="ok">OK</span>]', type: true, speed: 12, delay: 200 },
@@ -844,10 +671,10 @@
         }
 
         // ============================================================
-        //  LORE (amber colored, typewriter)
+        //  LORE
         // ============================================================
         function startLore() {
-            const loreLines = [
+            var loreLines = [
                 { fn: addEmpty, delay: 400 },
                 { fn: addSep, delay: 200 },
                 { html: '<span class="brand">EINGEHENDE NACHRICHT — QUELLE: SEELENREICH</span>', type: true, speed: 25, delay: 500 },
@@ -902,7 +729,7 @@
             inputEl.addEventListener('keydown', function(e) {
                 if (e.key.length === 1) SFX.keyPress();
                 if (e.key === 'Enter') {
-                    const raw = inputEl.value.trim();
+                    var raw = inputEl.value.trim();
                     inputEl.value = '';
                     if (!raw || decrypting) return;
                     addEcho(raw);
@@ -919,8 +746,8 @@
         //  COMMANDS
         // ============================================================
         function processCommand(raw) {
-            const parts = raw.split(/\s+/);
-            const cmd = parts[0].toLowerCase();
+            var parts = raw.split(/\s+/);
+            var cmd = parts[0].toLowerCase();
             if (loggedIn) { postLogin(cmd, parts); return; }
 
             switch(cmd) {
@@ -957,38 +784,47 @@
                 addLine('AUTH', 'Verwendung: login &lt;Benutzername&gt; &lt;Passwort&gt;', 'warn-text');
                 return;
             }
-            const user = parts[1];
-            const pass = parts.slice(2).join(' ');
+            var user = parts[1];
+            var pass = parts.slice(2).join(' ');
             loginAttempts++;
             addLine('AUTH', 'Authentifiziere "' + esc(user) + '"...', 'text');
             inputEl.disabled = true;
 
-            setTimeout(function() {
-                if (user.toLowerCase() === VALID_USER && pass.toLowerCase() === VALID_PASS.toLowerCase()) {
-                    SFX.loginSuccess();
-                    flash(); shake(); addEmpty();
-                    addLine('AUTH', '✓ ZUGANG GEWÄHRT', 'success');
-                    addLine('AUTH', 'Willkommen zurück, Watson.', 'success');
-                    addEmpty();
-                    addLine('SYSTEM', 'Verschlüsselte Datenfragmente gefunden.', 'text');
-                    addLine('SYSTEM', 'Befehl "decrypt" zum Entschlüsseln verfügbar.', 'success');
-                    addEmpty();
-                    loggedIn = true;
-                    stickyNote.style.display = 'none';
-                } else {
-                    SFX.loginFail();
-                    shake();
-                    addLine('AUTH', '✗ ZUGANG VERWEIGERT', 'error-text');
-                    if (user.toLowerCase() !== VALID_USER)
-                        addLine('AUTH', 'Benutzer "' + esc(user) + '" nicht gefunden.', 'error-text');
-                    else
-                        addLine('AUTH', 'Passwort ungültig.', 'error-text');
-                    if (loginAttempts >= 3)
-                        addLine('SYSTEM', 'Tipp: Habt ihr alles auf dem Bildschirm überprüft?', 'warn-text');
-                }
-                inputEl.disabled = false;
-                inputEl.focus();
-            }, 1200);
+            // Async SHA-256 comparison
+            Promise.all([
+                sha256(user.toLowerCase()),
+                sha256(pass.toLowerCase())
+            ]).then(function(hashes) {
+                setTimeout(function() {
+                    if (hashes[0] === USER_HASH && hashes[1] === PASS_HASH) {
+                        // Decrypt TARGET with the entered password
+                        TARGET = decryptTarget(pass);
+                        localStorage.setItem('arg-phase', 's33l3nreich');
+                        SFX.loginSuccess();
+                        flash(); shake(); addEmpty();
+                        addLine('AUTH', '✓ ZUGANG GEWÄHRT', 'success');
+                        addLine('AUTH', 'Willkommen zurück, Watson.', 'success');
+                        addEmpty();
+                        addLine('SYSTEM', 'Verschlüsselte Datenfragmente gefunden.', 'text');
+                        addLine('SYSTEM', 'Befehl "decrypt" zum Entschlüsseln verfügbar.', 'success');
+                        addEmpty();
+                        loggedIn = true;
+                        stickyNote.style.display = 'none';
+                    } else {
+                        SFX.loginFail();
+                        shake();
+                        addLine('AUTH', '✗ ZUGANG VERWEIGERT', 'error-text');
+                        if (hashes[0] !== USER_HASH)
+                            addLine('AUTH', 'Benutzer "' + esc(user) + '" nicht gefunden.', 'error-text');
+                        else
+                            addLine('AUTH', 'Passwort ungültig.', 'error-text');
+                        if (loginAttempts >= 3)
+                            addLine('SYSTEM', 'Tipp: Habt ihr alles auf dem Bildschirm überprüft?', 'warn-text');
+                    }
+                    inputEl.disabled = false;
+                    inputEl.focus();
+                }, 1200);
+            });
         }
 
         function postLogin(cmd, parts) {
@@ -1035,8 +871,8 @@
         // ============================================================
         //  DECRYPTION
         // ============================================================
-        let chars = [];
-        let scrambleInterval;
+        var decChars = [];
+        var scrambleInterval;
 
         function startDecryption() {
             decrypting = true;
@@ -1046,11 +882,11 @@
             addLine('DECRYPT', 'Datenfragment wird geladen...', 'text');
 
             setTimeout(function() {
-                const displayEl = document.createElement('div');
+                var displayEl = document.createElement('div');
                 displayEl.className = 'decrypt-display active';
                 terminal.insertBefore(displayEl, inputLineEl);
 
-                const progEl = document.createElement('div');
+                var progEl = document.createElement('div');
                 progEl.className = 'progress-bar active';
                 progEl.innerHTML = '<div class="fill" id="progress-fill"></div>';
                 terminal.insertBefore(progEl, inputLineEl);
@@ -1068,9 +904,9 @@
 
         function initDisplay(displayEl) {
             displayEl.innerHTML = '';
-            chars = [];
-            for (let i = 0; i < TARGET.length; i++) {
-                const span = document.createElement('span');
+            decChars = [];
+            for (var i = 0; i < TARGET.length; i++) {
+                var span = document.createElement('span');
                 if (TARGET[i] === '.' || TARGET[i] === '-') {
                     span.textContent = TARGET[i];
                     span.className = 'char dot';
@@ -1081,11 +917,11 @@
                     span.dataset.resolved = 'false';
                 }
                 displayEl.appendChild(span);
-                chars.push(span);
+                decChars.push(span);
             }
             scrambleInterval = setInterval(function() {
                 if (Math.random() < 0.3) SFX.scrambleTick();
-                chars.forEach(function(s) {
+                decChars.forEach(function(s) {
                     if (s.dataset.resolved === 'false')
                         s.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
                 });
@@ -1093,27 +929,27 @@
         }
 
         function runDecryption(displayEl, fillEl, progEl) {
-            let indices = [];
-            for (let i = 0; i < TARGET.length; i++) {
+            var indices = [];
+            for (var i = 0; i < TARGET.length; i++) {
                 if (TARGET[i] !== '.' && TARGET[i] !== '-') indices.push(i);
             }
-            for (let i = indices.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                const t = indices[i]; indices[i] = indices[j]; indices[j] = t;
+            for (var i = indices.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var t = indices[i]; indices[i] = indices[j]; indices[j] = t;
             }
-            const total = indices.length;
-            let resolved = 0;
+            var total = indices.length;
+            var resolved = 0;
 
             function next() {
                 if (indices.length === 0) {
                     clearInterval(scrambleInterval);
                     finish(progEl); return;
                 }
-                const idx = indices.shift();
-                const span = chars[idx];
-                let fc = 0;
-                const fm = 6 + Math.floor(Math.random() * 6);
-                const fi = setInterval(function() {
+                var idx = indices.shift();
+                var span = decChars[idx];
+                var fc = 0;
+                var fm = 6 + Math.floor(Math.random() * 6);
+                var fi = setInterval(function() {
                     span.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
                     fc++;
                     if (fc >= fm) {
@@ -1124,7 +960,7 @@
                         SFX.charLock();
                         resolved++;
                         fillEl.style.width = ((resolved / total) * 100) + '%';
-                        const pct = Math.round((resolved / total) * 100);
+                        var pct = Math.round((resolved / total) * 100);
                         if (pct === 25) { addLine('DECRYPT', 'Erste Datenschicht... 25%', 'text'); shake(); }
                         else if (pct === 50) { addLine('DECRYPT', 'Fragmentrekonstruktion... 50%', 'warn-text'); shake(); }
                         else if (pct === 75) { SFX.warn(); addLine('SYSTEM', 'WARNUNG: Instabile Verbindung!', 'error-text'); shake(); }
@@ -1146,7 +982,7 @@
                 progEl.style.display = 'none';
                 inputLineEl.style.display = 'none';
 
-                const box = document.createElement('div');
+                var box = document.createElement('div');
                 box.className = 'final-box';
                 box.innerHTML = '<p class="warn" style="font-size:1.2rem;letter-spacing:3px;">ZIEL GEFUNDEN</p>' +
                     '<p class="ip-text">' + TARGET + '</p>' +
@@ -1164,169 +1000,6 @@
                 }, 300);
             }, 1500);
         }
-
-        // ============================================================
-        //  ATMOSPHERE ENGINE — subtle immersive effects
-        // ============================================================
-        const ATMO = (function() {
-            let droneOsc1, droneOsc2, droneGain, crackleTimer, flickerTimer, tearTimer, interferenceTimer;
-            let sCtx, sCanvas, sW, sH;
-
-            function startDrone() {
-                var c;
-                try { c = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
-                if (c.state === 'suspended') c.resume();
-                droneGain = c.createGain();
-                droneGain.gain.value = 0;
-                droneGain.connect(c.destination);
-
-                droneOsc1 = c.createOscillator();
-                droneOsc1.type = 'sine';
-                droneOsc1.frequency.value = 42; // slightly lower for this page
-                droneOsc1.connect(droneGain);
-                droneOsc1.start();
-
-                droneOsc2 = c.createOscillator();
-                droneOsc2.type = 'sine';
-                droneOsc2.frequency.value = 44.5;
-                droneOsc2.connect(droneGain);
-                droneOsc2.start();
-
-                // Third sub-bass for extra depth on terminal page
-                var droneOsc3 = c.createOscillator();
-                droneOsc3.type = 'triangle';
-                droneOsc3.frequency.value = 28;
-                var g3 = c.createGain(); g3.gain.value = 0;
-                droneOsc3.connect(g3); g3.connect(c.destination);
-                droneOsc3.start();
-                g3.gain.linearRampToValueAtTime(0.012, c.currentTime + 6);
-
-                droneGain.gain.linearRampToValueAtTime(0.022, c.currentTime + 5);
-
-                var lfo = c.createOscillator();
-                var lfoGain = c.createGain();
-                lfo.type = 'sine';
-                lfo.frequency.value = 0.12;
-                lfoGain.gain.value = 0.006;
-                lfo.connect(lfoGain);
-                lfoGain.connect(droneGain.gain);
-                lfo.start();
-            }
-
-            function scheduleCrackle() {
-                var delay = 3000 + Math.random() * 10000; // slightly more frequent on this page
-                crackleTimer = setTimeout(function() {
-                    var c;
-                    try { c = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
-                    if (c.state === 'suspended') c.resume();
-                    var rate = c.sampleRate;
-                    var dur = 0.04 + Math.random() * 0.1;
-                    var buf = c.createBuffer(1, rate * dur, rate);
-                    var data = buf.getChannelData(0);
-                    for (var i = 0; i < data.length; i++) {
-                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (rate * dur * 0.2));
-                    }
-                    var src = c.createBufferSource(); src.buffer = buf;
-                    var g = c.createGain(); g.gain.value = 0.012 + Math.random() * 0.018;
-                    var bp = c.createBiquadFilter(); bp.type = 'bandpass';
-                    bp.frequency.value = 1500 + Math.random() * 5000;
-                    bp.Q.value = 0.5;
-                    src.connect(bp); bp.connect(g); g.connect(c.destination);
-                    src.start();
-                    scheduleCrackle();
-                }, delay);
-            }
-
-            function initStatic() {
-                sCanvas = document.getElementById('static-canvas');
-                if (!sCanvas) return;
-                sCtx = sCanvas.getContext('2d');
-                function resize() {
-                    sW = sCanvas.width = window.innerWidth;
-                    sH = sCanvas.height = window.innerHeight;
-                }
-                resize();
-                window.addEventListener('resize', resize);
-                renderStatic();
-            }
-
-            function renderStatic() {
-                if (!sCtx) return;
-                var imageData = sCtx.createImageData(sW, sH);
-                var data = imageData.data;
-                for (var i = 0; i < data.length; i += 4) {
-                    if (Math.random() < 0.08) {
-                        var v = Math.random() * 255;
-                        data[i] = data[i+1] = data[i+2] = v;
-                        data[i+3] = 10;
-                    }
-                }
-                sCtx.putImageData(imageData, 0, 0);
-                requestAnimationFrame(renderStatic);
-            }
-
-            function scheduleFlicker() {
-                var delay = 5000 + Math.random() * 12000;
-                flickerTimer = setTimeout(function() {
-                    document.body.classList.add('flickering');
-                    setTimeout(function() {
-                        document.body.classList.remove('flickering');
-                        if (Math.random() < 0.4) {
-                            setTimeout(function() {
-                                document.body.classList.add('flickering');
-                                setTimeout(function() {
-                                    document.body.classList.remove('flickering');
-                                }, 80);
-                            }, 100);
-                        }
-                    }, 80);
-                    scheduleFlicker();
-                }, delay);
-            }
-
-            function scheduleTear() {
-                var delay = 8000 + Math.random() * 18000;
-                tearTimer = setTimeout(function() {
-                    var tear = document.getElementById('screen-tear');
-                    if (tear) {
-                        tear.style.top = (Math.random() * 100) + '%';
-                        tear.classList.add('active');
-                        setTimeout(function() { tear.classList.remove('active'); }, 80 + Math.random() * 120);
-                    }
-                    scheduleTear();
-                }, delay);
-            }
-
-            function scheduleInterference() {
-                var delay = 12000 + Math.random() * 22000;
-                interferenceTimer = setTimeout(function() {
-                    var band = document.getElementById('interference-band');
-                    if (band) {
-                        band.style.top = (Math.random() * 80 + 10) + '%';
-                        band.style.height = (15 + Math.random() * 50) + 'px';
-                        band.classList.add('active');
-                        setTimeout(function() { band.classList.remove('active'); }, 120);
-                    }
-                    scheduleInterference();
-                }, delay);
-            }
-
-            return {
-                init: function() {
-                    initStatic();
-                    scheduleFlicker();
-                    scheduleTear();
-                    scheduleInterference();
-                    document.addEventListener('click', function startDroneOnce() {
-                        startDrone();
-                        scheduleCrackle();
-                        document.removeEventListener('click', startDroneOnce);
-                    }, { once: true });
-                }
-            };
-        })();
-
-        ATMO.init();
 
         // ============================================================
         //  START
