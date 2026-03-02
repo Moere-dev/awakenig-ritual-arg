@@ -446,13 +446,15 @@
                     charIndex++;
                     var t = document.createTextNode(ch);
                     el.insertBefore(t, cursor);
-                    setTimeout(function() { SFX.typeClick(); }, 18);
 
                     let delay = speed;
                     if (ch === ' ') delay = speed * 0.3;
                     else if (ch === '\n') delay = speed * 0.5;
                     else if (ch === '.' || ch === '—' || ch === '!') delay = speed * 3;
                     else if (ch === ',') delay = speed * 1.8;
+
+                    // Play click sound in sync with visible characters only
+                    if (ch !== ' ' && ch !== '\n') SFX.typeClick();
 
                     setTimeout(typeNext, delay);
                 } else {
