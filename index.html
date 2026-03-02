@@ -579,7 +579,7 @@
                 { html: '<span class="lore-line">Aber diesmal müsst ihr schneller sein.</span>', type: true, speed: 30, delay: 500 },
                 { fn: addEmpty, delay: 300 },
                 { fn: addSep, delay: 200 },
-                { html: '<span class="ok">» Befehl verfügbar: </span><span class="highlight">reconnect seele</span>', type: true, speed: 20, delay: 400 },
+                { html: '<span class="ok">» Befehl verfügbar: </span><span class="highlight">retry breach</span>', type: true, speed: 20, delay: 400 },
                 { fn: addSep, delay: 200 },
                 { fn: addEmpty, delay: 200 },
             ];
@@ -600,13 +600,10 @@
             addLineHtml('  <span class="highlight">open übertragung</span>    — Signalübertragung öffnen', '');
 
             if (breachFailed && !breachWon) {
-                addLineHtml('  <span class="highlight">reconnect seele</span>     — Zurück zum Seelenreich-Terminal', '');
+                addLineHtml('  <span class="highlight">retry breach</span>        — Hacking-Sequenz erneut starten', '');
             }
-            if (breachWon && !fragmentUnlocked) {
-                addLineHtml('  <span class="highlight">decrypt fragment</span>    — Gefundenen Code entschlüsseln', '');
-            }
-            if (fragmentUnlocked) {
-                addLineHtml('  <span class="highlight">open fragment</span>       — Forscher-Fragment #0 öffnen', '');
+            if (breachWon) {
+                addLineHtml('  <span class="highlight">decrypt fragment</span>    — Forscher-Fragment entschlüsseln', '');
             }
 
             addLineHtml('  <span class="highlight">help</span>                — Befehle anzeigen', '');
@@ -644,7 +641,7 @@
                     window.location.href = 'uebertragung.html';
                 }, 1200);
             }
-            else if (cmd === 'reconnect seele' || cmd === 'reconnect seelenreich') {
+            else if (cmd === 'retry breach') {
                 if (!breachFailed || breachWon) {
                     SFX.error();
                     addLine('[FEHLER] Befehl nicht verfügbar.', 'red');
@@ -666,7 +663,10 @@
                     return;
                 }
                 if (fragmentUnlocked) {
-                    addLine('[SYSTEM] Fragment bereits entschlüsselt. Nutze: open fragment', 'amber');
+                    SFX.confirm();
+                    addLine('[SYSTEM] Fragment bereits entschlüsselt. Öffne Fragment #0...', 'green');
+                    cmdInput.disabled = true;
+                    setTimeout(function() { launchFragmentTransition(); }, 600);
                     return;
                 }
                 SFX.confirm();
@@ -674,17 +674,6 @@
                 addLine('[SYSTEM] Autorisierungscode erforderlich.', 'amber');
                 addEmpty();
                 showFragmentInput();
-            }
-            else if (cmd === 'open fragment' || cmd === 'open fragment0') {
-                if (!fragmentUnlocked) {
-                    SFX.error();
-                    addLine('[FEHLER] Fragment nicht entschlüsselt.', 'red');
-                    return;
-                }
-                SFX.confirm();
-                addLine('[SYSTEM] Öffne Forscher-Fragment #0...', 'green');
-                cmdInput.disabled = true;
-                setTimeout(function() { launchFragmentTransition(); }, 600);
             }
             else if (cmd === 'help') {
                 showHelp();
@@ -751,17 +740,15 @@
                 input.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
                 SFX.unlock();
 
-                successEl.textContent = '[ENTSCHLÜSSELT] Fragment #0 verfügbar.';
+                successEl.textContent = '[ENTSCHLÜSSELT] Fragment #0 wird geladen...';
                 successEl.classList.add('visible');
 
                 setTimeout(function() {
                     section.remove();
-                    inputLine.style.display = 'block';
                     addEmpty();
                     addLine('[SYSTEM] FORSCHER-DATENFRAGMENT #0 — ENTSCHLÜSSELT', 'success');
-                    addLine('[SYSTEM] Neuer Befehl verfügbar: open fragment', 'green');
-                    addEmpty();
-                    cmdInput.focus();
+                    addLine('[SYSTEM] Öffne Fragment #0...', 'green');
+                    setTimeout(function() { launchFragmentTransition(); }, 800);
                 }, 2000);
             } else {
                 // FAIL
