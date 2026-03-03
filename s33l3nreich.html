@@ -1779,15 +1779,13 @@
         var breachActive = false;
 
         function checkBreachTrigger(cmd) {
-            var c = cmd.toLowerCase().trim();
+            // After breachArmed, ANY command starts the minigame
             if (breachArmed && !breachActive) {
-                if (c.indexOf('trace') !== -1 || c.indexOf('6661') !== -1 || c.indexOf('scan') !== -1 || c.indexOf('kill') !== -1 || c.indexOf('run') !== -1 || c.indexOf('execute') !== -1) {
-                    breachArmed = false;
-                    breachActive = true;
-                    inputLineEl.style.display = 'none';
-                    startBreachAttack();
-                    return true;
-                }
+                breachArmed = false;
+                breachActive = true;
+                inputLineEl.style.display = 'none';
+                startBreachAttack();
+                return true;
             }
             return false;
         }

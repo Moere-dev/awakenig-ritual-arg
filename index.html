@@ -619,6 +619,23 @@
         }
 
         // ============================================================
+        //  FULLSCREEN HELPER
+        // ============================================================
+        function goFullscreenAndNavigate(url) {
+            var el = document.documentElement;
+            var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+            if (rfs) {
+                rfs.call(el).then(function() {
+                    window.location.href = url;
+                }).catch(function() {
+                    window.location.href = url;
+                });
+            } else {
+                window.location.href = url;
+            }
+        }
+
+        // ============================================================
         //  HELP & COMMANDS
         // ============================================================
         function showHelp() {
@@ -635,6 +652,7 @@
 
             addLineHtml('  <span class="highlight">help</span>                — Befehle anzeigen', '');
             addLineHtml('  <span class="highlight">clear</span>               — Terminal leeren', '');
+            addLineHtml('  <span class="highlight">exit</span>                — Sitzung beenden', '');
             addEmpty();
 
             // Show input
@@ -665,7 +683,7 @@
                 addLine('[SYSTEM] Verbinde mit Signalübertragung...', 'green');
                 addLine('[SYSTEM] Tunnel aufgebaut. Weiterleitung...', 'green');
                 setTimeout(function() {
-                    window.location.href = 'uebertragung.html';
+                    goFullscreenAndNavigate('uebertragung.html');
                 }, 1200);
             }
             else if (cmd === 'retry breach') {
@@ -680,7 +698,7 @@
                 addLine('[WARNUNG] Eindringling noch aktiv — Vorbereiten...', 'red');
                 setTimeout(function() {
                     localStorage.removeItem('arg-breach-failed');
-                    window.location.href = 's33l3nreich.html?breach=retry';
+                    goFullscreenAndNavigate('s33l3nreich.html?breach=retry');
                 }, 2000);
             }
             else if (cmd === 'decrypt fragment' || cmd === 'decrypt fragment0') {
@@ -711,6 +729,16 @@
                 while (terminal.firstChild && terminal.firstChild !== inputLine) {
                     terminal.removeChild(terminal.firstChild);
                 }
+            }
+            else if (cmd === 'exit') {
+                SFX.confirm();
+                addLine('[SYSTEM] Sitzung wird beendet...', 'amber');
+                setTimeout(function() {
+                    window.close();
+                    // Fallback if browser blocks window.close()
+                    addLine('[SYSTEM] Tab kann nicht automatisch geschlossen werden.', 'red');
+                    addLine('[SYSTEM] Bitte schließe den Tab manuell.', 'dim');
+                }, 1000);
             }
             else {
                 SFX.error();
@@ -872,7 +900,7 @@
                 flash.classList.add('fire');
                 SFX.confirm();
                 setTimeout(function() {
-                    window.location.href = 'fragment0.html';
+                    goFullscreenAndNavigate('fragment0.html');
                 }, 500);
             }, 4200);
         }
