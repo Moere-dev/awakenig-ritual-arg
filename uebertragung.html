@@ -376,6 +376,11 @@
         let skipped = false;
         let typewriterDone = false;
 
+        // Revisit speed boost
+        var revisit = (JSON.parse(localStorage.getItem('arg-visited') || '[]')).indexOf('uebertragung') !== -1;
+        var SPD = revisit ? 3 : 1;   // speed divisor
+        var DLY = revisit ? 0.4 : 1; // delay multiplier
+
         // Store original HTML for each block before we touch it
         const blocksOriginal = [];
         blockData.forEach(function(bd) {
@@ -425,6 +430,7 @@
             cursor.className = 'tw-cursor';
             el.appendChild(cursor);
 
+            var adjSpeed = speed / SPD;
             let charIndex = 0;
             let lastCharTime = 0;
             let currentDelay = 0;
@@ -452,11 +458,11 @@
 
                     if (ch !== ' ' && ch !== '\n') SFX.typeClick();
 
-                    currentDelay = speed;
-                    if (ch === ' ') currentDelay = speed * 0.3;
-                    else if (ch === '\n') currentDelay = speed * 0.5;
-                    else if (ch === '.' || ch === '—' || ch === '!') currentDelay = speed * 3;
-                    else if (ch === ',') currentDelay = speed * 1.8;
+                    currentDelay = adjSpeed;
+                    if (ch === ' ') currentDelay = adjSpeed * 0.3;
+                    else if (ch === '\n') currentDelay = adjSpeed * 0.5;
+                    else if (ch === '.' || ch === '—' || ch === '!') currentDelay = adjSpeed * 3;
+                    else if (ch === ',') currentDelay = adjSpeed * 1.8;
 
                     lastCharTime = timestamp;
                     requestAnimationFrame(tick);
@@ -484,7 +490,7 @@
                     typewriterDone = true;
                     // Save progress
                     localStorage.setItem('arg-phase', 'uebertragung');
-                }, 500);
+                }, Math.round(500 * DLY));
                 return;
             }
 
@@ -495,13 +501,14 @@
                 typeBlock(blockInfo, 30, function() {
                     typeSequence(index + 1);
                 });
-            }, blockInfo.delay);
+            }, Math.round(blockInfo.delay * DLY));
         }
 
         // Start after initial pause
+        if (revisit) skipBtn.classList.add('hidden');
         setTimeout(function() {
             typeSequence(0);
-        }, 1500);
+        }, revisit ? 400 : 1500);
 
         // ============================================================
         //  ATMOSPHERE — use shared engine
