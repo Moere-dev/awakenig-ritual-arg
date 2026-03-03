@@ -1852,7 +1852,7 @@
             overlay.className = 'breach-overlay';
             overlay.innerHTML =
                 '<div class="breach-header">⚠ SICHERHEITSVERLETZUNG — EINDRINGLING ERKANNT</div>' +
-                '<div class="breach-timer" id="breach-timer">08.0</div>' +
+                '<div class="breach-timer" id="breach-timer">14.0</div>' +
                 '<div class="breach-terminal" id="breach-term"></div>' +
                 '<div class="breach-cmd-box" id="breach-cmd-box" style="display:none;">' +
                     '<div class="breach-cmd-label">» EINGABE «</div>' +
@@ -1901,10 +1901,10 @@
             }
 
             var commands = [
-                { cmd: 'FIREWALL ACTIVATE', hint: 'FIREWALL ACTIVATE', desc: 'Firewall aktivieren', timeLimit: 8000 },
-                { cmd: 'KILL 6661', hint: 'KILL 6661', desc: 'Prozess terminieren', timeLimit: 7000 },
-                { cmd: 'ENCRYPT TUNNEL', hint: 'ENCRYPT TUNNEL', desc: 'Tunnel verschlüsseln', timeLimit: 7000 },
-                { cmd: 'PURGE INTRUDER', hint: 'PURGE INTRUDER', desc: 'Eindringling entfernen', timeLimit: 8000 }
+                { cmd: 'FIREWALL ACTIVATE', hint: 'FIREWALL ACTIVATE', desc: 'Firewall aktivieren', timeLimit: 14000 },
+                { cmd: 'KILL 6661', hint: 'KILL 6661', desc: 'Prozess terminieren', timeLimit: 12000 },
+                { cmd: 'ENCRYPT TUNNEL', hint: 'ENCRYPT TUNNEL', desc: 'Tunnel verschlüsseln', timeLimit: 12000 },
+                { cmd: 'PURGE INTRUDER', hint: 'PURGE INTRUDER', desc: 'Eindringling entfernen', timeLimit: 14000 }
             ];
 
             var cmdIndex = 0;
