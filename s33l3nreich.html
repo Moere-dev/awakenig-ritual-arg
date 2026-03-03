@@ -1931,8 +1931,22 @@
                                 bLog('', '');
                                 BreachSFX.alarm();
                                 bInput.disabled = false;
-                                bInput.placeholder = 'Befehl eingeben...';
-                                setTimeout(function() { promptNextCommand(); }, 800);
+                                bInput.placeholder = 'Tippe einen beliebigen Befehl, um die Verteidigung zu starten...';
+                                // Wait for first input to start the defense minigame
+                                var startDefense = function(e) {
+                                    if (e.key === 'Enter' && bInput.value.trim() !== '') {
+                                        bInput.removeEventListener('keydown', startDefense);
+                                        bInput.disabled = true;
+                                        bLog('[DEFENSE] Verteidigung aktiviert — Zeit läuft!', 'bt-green');
+                                        setTimeout(function() {
+                                            bInput.disabled = false;
+                                            bInput.value = '';
+                                            bInput.placeholder = commands[0].hint;
+                                            promptNextCommand();
+                                        }, 500);
+                                    }
+                                };
+                                bInput.addEventListener('keydown', startDefense);
                             }, 1500);
                         }, 800);
                         return;
