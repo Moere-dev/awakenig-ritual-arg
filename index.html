@@ -533,7 +533,13 @@
                     { html: '<span class="ok">✓ System bereit.</span>', type: true, speed: 25, delay: 400 },
                 ];
 
-                runSequence(bootSteps, startLore);
+                runSequence(bootSteps, function() {
+                    if (!localStorage.getItem('arg-lore-seen')) {
+                        startLore();
+                    } else {
+                        showTerminalReady();
+                    }
+                });
             }, 1300);
         }
 
@@ -561,7 +567,10 @@
                 { fn: addEmpty, delay: 300 },
             ];
 
-            runSequence(loreSteps, showTerminalReady);
+            runSequence(loreSteps, function() {
+                localStorage.setItem('arg-lore-seen', 'true');
+                showTerminalReady();
+            });
         }
 
         // ============================================================
