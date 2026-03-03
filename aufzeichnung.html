@@ -301,8 +301,6 @@
                 >
                 <button id="submit-btn" class="submit-btn">ENTSCHLÜSSELN</button>
             </div>
-            <p id="error-msg" class="error-msg">⚠ ZUGANG VERWEIGERT — Code ungültig</p>
-            <p id="success-msg" class="success-msg">✓ ENTSCHLÜSSELUNG ERFOLGREICH — Zugang gewährt...</p>
         </div>
 
     </div>
@@ -351,8 +349,6 @@
         ];
         const input = document.getElementById('password-input');
         const submitBtn = document.getElementById('submit-btn');
-        const errorMsg = document.getElementById('error-msg');
-        const successMsg = document.getElementById('success-msg');
 
         async function hashSHA256(str) {
             var data = new TextEncoder().encode(str);
@@ -574,8 +570,6 @@
         async function checkPassword() {
             var value = input.value.trim();
             if (!value) return;
-            errorMsg.style.display = 'none';
-            successMsg.style.display = 'none';
             input.disabled = true;
             submitBtn.disabled = true;
             launchAnalyzer(value);

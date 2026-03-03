@@ -681,7 +681,6 @@
         var SHIFTED_TARGET = null;
         var phase2 = false;
         var analyzed = false;
-        var decodeAttempts = 0;
 
         var terminal = document.getElementById('terminal');
         var stickyNote = document.getElementById('sticky-note');
@@ -853,6 +852,18 @@
 
         function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
         function scrollBottom() { window.scrollTo(0, document.body.scrollHeight); }
+
+        function showLogs() {
+            addEmpty();
+            addLine('LOG', '[Tag 1] Erste Zeichen am Altar entdeckt.', 'text');
+            addLine('LOG', '[Tag 3] Drei Schichten. Immer drei. Die Zahl verfolgt mich.', 'warn-text');
+            addLine('LOG', '[Tag 4] Die Grenze schrumpft schneller.', 'text');
+            addLine('LOG', '[Tag 6] Ritual vorbereitet. Ich bin bereit.', 'warn-text');
+            addLine('LOG', '[Tag 7] Der Wächter... er ist zu stark.', 'error-text');
+            addLine('LOG', '[Tag 7] Das Seelenreich. Ich bin gefangen.', 'error-text');
+            addLine('LOG', '[Tag ?] ...findet die Welt. Beendet es.', 'success');
+            addEmpty();
+        }
 
         function flash() {
             SFX.glitch();
@@ -1179,15 +1190,7 @@
                     addLine('SYSTEM', 'Sitzung: Watson — Authentifiziert', 'success');
                     break;
                 case 'logs':
-                    addEmpty();
-                    addLine('LOG', '[Tag 1] Erste Zeichen am Altar entdeckt.', 'text');
-                    addLine('LOG', '[Tag 3] Drei Schichten. Immer drei. Die Zahl verfolgt mich.', 'warn-text');
-                    addLine('LOG', '[Tag 4] Die Grenze schrumpft schneller.', 'text');
-                    addLine('LOG', '[Tag 6] Ritual vorbereitet. Ich bin bereit.', 'warn-text');
-                    addLine('LOG', '[Tag 7] Der Wächter... er ist zu stark.', 'error-text');
-                    addLine('LOG', '[Tag 7] Das Seelenreich. Ich bin gefangen.', 'error-text');
-                    addLine('LOG', '[Tag ?] ...findet die Welt. Beendet es.', 'success');
-                    addEmpty();
+                    showLogs();
                     break;
                 case 'decrypt': case 'entschlüsseln':
                     startDecryption(); break;
@@ -1352,15 +1355,7 @@
                     addLine('SYSTEM', 'Analyse: ' + (analyzed ? 'ABGESCHLOSSEN' : 'AUSSTEHEND'), analyzed ? 'success' : 'warn-text');
                     break;
                 case 'logs':
-                    addEmpty();
-                    addLine('LOG', '[Tag 1] Erste Zeichen am Altar entdeckt.', 'text');
-                    addLine('LOG', '[Tag 3] Drei Schichten. Immer drei. Die Zahl verfolgt mich.', 'warn-text');
-                    addLine('LOG', '[Tag 4] Die Grenze schrumpft schneller.', 'text');
-                    addLine('LOG', '[Tag 6] Ritual vorbereitet. Ich bin bereit.', 'warn-text');
-                    addLine('LOG', '[Tag 7] Der Wächter... er ist zu stark.', 'error-text');
-                    addLine('LOG', '[Tag 7] Das Seelenreich. Ich bin gefangen.', 'error-text');
-                    addLine('LOG', '[Tag ?] ...findet die Welt. Beendet es.', 'success');
-                    addEmpty();
+                    showLogs();
                     break;
                 default:
                     addLine('SYSTEM', 'Unbekannter Befehl: "' + esc(cmd) + '"', 'error-text');
@@ -1423,7 +1418,6 @@
                 return;
             }
             var val = parseInt(parts[1], 10);
-            decodeAttempts++;
             if (isNaN(val)) {
                 addLine('SYSTEM', 'Ungültiger Wert. Erwartet: Zahl.', 'error-text');
                 return;
