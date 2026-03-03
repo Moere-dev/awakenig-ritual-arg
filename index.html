@@ -681,6 +681,8 @@
                     addLine('[FEHLER] Befehl nicht verfügbar.', 'red');
                     return;
                 }
+                // Pre-warm the whitelist API so it's ready when the player reaches fragment0
+                fetch('https://awakening-ritual-api.onrender.com/', { method: 'GET' }).catch(function() {});
                 if (fragmentUnlocked) {
                     SFX.confirm();
                     addLine('[SYSTEM] Fragment bereits entschlüsselt. Öffne Fragment #0...', 'green');
