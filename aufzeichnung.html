@@ -586,6 +586,8 @@
         //  ATMOSPHERE — use shared engine
         // ============================================================
         ATMO.init();
+    </script>
+</body>
     <!-- Universal Command Bar for ARG Navigation -->
     <div id="universal-cmd-bar" style="position:fixed;bottom:0;left:0;width:100vw;background:rgba(0,0,0,0.92);color:#00ff41;font-family:monospace;padding:10px 0 8px 0;z-index:9999;box-shadow:0 -2px 16px #000;display:flex;align-items:center;gap:10px;">
         <span style="margin-left:16px;">NAV:</span>
@@ -623,14 +625,26 @@
                 if (visited.includes(dest) && pageMap[dest]) {
                     window.location.href = pageMap[dest];
                 } else {
+                    // Show error, allow retry, do not navigate or end game
                     cmdHint.textContent = 'Unknown or locked page. Type help for options.';
+                    cmdInput.disabled = true;
+                    setTimeout(function() {
+                        cmdInput.disabled = false;
+                        cmdInput.focus();
+                    }, 1200);
                 }
                 return;
             }
+            // Show error, allow retry, do not navigate or end game
             cmdHint.textContent = 'Unknown command. Type help for options.';
+            cmdInput.disabled = true;
+            setTimeout(function() {
+                cmdInput.disabled = false;
+                cmdInput.focus();
+            }, 1200);
         }
     });
     // Show hint of available pages
     cmdHint.textContent = 'Type: goto [page] — pages: ' + visited.join(', ');
     </script>
-</body>
+</html>
