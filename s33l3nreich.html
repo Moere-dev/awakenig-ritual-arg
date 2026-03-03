@@ -1955,8 +1955,10 @@
                                         if (val === 'initialize defense mode') {
                                             bInput.removeEventListener('keydown', startDefense);
                                             bInput.disabled = true;
+                                            bInput.value = '';
                                             bLog('[DEFENSE] Verteidigung aktiviert — Zeit läuft!', 'bt-green');
                                             setTimeout(function() {
+                                                defenseReady = true;
                                                 bInput.disabled = false;
                                                 bInput.value = '';
                                                 bInput.placeholder = commands[0].hint;
