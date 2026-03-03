@@ -16,7 +16,6 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
         }
 
         /* ===================== LOCK SCREEN ===================== */
@@ -335,6 +334,11 @@
     <script src="connections.js"></script>
     <script>
         // ============================================================
+        //  NAVIGATION — init before access gate so it's always available
+        // ============================================================
+        CONNECTIONS.init();
+
+        // ============================================================
         //  ACCESS GATE
         // ============================================================
         if (localStorage.getItem('arg-breach-won') !== 'true') {
@@ -502,7 +506,6 @@
                 window.location.href = 'index.html';
             }, 700);
         });
-        CONNECTIONS.init();
     </script>
 </body>
 </html>
