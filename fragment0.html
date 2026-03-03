@@ -382,6 +382,7 @@
 
             if (hashHex === CODE_HASH) {
                 localStorage.setItem('arg-fragment0-unlocked', 'true');
+                localStorage.setItem('arg-phase', 'fragment0');
                 lockInput.style.color = '#00ff41';
                 lockInput.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
                 SFXCore.tone('sine', 800, 0.3, 0.06);
@@ -399,6 +400,7 @@
         function unlock() {
             lockScreen.style.display = 'none';
             wlContent.classList.add('unlocked');
+            localStorage.setItem('arg-phase', 'fragment0');
             setTimeout(function() { wlInput.focus(); }, 600);
         }
 
@@ -492,6 +494,7 @@
         // ============================================================
         wlBack.addEventListener('click', function() {
             SFXCore.tone('sine', 600, 0.15, 0.04);
+            localStorage.removeItem('arg-phase');
             document.body.style.transition = 'opacity 0.6s';
             document.body.style.opacity = '0';
             setTimeout(function() {

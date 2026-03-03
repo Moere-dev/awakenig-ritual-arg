@@ -339,6 +339,25 @@
 
     <script>
         // ============================================================
+        //  SESSION RESTORE — redirect to saved page
+        // ============================================================
+        (function() {
+            var phase = localStorage.getItem('arg-phase');
+            var pages = {
+                'uebertragung': 'uebertragung.html',
+                'aufzeichnung': 'aufzeichnung.html',
+                's33l3nreich':  's33l3nreich.html',
+                'fragment0':    'fragment0.html'
+            };
+            // Don't redirect if player just came back from breach defeat
+            var breachFailed = localStorage.getItem('arg-breach-failed') === 'true';
+            if (phase && pages[phase] && !breachFailed) {
+                window.location.replace(pages[phase]);
+                return;
+            }
+        })();
+
+        // ============================================================
         //  INIT
         // ============================================================
         AudioToggle.init();

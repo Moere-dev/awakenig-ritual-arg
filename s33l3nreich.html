@@ -2132,6 +2132,7 @@
                         term.scrollTop = term.scrollHeight;
                         // Save breach victory
                         localStorage.setItem('arg-breach-won', 'true');
+                        localStorage.removeItem('arg-phase');
 
                         // After a delay, show return prompt
                         setTimeout(function() {
