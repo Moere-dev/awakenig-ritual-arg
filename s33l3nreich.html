@@ -676,6 +676,7 @@
     <script src="sfx.js"></script>
     <script src="atmosphere.js"></script>
     <script src="audio-toggle.js"></script>
+    <script src="connections.js"></script>
 
     <script>
         // ============================================================
@@ -816,6 +817,10 @@
         ATMO.init({
             droneFreq1: 42,
             droneFreq2: 44.5,
+            droneFreq1: 42,
+            droneFreq2: 44.5,
+            droneFreq1: 42,
+            droneFreq2: 44.5,
             droneGain: 0.022,
             droneFadeIn: 5,
             lfoFreq: 0.12,
@@ -836,6 +841,9 @@
             interferenceHeight: [15, 50],
             interferenceRemoval: 120
         });
+
+        // Init connections dropdown (floating - no status bar)
+        CONNECTIONS.init();
 
         // ============================================================
         //  HELPERS

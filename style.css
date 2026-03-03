@@ -505,3 +505,148 @@ body {
 .reset-btn:hover {
     color: #ff4444;
 }
+
+/* ===================== CONNECTIONS DROPDOWN ===================== */
+.connections-dropdown {
+    position: relative;
+    display: inline-block;
+    font-family: 'VT323', monospace;
+    margin-left: 15px;
+}
+
+.conn-trigger {
+    background: rgba(0, 255, 65, 0.04);
+    border: 1px solid rgba(0, 255, 65, 0.12);
+    color: rgba(0, 255, 65, 0.5);
+    font-family: 'VT323', monospace;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: color 0.3s, border-color 0.3s, background 0.3s;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    outline: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.conn-arrow {
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+}
+
+.connections-dropdown.conn-open .conn-arrow {
+    transform: rotate(180deg);
+}
+
+.conn-trigger:hover {
+    background: rgba(0, 255, 65, 0.08);
+    border-color: rgba(0, 255, 65, 0.3);
+    color: #00ff41;
+    text-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
+}
+
+.conn-menu {
+    position: absolute;
+    bottom: calc(100% + 5px);
+    right: 0;
+    min-width: 180px;
+    background: rgba(0, 8, 0, 0.95);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 65, 0.05) inset;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+    z-index: 600;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.conn-menu.conn-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.conn-list {
+    padding: 4px 0;
+}
+
+.conn-item {
+    display: block;
+    padding: 8px 14px;
+    color: rgba(0, 255, 65, 0.5);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+}
+
+.conn-item:hover {
+    background: rgba(0, 255, 65, 0.08);
+    color: #00ff41;
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+    border-left-color: rgba(0, 255, 65, 0.4);
+}
+
+.conn-item.conn-current {
+    color: #00ff41;
+    text-shadow: 0 0 6px rgba(0, 255, 65, 0.2);
+    background: rgba(0, 255, 65, 0.05);
+    pointer-events: none;
+}
+
+.conn-arrow-right {
+    opacity: 0.5;
+    margin-right: 8px;
+}
+
+.conn-empty {
+    padding: 10px 14px;
+    color: rgba(255, 255, 255, 0.1);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+}
+
+/* Floating dropdown for pages without status bar */
+.conn-floating {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    z-index: 500;
+}
+
+.conn-floating .conn-menu {
+    right: 0;
+    left: auto;
+}
+
+/* Adjust audio toggle position when dropdown is present in floating mode */
+body .audio-toggle {
+    bottom: 18px;
+}
+
+body .skip-btn {
+    bottom: 18px;
+}
+
+@media (max-width: 600px) {
+    .connections-dropdown {
+        margin-left: 10px;
+    }
+    .conn-trigger {
+        font-size: 0.65rem;
+        padding: 3px 8px;
+    }
+    .conn-menu {
+        min-width: 150px;
+        right: -10px;
+    }
+    .conn-item {
+        font-size: 0.7rem;
+        padding: 7px 12px;
+    }
+}

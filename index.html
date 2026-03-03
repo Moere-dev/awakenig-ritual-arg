@@ -336,6 +336,7 @@
     <script src="sfx.js"></script>
     <script src="atmosphere.js"></script>
     <script src="audio-toggle.js"></script>
+    <script src="connections.js"></script>
 
     <script>
         // ============================================================
@@ -361,6 +362,7 @@
         //  INIT
         // ============================================================
         ATMO.init();
+        CONNECTIONS.init('.status-bar .sb-right');
 
         var terminal = document.getElementById('terminal');
         var inputLine = document.getElementById('input-line');
