@@ -614,7 +614,7 @@ body {
 /* Floating dropdown for pages without status bar */
 .conn-floating {
     position: fixed;
-    bottom: 18px;
+    bottom: 56px;
     right: 18px;
     z-index: 500;
 }

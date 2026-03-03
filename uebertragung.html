@@ -333,12 +333,7 @@
                 var target = phase === 's33l3nreich' ? 's33l3nreich.html' : 'aufzeichnung.html';
                 var label = phase === 's33l3nreich' ? 'SEELENREICH ►' : 'AUFZEICHNUNG ►';
                 prompt.style.display = 'block';
-                prompt.innerHTML = '<a class="continue-link" href="' + target + '">WEITER: ' + label + '</a>'
-                    + '<button class="reset-btn" id="reset-btn">FORTSCHRITT LÖSCHEN</button>';
-                document.getElementById('reset-btn').addEventListener('click', function() {
-                    localStorage.removeItem('arg-phase');
-                    prompt.style.display = 'none';
-                });
+                prompt.innerHTML = '<a class="continue-link" href="' + target + '">WEITER: ' + label + '</a>';
             }
         })();
 
