@@ -417,6 +417,11 @@
         var skipped = false;
         var skipBtn = document.getElementById('skip-btn');
 
+        // Revisit speed boost
+        var revisit = (JSON.parse(localStorage.getItem('arg-visited') || '[]')).indexOf('index') !== -1;
+        var SPD = revisit ? 3 : 1;   // speed divisor
+        var DLY = revisit ? 0.4 : 1; // delay multiplier
+
         function typeLine(html, speed, callback) {
             if (skipped) { addLineHtml(html, ''); if (callback) callback(); return; }
             var d = document.createElement('div');
@@ -432,6 +437,7 @@
             cursor.style.animation = 'blink-cursor 0.6s steps(2) infinite';
             d.appendChild(cursor);
 
+            var adjSpeed = speed / SPD;
             var charIdx = 0;
             var lastTime = 0;
 
@@ -442,7 +448,7 @@
                     return;
                 }
                 if (lastTime === 0) lastTime = ts;
-                if (ts - lastTime < speed) { requestAnimationFrame(tick); return; }
+                if (ts - lastTime < adjSpeed) { requestAnimationFrame(tick); return; }
 
                 if (charIdx < plainText.length) {
                     var ch = plainText[charIdx];
@@ -496,7 +502,7 @@
                         addLineHtml(step.html, '');
                         next();
                     }
-                }, step.delay || 0);
+                }, Math.round((step.delay || 0) * DLY));
             }
             next();
         }
@@ -517,6 +523,7 @@
         function startBoot() {
             setTimeout(function() {
                 SFX.boot();
+                if (revisit) skipBtn.classList.add('hidden');
                 var bootSteps = [
                     { html: '<span class="brand">FORSCHER-TERMINAL v1.0 — BIOS POST</span>', type: true, speed: 25, delay: 400 },
                     { fn: addSep, delay: 200 },
@@ -541,7 +548,7 @@
                         showTerminalReady();
                     }
                 });
-            }, 1300);
+            }, revisit ? 400 : 1300);
         }
 
         // ============================================================
@@ -942,7 +949,7 @@
         // ============================================================
         //  START
         // ============================================================
-        setTimeout(function() { startBoot(); }, 500);
+        setTimeout(function() { startBoot(); }, revisit ? 150 : 500);
     </script>
 </body>
 </html>

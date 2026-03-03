@@ -712,6 +712,11 @@
         var skipped = false;
         var skipBtn = document.getElementById('skip-btn');
 
+        // Revisit speed boost
+        var revisit = (JSON.parse(localStorage.getItem('arg-visited') || '[]')).indexOf('s33l3nreich') !== -1;
+        var SPD = revisit ? 3 : 1;   // speed divisor
+        var DLY = revisit ? 0.4 : 1; // delay multiplier
+
         // ============================================================
         //  PAGE-SPECIFIC SFX (built on shared SFXCore)
         // ============================================================
@@ -953,10 +958,11 @@
 
                     if (ch !== ' ' && ch !== '\n') SFX.typeClick();
 
-                    currentDelay = speed;
-                    if (ch === ' ') currentDelay = speed * 0.3;
-                    else if (ch === '.' || ch === '—') currentDelay = speed * 3;
-                    else if (ch === ',') currentDelay = speed * 1.8;
+                    var adjSpeed = speed / SPD;
+                    currentDelay = adjSpeed;
+                    if (ch === ' ') currentDelay = adjSpeed * 0.3;
+                    else if (ch === '.' || ch === '—') currentDelay = adjSpeed * 3;
+                    else if (ch === ',') currentDelay = adjSpeed * 1.8;
 
                     lastCharTime = timestamp;
                     requestAnimationFrame(tick);
@@ -990,14 +996,14 @@
                 i++;
                 if (l.fn) {
                     l.fn();
-                    setTimeout(next, l.delay || 200);
+                    setTimeout(next, Math.round((l.delay || 200) * DLY));
                 } else if (l.type) {
                     typeLine(l.html, l.speed || 20, function() {
-                        setTimeout(next, l.delay || 100);
+                        setTimeout(next, Math.round((l.delay || 100) * DLY));
                     });
                 } else {
                     addRaw(l.html);
-                    setTimeout(next, l.delay || 200);
+                    setTimeout(next, Math.round((l.delay || 200) * DLY));
                 }
             }
             next();
@@ -1009,6 +1015,7 @@
         function startBoot() {
             setTimeout(function() {
                 SFX.bootBeep();
+                if (revisit) skipBtn.classList.add('hidden');
                 var bootLines = [
                     { html: '<span class="brand">FORSCHER-OS v0.7.3 — BIOS POST</span>', type: true, speed: 30, delay: 400 },
                     { fn: addSep, delay: 200 },
@@ -1031,7 +1038,7 @@
                 ];
 
                 runSequence(bootLines, startLore);
-            }, 1300);
+            }, revisit ? 400 : 1300);
         }
 
         // ============================================================
