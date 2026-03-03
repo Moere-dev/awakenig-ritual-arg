@@ -1684,20 +1684,40 @@
                     addLine('FORSCHER', 'Ihr habt mich gefunden... brecht den Fluch.', 'success');
                     scrollBottom();
 
-                    // After a pause, show suspicious warning
+                    // After a pause, show dramatic breach warning
                     setTimeout(function() {
-                        addEmpty();
-                        addLine('SYSTEM', '<span class="warn-text">[WARNUNG] Unbekannter Prozess erkannt: PID 6661</span>', 'warn-text');
-                        addLine('SYSTEM', 'Verdächtige Netzwerkaktivität auf Port 443...', 'text');
-                        addEmpty();
+                        flash(); shake();
+                        SFX.warn();
 
-                        inputLineEl.style.display = '';
-                        inputEl.disabled = false;
-                        inputEl.placeholder = 'trace PID 6661...';
-                        inputEl.focus();
-                        decrypting = false;
-                        breachArmed = true;
-                        scrollBottom();
+                        var alertSteps = [
+                            { fn: addEmpty, delay: 200 },
+                            { fn: addSep, delay: 300 },
+                            { html: '<span class="error-text" style="font-size:1.2rem;letter-spacing:3px;">⚠ SICHERHEITSALARM ⚠</span>', type: true, speed: 20, delay: 500 },
+                            { fn: addSep, delay: 200 },
+                            { fn: addEmpty, delay: 200 },
+                            { html: '<span class="error-text">[WARNUNG] Unbekannter Prozess erkannt: PID 6661</span>', type: true, speed: 20, delay: 400 },
+                            { html: '<span class="error-text">[WARNUNG] Verdächtige Netzwerkaktivität auf Port 443...</span>', type: true, speed: 20, delay: 400 },
+                            { html: '<span class="error-text">[WARNUNG] Unautorisierter Zugriff — Eindringling im System!</span>', type: true, speed: 20, delay: 500 },
+                            { fn: addEmpty, delay: 300 },
+                            { fn: function() { flash(); SFX.warn(); }, delay: 400 },
+                            { html: '<span class="warn-text">Das System wird angegriffen. Jemand — oder etwas — versucht,</span>', type: true, speed: 25, delay: 300 },
+                            { html: '<span class="warn-text">die Kontrolle über das Terminal zu übernehmen.</span>', type: true, speed: 25, delay: 500 },
+                            { fn: addEmpty, delay: 300 },
+                            { html: '<span class="success">» Tippe einen Befehl um den Eindringling zu verfolgen:</span>', type: true, speed: 20, delay: 300 },
+                            { html: '<span class="highlight" style="font-size:1.3rem;letter-spacing:3px;">  trace 6661</span>', type: true, speed: 15, delay: 300 },
+                            { fn: addEmpty, delay: 200 },
+                            { fn: addSep, delay: 200 },
+                        ];
+
+                        runSequence(alertSteps, function() {
+                            inputLineEl.style.display = '';
+                            inputEl.disabled = false;
+                            inputEl.placeholder = 'trace 6661';
+                            inputEl.focus();
+                            decrypting = false;
+                            breachArmed = true;
+                            scrollBottom();
+                        });
                     }, 4000);
                 }, 300);
             }, 1500);
