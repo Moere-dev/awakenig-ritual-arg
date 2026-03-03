@@ -269,30 +269,17 @@
             text-shadow: 0 0 15px rgba(0,255,65,0.7), 0 0 30px rgba(0,255,65,0.3);
             letter-spacing: 4px; margin: 15px 0;
             user-select: all; -webkit-user-select: all;
-            cursor: text;
-        }
-        .ip-copy-btn {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 5px 14px;
-            background: transparent;
-            border: 1px solid rgba(0, 255, 65, 0.2);
-            color: rgba(0, 255, 65, 0.4);
-            font-family: 'VT323', monospace;
-            font-size: 0.8rem;
-            letter-spacing: 2px;
             cursor: pointer;
-            transition: all 0.3s;
         }
-        .ip-copy-btn:hover {
-            border-color: rgba(0, 255, 65, 0.5);
-            color: #00ff41;
-            background: rgba(0, 255, 65, 0.05);
+        .copy-ip-btn {
+            background: none; border: 1px solid #00ff41; color: #00ff41;
+            font-family: 'VT323', monospace; font-size: 0.95rem;
+            padding: 5px 16px; margin-top: 6px; cursor: pointer;
+            letter-spacing: 2px;
+            transition: background 0.2s, color 0.2s;
         }
-        .ip-copy-btn.copied {
-            color: #00ff41;
-            border-color: #00ff41;
-        }
+        .copy-ip-btn:hover { background: #00ff41; color: #000; }
+        .copy-ip-btn.copied { border-color: #d4a030; color: #d4a030; }
 
         /* ===================== DECODER OVERLAY APP ===================== */
         .decoder-overlay {
@@ -1695,25 +1682,49 @@
                 var box = document.createElement('div');
                 box.className = 'final-box';
                 box.innerHTML = '<p class="warn" style="font-size:1.2rem;letter-spacing:3px;">ZIEL GEFUNDEN</p>' +
-                    '<p class="ip-text" id="ip-text">' + TARGET + '</p>' +
-                    '<button class="ip-copy-btn" id="ip-copy-btn" title="IP kopieren">[ KOPIEREN ]</button>' +
+                    '<p class="ip-text" id="server-ip">' + TARGET + '</p>' +
+                    '<button class="copy-ip-btn" id="copy-ip-btn">[ KOPIEREN ]</button>' +
                     '<hr style="border:none;border-top:1px solid #0e2e0e;margin:15px 0;">' +
                     '<p style="color:#d4a030;font-size:1.1rem;text-shadow:0 0 5px rgba(212,160,48,0.25);">Die verfluchte Welt erwartet euch.</p>' +
                     '<p style="color:#d4a030;font-size:1.1rem;text-shadow:0 0 5px rgba(212,160,48,0.25);">Brecht den Fluch. Befreit mich.</p>' +
                     '<p class="dim" style="margin-top:12px;font-size:0.9rem;">— Der Forscher</p>';
                 terminal.appendChild(box);
 
-                document.getElementById('ip-copy-btn').addEventListener('click', function() {
+                // Copy button handler with fallback
+                document.getElementById('copy-ip-btn').addEventListener('click', function() {
                     var btn = this;
-                    navigator.clipboard.writeText(TARGET).then(function() {
+                    var ip = TARGET;
+                    function onSuccess() {
+                        SFX.confirm();
                         btn.textContent = '[ KOPIERT ✓ ]';
                         btn.classList.add('copied');
-                        SFX.charLock();
                         setTimeout(function() {
                             btn.textContent = '[ KOPIEREN ]';
                             btn.classList.remove('copied');
                         }, 2000);
-                    });
+                    }
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(ip).then(onSuccess).catch(function() {
+                            // Fallback: hidden textarea + execCommand
+                            var ta = document.createElement('textarea');
+                            ta.value = ip;
+                            ta.style.cssText = 'position:fixed;left:-9999px';
+                            document.body.appendChild(ta);
+                            ta.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(ta);
+                            onSuccess();
+                        });
+                    } else {
+                        var ta = document.createElement('textarea');
+                        ta.value = ip;
+                        ta.style.cssText = 'position:fixed;left:-9999px';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        onSuccess();
+                    }
                 });
 
                 setTimeout(function() {
