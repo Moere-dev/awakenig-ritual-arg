@@ -621,10 +621,6 @@
         }
 
         // ============================================================
-        //  FULLSCREEN HELPER
-        // ============================================================
-
-        // ============================================================
         //  HELP & COMMANDS
         // ============================================================
         function showHelp() {
@@ -672,7 +668,7 @@
                 addLine('[SYSTEM] Verbinde mit Signalübertragung...', 'green');
                 addLine('[SYSTEM] Tunnel aufgebaut. Weiterleitung...', 'green');
                 setTimeout(function() {
-                    goFullscreenAndNavigate('uebertragung.html');
+                    window.location.href = 'uebertragung.html';
                 }, 1200);
             }
             else if (cmd === 'retry breach') {
@@ -687,7 +683,7 @@
                 addLine('[WARNUNG] Eindringling noch aktiv — Vorbereiten...', 'red');
                 setTimeout(function() {
                     localStorage.removeItem('arg-breach-failed');
-                    goFullscreenAndNavigate('s33l3nreich.html?breach=retry');
+                    window.location.href = 's33l3nreich.html?breach=retry';
                 }, 2000);
             }
             else if (cmd === 'decrypt fragment' || cmd === 'decrypt fragment0') {
@@ -889,7 +885,7 @@
                 flash.classList.add('fire');
                 SFX.confirm();
                 setTimeout(function() {
-                    goFullscreenAndNavigate('fragment0.html');
+                    window.location.href = 'fragment0.html';
                 }, 500);
             }, 4200);
         }
