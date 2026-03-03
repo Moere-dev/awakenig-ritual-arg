@@ -99,7 +99,7 @@ var CONNECTIONS = (function() {
             if (pageId === currentPageId) {
                 item.classList.add('conn-current');
             }
-            item.href = page.file;
+            item.href = page.file + '?nav=1';
             item.innerHTML = '<span class="conn-arrow-right">→</span> ' + page.name;
             list.appendChild(item);
         });

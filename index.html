@@ -351,8 +351,10 @@
                 'fragment0':    'fragment0.html'
             };
             // Don't redirect if player just came back from breach defeat
+            // or if they navigated here via VERBINDUNGEN dropdown
             var breachFailed = localStorage.getItem('arg-breach-failed') === 'true';
-            if (phase && pages[phase] && !breachFailed) {
+            var navIntent = window.location.search.indexOf('nav=1') !== -1;
+            if (phase && pages[phase] && !breachFailed && !navIntent) {
                 window.location.replace(pages[phase]);
                 return;
             }
