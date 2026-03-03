@@ -90,156 +90,197 @@
             letter-spacing: 2px;
         }
 
-        /* ===================== FRAGMENT CONTENT ===================== */
-        .fragment-container {
+        /* ===================== WHITELIST PAGE ===================== */
+        .wl-container {
             display: none;
-            max-width: 700px;
+            max-width: 500px;
+            width: 100%;
             margin: 0 auto;
-            padding: 30px 25px 60px;
-            overflow-y: auto;
-            max-height: 100vh;
+            padding: 40px 25px;
+            text-align: center;
         }
-        .fragment-container.unlocked {
+        .wl-container.unlocked {
             display: block;
-            animation: fragment-fade-in 2s ease-out;
+            animation: wl-fade-in 1.5s ease-out;
         }
-        @keyframes fragment-fade-in {
+        @keyframes wl-fade-in {
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        .frag-header {
-            text-align: center;
-            margin-bottom: 35px;
+        .wl-header {
+            margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid rgba(0, 255, 65, 0.15);
         }
-        .frag-label {
-            font-size: 0.75rem;
+        .wl-label {
+            font-size: 0.7rem;
             color: rgba(0, 255, 65, 0.4);
             letter-spacing: 6px;
             margin-bottom: 8px;
         }
-        .frag-title {
-            font-size: 1.6rem;
+        .wl-title {
+            font-size: 1.5rem;
             color: #00ff41;
             text-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-            letter-spacing: 4px;
+            letter-spacing: 3px;
         }
-        .frag-date {
+        .wl-subtitle {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.15);
+            color: rgba(255,255,255,0.15);
             margin-top: 8px;
         }
 
-        .frag-entry {
-            margin-bottom: 28px;
-            padding-left: 15px;
+        .wl-lore {
+            text-align: left;
+            margin-bottom: 30px;
+            padding: 15px 18px;
             border-left: 2px solid rgba(0, 255, 65, 0.1);
         }
-        .frag-entry .frag-ts {
-            font-size: 0.75rem;
-            color: rgba(0, 255, 65, 0.3);
-            letter-spacing: 2px;
-            margin-bottom: 6px;
-        }
-        .frag-entry p {
+        .wl-lore p {
             color: #a0a0a0;
-            font-size: 1rem;
+            font-size: 0.95rem;
             line-height: 1.7;
             margin: 6px 0;
         }
-        .frag-entry .warn-text {
+        .wl-lore .warn-text {
             color: #d4a030;
-            text-shadow: 0 0 5px rgba(212, 160, 48, 0.2);
-        }
-        .frag-entry .fear-text {
-            color: #ff4444;
-            text-shadow: 0 0 5px rgba(255, 68, 68, 0.2);
-        }
-        .frag-entry .dim-text {
-            color: rgba(255, 255, 255, 0.25);
-            font-size: 0.85rem;
-        }
-        .frag-entry .code-inline {
-            color: #00ff41;
-            background: rgba(0, 255, 65, 0.05);
-            padding: 2px 6px;
-            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(212,160,48,0.2);
         }
 
-        .frag-corrupted {
-            color: rgba(255, 68, 68, 0.3) !important;
+        .wl-input-section {
+            margin: 30px 0;
+        }
+        .wl-input-label {
             font-size: 0.85rem;
-            letter-spacing: 1px;
-        }
-        .frag-corrupted span {
-            display: inline-block;
-            animation: corrupt-flicker 0.3s steps(2) infinite;
-        }
-        @keyframes corrupt-flicker {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
-        }
-
-        .frag-footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(0, 255, 65, 0.1);
-            text-align: center;
-        }
-        .frag-footer p {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.12);
+            color: rgba(0, 255, 65, 0.5);
             letter-spacing: 2px;
-            margin: 5px 0;
+            margin-bottom: 12px;
         }
-        .frag-footer .frag-sig {
-            color: rgba(0, 255, 65, 0.3);
-            font-size: 0.9rem;
-            margin-top: 15px;
-        }
-
-        .frag-cmd-bar {
-            margin-top: 30px;
-            padding: 12px 16px;
-            border: 1px solid rgba(0, 255, 65, 0.12);
-            background: rgba(0, 20, 0, 0.4);
+        .wl-input-wrap {
             display: flex;
-            align-items: center;
             gap: 8px;
+            align-items: center;
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            padding: 10px 16px;
+            background: rgba(0, 20, 0, 0.3);
+            transition: border-color 0.3s, box-shadow 0.3s;
         }
-        .frag-cmd-bar:focus-within {
-            border-color: rgba(0, 255, 65, 0.35);
-            box-shadow: 0 0 12px rgba(0, 255, 65, 0.06);
+        .wl-input-wrap:focus-within {
+            border-color: rgba(0, 255, 65, 0.5);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.08);
         }
-        .frag-cmd-prompt {
+        .wl-input-wrap.error {
+            border-color: rgba(255, 68, 68, 0.5);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.08);
+        }
+        .wl-input-wrap.success {
+            border-color: rgba(0, 255, 65, 0.6);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+        }
+        .wl-prompt {
             color: rgba(0, 255, 65, 0.5);
             font-size: 0.9rem;
             white-space: nowrap;
         }
-        .frag-cmd-input {
+        .wl-input {
             flex: 1;
             background: transparent;
             border: none;
             outline: none;
             color: #00ff41;
             font-family: 'VT323', monospace;
-            font-size: 1rem;
-            letter-spacing: 1px;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
             caret-color: #00ff41;
         }
-        .frag-cmd-input::placeholder { color: rgba(0,255,65,0.12); }
-        .frag-cmd-hint {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.1);
-            margin-top: 6px;
-            letter-spacing: 1px;
+        .wl-input::placeholder { color: rgba(0,255,65,0.12); }
+        .wl-input:disabled {
+            opacity: 0.5;
         }
 
-        body.unlocked-body {
-            overflow-y: auto;
-            align-items: flex-start;
+        .wl-submit-btn {
+            margin-top: 15px;
+            padding: 10px 30px;
+            background: transparent;
+            border: 1px solid rgba(0, 255, 65, 0.25);
+            color: #00ff41;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .wl-submit-btn:hover {
+            background: rgba(0, 255, 65, 0.05);
+            border-color: rgba(0, 255, 65, 0.5);
+            box-shadow: 0 0 12px rgba(0, 255, 65, 0.1);
+        }
+        .wl-submit-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .wl-status {
+            margin-top: 18px;
+            font-size: 0.9rem;
+            min-height: 1.4em;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .wl-status.visible { opacity: 1; }
+        .wl-status.status-ok {
+            color: #00ff41;
+            text-shadow: 0 0 8px rgba(0,255,65,0.4);
+        }
+        .wl-status.status-err {
+            color: #ff4444;
+            text-shadow: 0 0 8px rgba(255,0,0,0.3);
+        }
+        .wl-status.status-wait {
+            color: #d4a030;
+        }
+
+        .wl-loading {
+            display: none;
+            margin-top: 15px;
+        }
+        .wl-loading.active { display: block; }
+        .wl-loading-bar {
+            width: 200px;
+            height: 3px;
+            background: rgba(0,255,65,0.1);
+            margin: 0 auto;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .wl-loading-fill {
+            height: 100%;
+            width: 30%;
+            background: #00ff41;
+            box-shadow: 0 0 6px rgba(0,255,65,0.4);
+            animation: wl-load-slide 1s ease-in-out infinite;
+        }
+        @keyframes wl-load-slide {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(700%); }
+        }
+
+        .wl-footer {
+            margin-top: 35px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 255, 65, 0.08);
+        }
+        .wl-back {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.12);
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .wl-back:hover {
+            color: rgba(0, 255, 65, 0.4);
         }
     </style>
 </head>
@@ -258,109 +299,69 @@
         <div class="lock-hint">Nur wer das System verteidigt hat, kennt den Schlüssel.</div>
     </div>
 
-    <!-- FRAGMENT CONTENT (hidden until unlocked) -->
-    <div class="fragment-container" id="fragment-content">
-        <div class="frag-header">
-            <div class="frag-label">ENTSCHLÜSSELT</div>
-            <div class="frag-title">FORSCHER-DATENFRAGMENT #0</div>
-            <div class="frag-date">Wiederhergestellt aus Partition /dev/seele0 — Verschlüsselung: AES-256-GCM</div>
+    <!-- WHITELIST REGISTRATION (hidden until unlocked) -->
+    <div class="wl-container" id="wl-content">
+        <div class="wl-header">
+            <div class="wl-label">ENTSCHLÜSSELT</div>
+            <div class="wl-title">RITUAL DER EINSCHREIBUNG</div>
+            <div class="wl-subtitle">Grenzübertritt zum Seelenreich — Registrierung</div>
         </div>
 
-        <div class="frag-entry">
-            <div class="frag-ts">// EINTRAG 001 — DATUM: UNBEKANNT</div>
-            <p>Ich habe es gefunden. Nach Monaten der Suche — die Grenze zwischen den Welten ist kein Mythos. Sie ist real, und sie ist <span class="warn-text">dünn</span>.</p>
-            <p>Die alten Texte sprechen von einem „Seelenreich" — einer Ebene, die parallel zu unserer existiert. Ich hielt es für Metaphern. Poetische Sprache alter Mystiker.</p>
-            <p>Ich lag falsch.</p>
+        <div class="wl-lore">
+            <p>Ihr habt den Code gebrochen. Die Grenze liegt offen.</p>
+            <p>Doch um das <span class="warn-text">Seelenreich</span> zu betreten, muss euer Name in die Schriftrollen eingetragen werden.</p>
+            <p>Gebt euren Namen ein. Die Brücke wird sich öffnen.</p>
         </div>
 
-        <div class="frag-entry">
-            <div class="frag-ts">// EINTRAG 002 — DATUM: ██.██.████</div>
-            <p>Das Ritual benötigt sieben Komponenten. Ich habe vier identifiziert:</p>
-            <p class="dim-text">1. Einen Ort, an dem die Grenze am dünnsten ist (Koordinaten gefunden)</p>
-            <p class="dim-text">2. Eine Frequenz — 42.7 Hz — die Resonanzfrequenz der Grenze</p>
-            <p class="dim-text">3. Ein Wort der Macht, gesprochen zum richtigen Zeitpunkt</p>
-            <p class="dim-text">4. Das Blut des Suchenden (ich vermute, das ist metaphorisch gemeint)</p>
-            <p>Die restlichen drei... <span class="frag-corrupted"><span>█</span><span>█</span><span>█</span> DATEN BESCHÄDIGT <span>█</span><span>█</span><span>█</span></span></p>
+        <div class="wl-input-section">
+            <div class="wl-input-label">MINECRAFT-BENUTZERNAME</div>
+            <div class="wl-input-wrap" id="wl-input-wrap">
+                <span class="wl-prompt">NAME:~$</span>
+                <input type="text" class="wl-input" id="wl-input" placeholder="Benutzername eingeben..." autocomplete="off" spellcheck="false" maxlength="16">
+            </div>
+            <button class="wl-submit-btn" id="wl-submit">EINSCHREIBEN</button>
+            <div class="wl-loading" id="wl-loading">
+                <div class="wl-loading-bar"><div class="wl-loading-fill"></div></div>
+            </div>
+            <div class="wl-status" id="wl-status"></div>
         </div>
 
-        <div class="frag-entry">
-            <div class="frag-ts">// EINTRAG 003 — DATUM: ██.██.████</div>
-            <p>Ich höre sie jetzt. Nachts. Stimmen, die nicht von dieser Welt sind.</p>
-            <p>Sie <span class="warn-text">flüstern</span>. Nicht in Worten — in Gefühlen. Kälte. Hunger. Eine Sehnsucht so tief, dass sie physisch wehtut.</p>
-            <p>Ich glaube, sie spüren, dass ich nahe bin. Dass jemand an der Grenze kratzt.</p>
+        <div class="wl-footer">
+            <div class="wl-back" id="wl-back">[ ZURÜCK ZUM TERMINAL ]</div>
         </div>
-
-        <div class="frag-entry">
-            <div class="frag-ts">// EINTRAG 004 — DATUM: ██.██.████</div>
-            <p class="fear-text">Etwas ist passiert.</p>
-            <p>Während der letzten Sitzung hat sich die Frequenz verändert. Von 42.7 Hz auf <span class="code-inline">6.66 Hz</span>. Das Messgerät hat Dinge aufgezeichnet, die nicht hätten da sein dürfen.</p>
-            <p>Ich habe die Aufzeichnung analysiert. Zwischen den Frequenzspitzen — versteckt im Rauschen — waren <span class="warn-text">Worte</span>.</p>
-            <p class="dim-text">„KOMM NÄHER."</p>
-            <p class="dim-text">„WIR WARTEN."</p>
-            <p class="dim-text">„DER FLUCH IST DER WEG."</p>
-        </div>
-
-        <div class="frag-entry">
-            <div class="frag-ts">// EINTRAG 005 — DATUM: ██.██.████</div>
-            <p>Ich habe den Fehler gefunden. In den alten Texten. Das Ritual öffnet nicht nur die Grenze — <span class="fear-text">es bindet den Durchführenden</span>.</p>
-            <p>Wer das Seelenreich betritt, kann nicht zurück. Nicht ohne einen Preis. Die alten Mystiker wussten das. Deswegen haben sie die Anleitung in Fragmente zerteilt und über die Welt verstreut.</p>
-            <p>Sie wollten nicht, dass jemand es vervollständigt.</p>
-            <p class="warn-text">Aber ich werde es tun.</p>
-        </div>
-
-        <div class="frag-entry">
-            <div class="frag-ts">// EINTRAG 006 — DATUM: ██.██.████</div>
-            <p>Mein letzter Eintrag, bevor ich die Grenze überschreite.</p>
-            <p>Falls ihr das lest — falls jemand den Code gefunden hat, den ich in den Servern versteckt habe — dann wisst ihr nun, was ich weiß.</p>
-            <p class="warn-text">Das Seelenreich ist real. Der Fluch ist real. Und ich bin darin gefangen.</p>
-            <p>Aber es gibt einen Weg. Die Fragmente existieren noch — verstreut, verschlüsselt, versteckt. Findet sie alle. Brecht den Fluch.</p>
-            <p>Und was auch immer ihr tut: <span class="fear-text">Vertraut dem Wächter nicht.</span></p>
-        </div>
-
-        <div class="frag-entry">
-            <div class="frag-ts">// EINTRAG 007 — DATUM: ???</div>
-            <p class="frag-corrupted">
-                <span>█</span><span>█</span><span>█</span> 
-                PARTITION ENDET HIER 
-                <span>█</span><span>█</span><span>█</span>
-                <br>
-                WEITERE FRAGMENTE AUSSTEHEND
-                <br>
-                <span>█</span><span>█</span><span>█</span> 
-                SUCHE: FRAGMENT #1 
-                <span>█</span><span>█</span><span>█</span>
-            </p>
-        </div>
-
-        <div class="frag-footer">
-            <p>ENDE DES FRAGMENTS</p>
-            <p>INTEGRITÄTSPRÜFUNG: 73% — TEILWEISE BESCHÄDIGT</p>
-            <div class="frag-sig">— Der Forscher</div>
-        </div>
-
-        <div class="frag-cmd-bar">
-            <span class="frag-cmd-prompt">fragment0:~$</span>
-            <input type="text" class="frag-cmd-input" id="frag-cmd" placeholder="Befehl eingeben..." autocomplete="off" spellcheck="false">
-        </div>
-        <div class="frag-cmd-hint">Befehle: back — exit</div>
     </div>
 
     <script src="sfx.js"></script>
     <script>
-        // Gate: breach must have been won to access this page at all
+        // ============================================================
+        //  ACCESS GATE
+        // ============================================================
         if (localStorage.getItem('arg-breach-won') !== 'true') {
             document.body.innerHTML = '<div style="color:#ff4444;font-family:monospace;padding:40px;text-align:center;font-size:1.2rem;">ZUGANG VERWEIGERT<br><br><a href="index.html" style="color:#555;font-size:0.9rem;">Zurück zum Terminal</a></div>';
             throw new Error('ACCESS DENIED');
         }
+
+        // ============================================================
+        //  CONFIG — Replace with your Render URL after deploying
+        // ============================================================
+        var API_URL = 'https://YOUR-RENDER-APP.onrender.com/whitelist';
 
         var CODE_HASH = '7fd491e56c28b1fc38860045f3c26a2b32adf92a004ee4bdca9b01bd6ea487ff';
 
         var lockScreen = document.getElementById('lock-screen');
         var lockInput = document.getElementById('lock-input');
         var lockError = document.getElementById('lock-error');
-        var fragmentContent = document.getElementById('fragment-content');
+        var wlContent = document.getElementById('wl-content');
+        var wlInput = document.getElementById('wl-input');
+        var wlInputWrap = document.getElementById('wl-input-wrap');
+        var wlSubmit = document.getElementById('wl-submit');
+        var wlStatus = document.getElementById('wl-status');
+        var wlLoading = document.getElementById('wl-loading');
+        var wlBack = document.getElementById('wl-back');
 
-        // Check if already unlocked (only reachable after breach gate above)
+        // ============================================================
+        //  LOCK SCREEN
+        // ============================================================
         if (localStorage.getItem('arg-fragment0-unlocked') === 'true') {
             unlock();
         }
@@ -384,49 +385,118 @@
                 lockInput.style.color = '#00ff41';
                 lockInput.style.textShadow = '0 0 10px rgba(0,255,65,0.5)';
                 SFXCore.tone('sine', 800, 0.3, 0.06);
-                setTimeout(function() {
-                    SFXCore.tone('sine', 1000, 0.3, 0.06);
-                }, 150);
-                setTimeout(function() {
-                    SFXCore.tone('sine', 1200, 0.3, 0.06);
-                }, 300);
+                setTimeout(function() { SFXCore.tone('sine', 1000, 0.3, 0.06); }, 150);
+                setTimeout(function() { SFXCore.tone('sine', 1200, 0.3, 0.06); }, 300);
                 setTimeout(unlock, 800);
             } else {
                 lockError.classList.add('visible');
                 SFXCore.tone('square', 150, 0.2, 0.04);
                 lockInput.value = '';
-                setTimeout(function() {
-                    lockError.classList.remove('visible');
-                }, 2000);
+                setTimeout(function() { lockError.classList.remove('visible'); }, 2000);
             }
         }
 
         function unlock() {
             lockScreen.style.display = 'none';
-            fragmentContent.classList.add('unlocked');
-            document.body.classList.add('unlocked-body');
-
-            // Focus command input after content appears
-            setTimeout(function() {
-                var fc = document.getElementById('frag-cmd');
-                if (fc) fc.focus();
-            }, 600);
+            wlContent.classList.add('unlocked');
+            setTimeout(function() { wlInput.focus(); }, 600);
         }
 
-        // Fragment command bar
-        document.getElementById('frag-cmd').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                var val = this.value.trim().toLowerCase();
-                this.value = '';
-                if (val === 'back' || val === 'exit') {
-                    SFXCore.tone('sine', 600, 0.15, 0.04);
-                    document.body.style.transition = 'opacity 0.6s';
-                    document.body.style.opacity = '0';
-                    setTimeout(function() {
-                        window.location.href = 'index.html';
-                    }, 700);
-                }
+        // ============================================================
+        //  USERNAME VALIDATION
+        // ============================================================
+        function isValidUsername(name) {
+            return /^[a-zA-Z0-9_]{3,16}$/.test(name);
+        }
+
+        // ============================================================
+        //  WHITELIST SUBMIT
+        // ============================================================
+        function setStatus(text, type) {
+            wlStatus.textContent = text;
+            wlStatus.className = 'wl-status visible status-' + type;
+        }
+
+        function clearStatus() {
+            wlStatus.className = 'wl-status';
+        }
+
+        function setLoading(on) {
+            wlLoading.classList.toggle('active', on);
+            wlSubmit.disabled = on;
+            wlInput.disabled = on;
+        }
+
+        async function submitWhitelist() {
+            var name = wlInput.value.trim();
+
+            if (!name) return;
+
+            if (!isValidUsername(name)) {
+                SFXCore.tone('square', 150, 0.2, 0.04);
+                wlInputWrap.classList.add('error');
+                setStatus('UNGÜLTIGER NAME — 3-16 Zeichen, nur A-Z, 0-9, _', 'err');
+                setTimeout(function() { wlInputWrap.classList.remove('error'); }, 2000);
+                return;
             }
+
+            clearStatus();
+            setLoading(true);
+            setStatus('VERBINDE MIT SEELENREICH-SERVER...', 'wait');
+
+            try {
+                var resp = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: name })
+                });
+
+                var data = await resp.json();
+
+                setLoading(false);
+
+                if (data.success) {
+                    SFXCore.tone('sine', 800, 0.3, 0.06);
+                    setTimeout(function() { SFXCore.tone('sine', 1000, 0.3, 0.06); }, 150);
+                    setTimeout(function() { SFXCore.tone('sine', 1200, 0.3, 0.06); }, 300);
+
+                    wlInputWrap.classList.add('success');
+                    wlInput.disabled = true;
+                    wlSubmit.disabled = true;
+                    setStatus('✓ EINGESCHRIEBEN — ' + name + ' — Die Brücke ist offen.', 'ok');
+                } else {
+                    SFXCore.tone('square', 150, 0.2, 0.04);
+                    wlInputWrap.classList.add('error');
+                    setStatus(data.error || 'FEHLER — Versuche es erneut.', 'err');
+                    setTimeout(function() { wlInputWrap.classList.remove('error'); }, 2000);
+                }
+            } catch (err) {
+                setLoading(false);
+                SFXCore.tone('square', 150, 0.2, 0.04);
+                wlInputWrap.classList.add('error');
+                setStatus('VERBINDUNG FEHLGESCHLAGEN — Server nicht erreichbar.', 'err');
+                setTimeout(function() { wlInputWrap.classList.remove('error'); }, 2000);
+            }
+        }
+
+        // Submit on button click
+        wlSubmit.addEventListener('click', submitWhitelist);
+
+        // Submit on Enter
+        wlInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') submitWhitelist();
+        });
+
+        // ============================================================
+        //  BACK BUTTON
+        // ============================================================
+        wlBack.addEventListener('click', function() {
+            SFXCore.tone('sine', 600, 0.15, 0.04);
+            document.body.style.transition = 'opacity 0.6s';
+            document.body.style.opacity = '0';
+            setTimeout(function() {
+                window.location.href = 'index.html';
+            }, 700);
         });
     </script>
 </body>
