@@ -438,13 +438,13 @@
         .breach-overlay.darken { background: rgba(0, 0, 0, 0.85); }
 
         .breach-header {
-            padding: 12px 20px;
-            background: rgba(255, 0, 0, 0.12);
-            border-bottom: 2px solid rgba(255, 0, 0, 0.4);
-            font-size: 1rem;
-            color: #ff4444;
+            padding: 14px 24px;
+            background: rgba(255, 0, 0, 0.18);
+            border-bottom: 2px solid rgba(255, 0, 0, 0.6);
+            font-size: 1.2rem;
+            color: #ff5555;
             letter-spacing: 3px;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            text-shadow: 0 0 12px rgba(255, 0, 0, 0.6), 0 0 25px rgba(255, 0, 0, 0.3);
             animation: breach-header-blink 0.5s ease-in-out infinite alternate;
             flex-shrink: 0;
         }
@@ -456,45 +456,48 @@
         .breach-terminal {
             flex: 1; overflow-y: auto;
             padding: 20px 25px;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            font-size: 1.1rem;
+            line-height: 1.7;
         }
-        .breach-terminal .bt-line { margin-bottom: 2px; }
-        .breach-terminal .bt-red { color: #ff4444; text-shadow: 0 0 5px rgba(255,0,0,0.3); }
-        .breach-terminal .bt-green { color: #00ff41; text-shadow: 0 0 5px rgba(0,255,65,0.3); }
-        .breach-terminal .bt-amber { color: #d4a030; text-shadow: 0 0 5px rgba(212,160,48,0.3); }
-        .breach-terminal .bt-dim { color: rgba(255,255,255,0.2); }
-        .breach-terminal .bt-white { color: #e0e0e0; }
+        .breach-terminal .bt-line { margin-bottom: 3px; }
+        .breach-terminal .bt-red { color: #ff5555; text-shadow: 0 0 8px rgba(255,0,0,0.4); }
+        .breach-terminal .bt-green { color: #00ff41; text-shadow: 0 0 8px rgba(0,255,65,0.4); }
+        .breach-terminal .bt-amber { color: #e0b040; text-shadow: 0 0 8px rgba(212,160,48,0.4); }
+        .breach-terminal .bt-dim { color: rgba(255,255,255,0.35); }
+        .breach-terminal .bt-white { color: #f0f0f0; }
 
         .breach-input-area {
-            padding: 10px 25px 20px;
-            border-top: 1px solid rgba(255, 0, 0, 0.2);
+            padding: 14px 25px 22px;
+            border-top: 2px solid rgba(255, 0, 0, 0.35);
             flex-shrink: 0;
-            display: flex; gap: 10px; align-items: center;
+            display: flex; gap: 12px; align-items: center;
+            background: rgba(255, 0, 0, 0.03);
         }
         .breach-prompt {
-            color: #ff4444;
-            font-size: 0.9rem;
+            color: #ff5555;
+            font-size: 1.1rem;
             white-space: nowrap;
+            text-shadow: 0 0 6px rgba(255, 0, 0, 0.4);
         }
         .breach-input {
             flex: 1;
             background: transparent;
             border: none; outline: none;
-            color: #ff4444;
+            color: #ff6666;
             font-family: 'VT323', monospace;
-            font-size: 1rem;
-            letter-spacing: 1px;
-            caret-color: #ff4444;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            caret-color: #ff6666;
+            text-shadow: 0 0 4px rgba(255, 68, 68, 0.3);
         }
-        .breach-input::placeholder { color: rgba(255,68,68,0.3); }
+        .breach-input::placeholder { color: rgba(255,68,68,0.5); }
 
         .breach-timer {
             position: absolute; top: 12px; right: 20px;
-            font-size: 1.4rem;
-            color: #ff4444;
-            text-shadow: 0 0 10px rgba(255,0,0,0.6);
-            letter-spacing: 2px;
+            font-size: 1.8rem;
+            color: #ff5555;
+            text-shadow: 0 0 14px rgba(255,0,0,0.7), 0 0 30px rgba(255,0,0,0.3);
+            letter-spacing: 3px;
         }
         .breach-timer.critical { animation: timer-pulse 0.3s ease-in-out infinite alternate; }
         @keyframes timer-pulse {
@@ -504,14 +507,15 @@
 
         .breach-progress {
             position: absolute; bottom: 60px; left: 25px; right: 25px;
-            height: 3px;
-            background: rgba(255,0,0,0.1);
+            height: 5px;
+            background: rgba(255,0,0,0.15);
+            border-radius: 2px;
         }
         .breach-progress .bp-fill {
             height: 100%;
             width: 0%;
-            background: #ff4444;
-            box-shadow: 0 0 8px rgba(255,0,0,0.4);
+            background: #ff5555;
+            box-shadow: 0 0 12px rgba(255,0,0,0.5), 0 0 25px rgba(255,0,0,0.2);
             transition: width 0.3s;
         }
         .breach-progress .bp-fill.safe {
@@ -527,43 +531,45 @@
         .wipe-out { animation: wipe-line 0.4s ease-in forwards; }
 
         .breach-cmd-box {
-            margin: 12px 0;
-            padding: 18px 22px;
-            border: 2px solid rgba(255, 68, 68, 0.5);
-            background: rgba(255, 0, 0, 0.06);
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.08), inset 0 0 15px rgba(255, 0, 0, 0.03);
+            margin: 15px 0;
+            padding: 22px 28px;
+            border: 2px solid rgba(255, 68, 68, 0.6);
+            background: rgba(255, 0, 0, 0.08);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.12), inset 0 0 20px rgba(255, 0, 0, 0.04);
             text-align: center;
             animation: cmd-box-pulse 1s ease-in-out infinite alternate;
         }
         @keyframes cmd-box-pulse {
-            0% { border-color: rgba(255, 68, 68, 0.5); box-shadow: 0 0 20px rgba(255,0,0,0.08); }
-            100% { border-color: rgba(255, 68, 68, 0.8); box-shadow: 0 0 35px rgba(255,0,0,0.15); }
+            0% { border-color: rgba(255, 68, 68, 0.6); box-shadow: 0 0 30px rgba(255,0,0,0.12); }
+            100% { border-color: rgba(255, 68, 68, 0.9); box-shadow: 0 0 45px rgba(255,0,0,0.2); }
         }
         .breach-cmd-label {
-            font-size: 0.8rem;
-            color: rgba(255, 68, 68, 0.5);
+            font-size: 1rem;
+            color: rgba(255, 68, 68, 0.75);
             letter-spacing: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px rgba(255, 0, 0, 0.2);
         }
         .breach-cmd-text {
-            font-size: 2rem;
-            color: #ff4444;
-            text-shadow: 0 0 15px rgba(255, 68, 68, 0.6), 0 0 30px rgba(255, 0, 0, 0.2);
-            letter-spacing: 6px;
+            font-size: 2.6rem;
+            color: #ff5555;
+            text-shadow: 0 0 18px rgba(255, 68, 68, 0.7), 0 0 40px rgba(255, 0, 0, 0.3);
+            letter-spacing: 8px;
             font-weight: bold;
         }
         .breach-cmd-desc {
-            font-size: 0.85rem;
-            color: rgba(212, 160, 48, 0.6);
-            margin-top: 8px;
+            font-size: 1rem;
+            color: rgba(212, 160, 48, 0.85);
+            margin-top: 10px;
             letter-spacing: 2px;
+            text-shadow: 0 0 5px rgba(212, 160, 48, 0.2);
         }
         .breach-cmd-timer-bar {
             width: 100%;
-            height: 4px;
-            background: rgba(255, 0, 0, 0.15);
-            margin-top: 12px;
-            border-radius: 2px;
+            height: 6px;
+            background: rgba(255, 0, 0, 0.2);
+            margin-top: 14px;
+            border-radius: 3px;
             overflow: hidden;
         }
         .breach-cmd-timer-fill {
@@ -1899,6 +1905,7 @@
             var timerInterval = null;
             var breachWon = false;
             var breachLost = false;
+            var defenseReady = false;
 
             bLog('[ALARM] Eindringling erkannt auf forscher@seelenreich', 'bt-red');
             bLog('[ALARM] Unautorisierter Zugriff — PID 6661', 'bt-red');
@@ -2051,7 +2058,7 @@
             bInput.addEventListener('keydown', function(e) {
                 if (e.key.length === 1) SFX.keyPress();
                 if (e.key === 'Enter') {
-                    if (breachWon || breachLost) return;
+                    if (breachWon || breachLost || !defenseReady) return;
                     var val = bInput.value.trim().toUpperCase();
                     bInput.value = '';
                     if (!val) return;
