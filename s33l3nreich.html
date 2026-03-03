@@ -1998,8 +1998,9 @@
                 setTimeout(showNextThreat, 800);
             }, 1200);
 
+            var attackNoiseCount = 0;
             var attackNoiseInterval = setInterval(function() {
-                if (breachWon || breachLost) { clearInterval(attackNoiseInterval); return; }
+                if (breachWon || breachLost || attackNoiseCount >= 5) { clearInterval(attackNoiseInterval); return; }
                 var noises = [
                     '[INTRUSION] Brute-Force auf Port ' + (Math.floor(Math.random() * 9000) + 1000) + '...',
                     '[INTRUSION] SQL-Injection Versuch auf /api/seele...',
@@ -2010,6 +2011,7 @@
                     '[INTRUSION] Daten-Exfiltration: seelenreich.db...'
                 ];
                 bLog(noises[Math.floor(Math.random() * noises.length)], 'bt-dim');
+                attackNoiseCount++;
             }, 1800);
 
             function promptNextCommand() {
