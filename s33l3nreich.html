@@ -1096,38 +1096,64 @@
         //  COMMANDS
         // ============================================================
         function processCommand(raw) {
-            if (checkBreachTrigger(raw)) return;
-            var parts = raw.split(/\s+/);
-            var cmd = parts[0].toLowerCase();
-            if (loggedIn) { postLogin(cmd, parts); return; }
-
-            switch(cmd) {
-                case 'help':
-                    addEmpty();
-                    addLine('HELP', 'Verfügbare Befehle:', 'success');
-                    addLine('HELP', 'help ............... Diese Hilfe anzeigen', 'text');
-                    addLine('HELP', 'login &lt;user&gt; &lt;pass&gt; . Authentifizierung', 'text');
-                    addLine('HELP', 'status ............. Systemstatus anzeigen', 'text');
-                    addLine('HELP', 'whoami ............. Aktuelle Sitzung', 'text');
-                    addEmpty();
-                    break;
-                case 'status':
-                    addLine('SYSTEM', 'Verbindung: INSTABIL', 'warn-text');
-                    addLine('SYSTEM', 'Verschlüsselte Datenfragmente: 1', 'text');
-                    addLine('SYSTEM', 'Authentifizierung: AUSSTEHEND', 'error-text');
-                    break;
-                case 'whoami':
-                    addLine('SYSTEM', 'Sitzung: ANONYM — Authentifizierung erforderlich', 'warn-text');
-                    break;
-                case 'login':
-                    handleLogin(parts); break;
-                case 'decrypt': case 'entschlüsseln':
-                    addLine('SYSTEM', 'ZUGANG VERWEIGERT — Authentifizierung erforderlich.', 'error-text');
-                    break;
-                default:
-                    addLine('SYSTEM', 'Unbekannter Befehl: "' + esc(cmd) + '"', 'error-text');
-                    addLine('SYSTEM', 'Gib "help" für verfügbare Befehle ein.', 'text');
-            }
+                if (checkBreachTrigger(raw)) return;
+                var parts = raw.split(/\s+/);
+                var cmd = parts[0].toLowerCase();
+                // --- Universal Navigation Commands ---
+                const pageMap = {
+                    terminal: 'index.html',
+                    transmission: 'uebertragung.html',
+                    recording: 'aufzeichnung.html',
+                    defense: 's33l3nreich.html',
+                    fragment: 'fragment0.html'
+                };
+                const currentPage = Object.entries(pageMap).find(([k,v]) => window.location.pathname.endsWith(v))[0];
+                let visited = JSON.parse(localStorage.getItem('arg_visited_pages')||'[]');
+                if (!visited.includes(currentPage)) { visited.push(currentPage); localStorage.setItem('arg_visited_pages', JSON.stringify(visited)); }
+                if (cmd === 'help nav') {
+                    addLine('NAV', 'Type: goto [page] — pages: ' + visited.join(', '), 'success');
+                    return;
+                }
+                if (cmd.startsWith('goto ')) {
+                    const dest = cmd.slice(5).trim();
+                    if (visited.includes(dest) && pageMap[dest]) {
+                        addLine('NAV', 'Navigiere zu ' + dest + '...', 'success');
+                        setTimeout(function() { window.location.href = pageMap[dest]; }, 600);
+                    } else {
+                        addLine('NAV', 'Unbekannte oder gesperrte Seite. "help nav" für Optionen.', 'error-text');
+                    }
+                    return;
+                }
+                if (loggedIn) { postLogin(cmd, parts); return; }
+                switch(cmd) {
+                    case 'help':
+                        addEmpty();
+                        addLine('HELP', 'Verfügbare Befehle:', 'success');
+                        addLine('HELP', 'help ............... Diese Hilfe anzeigen', 'text');
+                        addLine('HELP', 'help nav ........... Navigation & Seitenwechsel', 'text');
+                        addLine('HELP', 'goto [page] ........ Zu besuchter Seite springen', 'text');
+                        addLine('HELP', 'login &lt;user&gt; &lt;pass&gt; . Authentifizierung', 'text');
+                        addLine('HELP', 'status ............. Systemstatus anzeigen', 'text');
+                        addLine('HELP', 'whoami ............. Aktuelle Sitzung', 'text');
+                        addEmpty();
+                        break;
+                    case 'status':
+                        addLine('SYSTEM', 'Verbindung: INSTABIL', 'warn-text');
+                        addLine('SYSTEM', 'Verschlüsselte Datenfragmente: 1', 'text');
+                        addLine('SYSTEM', 'Authentifizierung: AUSSTEHEND', 'error-text');
+                        break;
+                    case 'whoami':
+                        addLine('SYSTEM', 'Sitzung: ANONYM — Authentifizierung erforderlich', 'warn-text');
+                        break;
+                    case 'login':
+                        handleLogin(parts); break;
+                    case 'decrypt': case 'entschlüsseln':
+                        addLine('SYSTEM', 'ZUGANG VERWEIGERT — Authentifizierung erforderlich.', 'error-text');
+                        break;
+                    default:
+                        addLine('SYSTEM', 'Unbekannter Befehl: "' + esc(cmd) + '"', 'error-text');
+                        addLine('SYSTEM', 'Gib "help" für verfügbare Befehle ein.', 'text');
+                }
         }
 
         function handleLogin(parts) {

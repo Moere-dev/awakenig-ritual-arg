@@ -502,5 +502,53 @@
             }, 700);
         });
     </script>
+    </body>
+    <!-- Universal Command Bar for ARG Navigation -->
+    <div id="universal-cmd-bar" style="position:fixed;bottom:0;left:0;width:100vw;background:rgba(0,0,0,0.92);color:#00ff41;font-family:monospace;padding:10px 0 8px 0;z-index:9999;box-shadow:0 -2px 16px #000;display:flex;align-items:center;gap:10px;">
+        <span style="margin-left:16px;">NAV:</span>
+        <input id="universal-cmd-input" type="text" autocomplete="off" spellcheck="false" style="background:transparent;border:none;color:#00ff41;font-size:1.1em;width:320px;outline:none;" placeholder="Type: goto [page] — help for options">
+        <span id="universal-cmd-hint" style="color:#0e2e0e;font-size:0.95em;margin-left:10px;">Type: goto [page] — pages: terminal, transmission, recording, defense, fragment</span>
+    </div>
 </body>
 </html>
+<script>
+// --- Universal Command Bar Logic ---
+const pageMap = {
+    terminal: 'index.html',
+    transmission: 'uebertragung.html',
+    recording: 'aufzeichnung.html',
+    defense: 's33l3nreich.html',
+    fragment: 'fragment0.html'
+};
+const pageNames = Object.keys(pageMap);
+const currentPage = Object.entries(pageMap).find(([k,v]) => window.location.pathname.endsWith(v))[0];
+// Mark this page as visited
+let visited = JSON.parse(localStorage.getItem('arg_visited_pages')||'[]');
+if (!visited.includes(currentPage)) { visited.push(currentPage); localStorage.setItem('arg_visited_pages', JSON.stringify(visited)); }
+
+const cmdInput = document.getElementById('universal-cmd-input');
+const cmdHint = document.getElementById('universal-cmd-hint');
+cmdInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const raw = cmdInput.value.trim().toLowerCase();
+        cmdInput.value = '';
+        if (!raw) return;
+        if (raw === 'help') {
+            cmdHint.textContent = 'Type: goto [page] — pages: ' + visited.join(', ');
+            return;
+        }
+        if (raw.startsWith('goto ')) {
+            const dest = raw.slice(5).trim();
+            if (visited.includes(dest) && pageMap[dest]) {
+                window.location.href = pageMap[dest];
+            } else {
+                cmdHint.textContent = 'Unknown or locked page. Type help for options.';
+            }
+            return;
+        }
+        cmdHint.textContent = 'Unknown command. Type help for options.';
+    }
+});
+// Show hint of available pages
+cmdHint.textContent = 'Type: goto [page] — pages: ' + visited.join(', ');
+</script>

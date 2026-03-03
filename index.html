@@ -676,7 +676,32 @@
         });
 
         function processCommand(raw) {
-            var cmd = raw.toLowerCase().trim();
+                var cmd = raw.toLowerCase().trim();
+                // --- Universal Navigation Commands ---
+                const pageMap = {
+                    terminal: 'index.html',
+                    transmission: 'uebertragung.html',
+                    recording: 'aufzeichnung.html',
+                    defense: 's33l3nreich.html',
+                    fragment: 'fragment0.html'
+                };
+                const currentPage = Object.entries(pageMap).find(([k,v]) => window.location.pathname.endsWith(v))[0];
+                let visited = JSON.parse(localStorage.getItem('arg_visited_pages')||'[]');
+                if (!visited.includes(currentPage)) { visited.push(currentPage); localStorage.setItem('arg_visited_pages', JSON.stringify(visited)); }
+                if (cmd === 'help nav') {
+                    addLine('[NAV] Type: goto [page] — pages: ' + visited.join(', '), 'green');
+                    return;
+                }
+                if (cmd.startsWith('goto ')) {
+                    const dest = cmd.slice(5).trim();
+                    if (visited.includes(dest) && pageMap[dest]) {
+                        addLine('[NAV] Navigating to ' + dest + '...', 'green');
+                        setTimeout(function() { window.location.href = pageMap[dest]; }, 600);
+                    } else {
+                        addLine('[NAV] Unknown or locked page. Type help nav for options.', 'error');
+                    }
+                    return;
+                }
 
             if (cmd === 'open übertragung' || cmd === 'open uebertragung') {
                 SFX.confirm();
@@ -725,20 +750,22 @@
             else if (cmd === 'help') {
                 showHelp();
             }
-            else if (cmd === 'clear') {
-                while (terminal.firstChild && terminal.firstChild !== inputLine) {
-                    terminal.removeChild(terminal.firstChild);
-                }
+            else if (cmd === 'help') {
+                addEmpty();
+                addLine('HELP', 'Verfügbare Befehle:', 'success');
+                addLine('HELP', 'help ............... Diese Hilfe anzeigen', 'text');
+                addLine('HELP', 'help nav ........... Navigation & Seitenwechsel', 'text');
+                addLine('HELP', 'goto [page] ........ Zu besuchter Seite springen', 'text');
+                addLine('HELP', 'login .............. Anmelden', 'text');
+                addLine('HELP', 'status ............. Systemstatus anzeigen', 'text');
+                addLine('HELP', 'whoami ............. Aktuelle Sitzung', 'text');
+                addLine('HELP', 'open übertragung ... Übertragung öffnen', 'text');
+                addLine('HELP', 'decrypt fragment ... Fragment entschlüsseln', 'text');
+                addLine('HELP', 'clear .............. Terminal leeren', 'text');
+                addLine('HELP', 'exit ............... Sitzung beenden', 'text');
+                addEmpty();
+                return;
             }
-            else if (cmd === 'exit') {
-                SFX.confirm();
-                addLine('[SYSTEM] Sitzung wird beendet...', 'amber');
-                setTimeout(function() {
-                    window.close();
-                    // Fallback if browser blocks window.close()
-                    addLine('[SYSTEM] Tab kann nicht automatisch geschlossen werden.', 'red');
-                    addLine('[SYSTEM] Bitte schließe den Tab manuell.', 'dim');
-                }, 1000);
             }
             else {
                 SFX.error();
