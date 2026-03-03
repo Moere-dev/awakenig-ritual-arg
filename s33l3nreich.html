@@ -1934,6 +1934,7 @@
                                 BreachSFX.alarm();
                                 bInput.disabled = false;
                                 bInput.placeholder = 'INITIALIZE DEFENSE MODE';
+                                var mainDefenseHandler = null;
                                 var startDefense = function(e) {
                                     if (e.key === 'Enter') {
                                         var val = bInput.value.trim().toLowerCase();
@@ -1945,6 +1946,41 @@
                                                 bInput.disabled = false;
                                                 bInput.value = '';
                                                 bInput.placeholder = commands[0].hint;
+                                                // Attach the main handler for defense commands
+                                                mainDefenseHandler = function(e2) {
+                                                    if (e2.key.length === 1) SFX.keyPress();
+                                                    if (e2.key === 'Enter') {
+                                                        if (breachWon || breachLost) return;
+                                                        var val2 = bInput.value.trim().toUpperCase();
+                                                        bInput.value = '';
+                                                        if (!val2) return;
+                                                        bLog('root@DEFENSE:~# ' + val2, 'bt-white');
+                                                        if (val2 === commands[cmdIndex].cmd) {
+                                                            clearInterval(timerInterval);
+                                                            BreachSFX.cmdSuccess();
+                                                            bLog('[OK] ' + commands[cmdIndex].desc + ' — ERFOLGREICH', 'bt-green');
+                                                            cmdBox.classList.add('success');
+                                                            cmdIndex++;
+                                                            bFill.classList.add('safe');
+                                                            bFill.style.width = ((cmdIndex / commands.length) * 100) + '%';
+                                                            setTimeout(function() {
+                                                                bFill.classList.remove('safe');
+                                                                promptNextCommand();
+                                                            }, 600);
+                                                        } else {
+                                                            BreachSFX.cmdFail();
+                                                            bLog('[FEHLER] Unbekannter Befehl — versuche es erneut!', 'bt-red');
+                                                            timeLeft -= 1500;
+                                                            if (timeLeft <= 0) {
+                                                                clearInterval(timerInterval);
+                                                                breachLost = true;
+                                                                bLog('[SYSTEM] ZEIT ABGELAUFEN', 'bt-red');
+                                                                breachDefeat(overlay, term);
+                                                            }
+                                                        }
+                                                    }
+                                                };
+                                                bInput.addEventListener('keydown', mainDefenseHandler);
                                                 promptNextCommand();
                                             }, 500);
                                         } else if (val !== '') {
@@ -2040,41 +2076,7 @@
                 }, 100);
             }
 
-            bInput.addEventListener('keydown', function(e) {
-                if (e.key.length === 1) SFX.keyPress();
-                if (e.key === 'Enter') {
-                    if (breachWon || breachLost) return;
-                    var val = bInput.value.trim().toUpperCase();
-                    bInput.value = '';
-                    if (!val) return;
-
-                    bLog('root@DEFENSE:~# ' + val, 'bt-white');
-
-                    if (val === commands[cmdIndex].cmd) {
-                        clearInterval(timerInterval);
-                        BreachSFX.cmdSuccess();
-                        bLog('[OK] ' + commands[cmdIndex].desc + ' — ERFOLGREICH', 'bt-green');
-                        cmdBox.classList.add('success');
-                        cmdIndex++;
-                        bFill.classList.add('safe');
-                        bFill.style.width = ((cmdIndex / commands.length) * 100) + '%';
-                        setTimeout(function() {
-                            bFill.classList.remove('safe');
-                            promptNextCommand();
-                        }, 600);
-                    } else {
-                        BreachSFX.cmdFail();
-                        bLog('[FEHLER] Unbekannter Befehl — versuche es erneut!', 'bt-red');
-                        timeLeft -= 1500;
-                        if (timeLeft <= 0) {
-                            clearInterval(timerInterval);
-                            breachLost = true;
-                            bLog('[SYSTEM] ZEIT ABGELAUFEN', 'bt-red');
-                            breachDefeat(overlay, term);
-                        }
-                    }
-                }
-            });
+            // (moved: see above)
         }
 
         // ============================================================
