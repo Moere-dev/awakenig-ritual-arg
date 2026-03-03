@@ -8,8 +8,7 @@ var CONNECTIONS = (function() {
     // Page definitions with friendly German names
     var PAGES = {
         'index':         { name: 'Terminal',        file: 'index.html' },
-        'uebertragung':  { name: 'Signalübertragung', file: 'uebertragung.html' },
-        's33l3nreich':   { name: 'Seelenreich',     file: 's33l3nreich.html' },
+        's33l3nreich':   { name: 'Dr. Watson login', file: 's33l3nreich.html' },
         'aufzeichnung':  { name: 'Aufzeichnung',    file: 'aufzeichnung.html' },
         'fragment0':     { name: 'Fragment #0',     file: 'fragment0.html' }
     };
