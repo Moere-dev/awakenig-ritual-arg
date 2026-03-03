@@ -621,19 +621,6 @@
         // ============================================================
         //  FULLSCREEN HELPER
         // ============================================================
-        function goFullscreenAndNavigate(url) {
-            var el = document.documentElement;
-            var rfs = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-            if (rfs) {
-                rfs.call(el).then(function() {
-                    window.location.href = url;
-                }).catch(function() {
-                    window.location.href = url;
-                });
-            } else {
-                window.location.href = url;
-            }
-        }
 
         // ============================================================
         //  HELP & COMMANDS
