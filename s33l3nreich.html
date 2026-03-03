@@ -1929,21 +1929,29 @@
                                 bLog('[DEFENSE] » VERTEIDIGUNG BEGINNT «', 'bt-green');
                                 bLog('[DEFENSE] ═══════════════════════════════════════════', 'bt-amber');
                                 bLog('', '');
+                                // Show the required command as a visible prompt
+                                bLogHtml('<span style="color:#00ff41;font-size:1.15rem;letter-spacing:2px;">Tippe <b>INITIALIZE DEFENSE MODE</b> und drücke Enter, um die Verteidigung zu starten.</span>', 'bt-green');
                                 BreachSFX.alarm();
                                 bInput.disabled = false;
-                                bInput.placeholder = 'Tippe einen beliebigen Befehl, um die Verteidigung zu starten...';
-                                // Wait for first input to start the defense minigame
+                                bInput.placeholder = 'INITIALIZE DEFENSE MODE';
                                 var startDefense = function(e) {
-                                    if (e.key === 'Enter' && bInput.value.trim() !== '') {
-                                        bInput.removeEventListener('keydown', startDefense);
-                                        bInput.disabled = true;
-                                        bLog('[DEFENSE] Verteidigung aktiviert — Zeit läuft!', 'bt-green');
-                                        setTimeout(function() {
-                                            bInput.disabled = false;
+                                    if (e.key === 'Enter') {
+                                        var val = bInput.value.trim().toLowerCase();
+                                        if (val === 'initialize defense mode') {
+                                            bInput.removeEventListener('keydown', startDefense);
+                                            bInput.disabled = true;
+                                            bLog('[DEFENSE] Verteidigung aktiviert — Zeit läuft!', 'bt-green');
+                                            setTimeout(function() {
+                                                bInput.disabled = false;
+                                                bInput.value = '';
+                                                bInput.placeholder = commands[0].hint;
+                                                promptNextCommand();
+                                            }, 500);
+                                        } else if (val !== '') {
+                                            BreachSFX.cmdFail();
+                                            bLog('[FEHLER] Falscher Initialisierungsbefehl. Versuche: INITIALIZE DEFENSE MODE', 'bt-red');
                                             bInput.value = '';
-                                            bInput.placeholder = commands[0].hint;
-                                            promptNextCommand();
-                                        }, 500);
+                                        }
                                     }
                                 };
                                 bInput.addEventListener('keydown', startDefense);
